@@ -5,6 +5,9 @@ import android.opengl.GLES20
 import android.opengl.GLES32
 import android.util.Log
 import com.arthurgichuhi.kotlinopengl.io_Operations.MyIO
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+
 
 class Shaders(context: Context) {
     val TAG="Shaders-Class"
@@ -46,26 +49,36 @@ class Shaders(context: Context) {
                 "")
         return program
     }
+    fun sendVertexDataToGL(data: FloatArray, gl_position: Int): IntArray {
+        val vertices_data_bytes = ByteBuffer.allocateDirect(data.size * 4)
+            .order(ByteOrder.nativeOrder())
+        val vertices_data = vertices_data_bytes.asFloatBuffer()
+        vertices_data.put(data).position(0)
 
-    fun sendVertexDataToGL(data:FloatArray,position:Int):IntArray{
-        Log.d(TAG,"Float Array Size -------- ${data.size}")
-        val temp=IntArray(1)
-        //create VAO and get VAOID
-        GLES32.glGenVertexArrays(1,temp,0)
-        val vaoID=temp[0]
-        //create VBO and get its ID
-        GLES32.glGenBuffers(1,temp,0)
-        val vboID=temp[0]
 
-        GLES32.glBindVertexArray(vaoID)
+        val tmp = IntArray(1)
+        GLES32.glGenVertexArrays(1, tmp, 0)
+        val gl_array_id = tmp[0]
 
-        GLES32.glBindBuffer(GLES32.GL_ARRAY_BUFFER,vboID)
-        GLES32.glBufferData(GLES20.GL_ARRAY_BUFFER,data.size*4,myIO.createFloatBuffer(data),GLES32.GL_STATIC_DRAW)
+        GLES32.glGenBuffers(1, tmp, 0)
+        val gl_buffer_id = tmp[0]
 
-        GLES32.glEnable(position)
+        GLES32.glBindVertexArray(gl_array_id)
 
-        GLES32.glVertexAttribPointer(position,3,GLES32.GL_FLOAT,false,12,0)
+        GLES32.glBindBuffer(GLES32.GL_ARRAY_BUFFER, gl_buffer_id)
+        GLES32.glBufferData(
+            GLES32.GL_ARRAY_BUFFER,
+            data.size * 4,
+            myIO.createFloatBuffer(data),
+            GLES32.GL_STATIC_DRAW
+        )
 
-        return intArrayOf(vaoID,vboID)
+        GLES32.glEnableVertexAttribArray(gl_position)
+        GLES32.glVertexAttribPointer(
+            gl_position, 3, GLES32.GL_FLOAT, false,
+            12, 0
+        )
+
+        return intArrayOf(gl_array_id, gl_buffer_id)
     }
 }

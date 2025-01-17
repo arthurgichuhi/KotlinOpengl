@@ -1,8 +1,11 @@
 package com.arthurgichuhi.kotlinopengl.gl_surface
 
 import android.content.Context
+import android.opengl.GLES20
 import android.opengl.GLES32
 import android.opengl.GLSurfaceView
+import android.util.Log
+import com.arthurgichuhi.aopengl.models.Vec3
 import com.arthurgichuhi.kotlinopengl.io_Operations.MyIO
 import com.arthurgichuhi.kotlinopengl.shaders.Shaders
 import javax.microedition.khronos.egl.EGLConfig
@@ -39,9 +42,10 @@ class MyRender(context: Context):GLSurfaceView.Renderer {
     )
     //
     override fun onSurfaceCreated(p0: GL10?, p1: EGLConfig?) {
-        GLES32.glClearColor(0f,.3f,0f,1.0f)
+        GLES20.glClearColor(0f,.3f,1f,1.0f)
 
         program=shaders.createProgram("vs1.txt","fs1.txt")
+
         GLES32.glUseProgram(program)
         position=GLES32.glGetAttribLocation(program,"position")
 
@@ -50,17 +54,20 @@ class MyRender(context: Context):GLSurfaceView.Renderer {
 
     }
 
-    override fun onSurfaceChanged(p0: GL10?, p1: Int, p2: Int) {
-        TODO("Not yet implemented")
+    override fun onSurfaceChanged(p0: GL10?, width: Int, height: Int) {
+
     }
 
     override fun onDrawFrame(p0: GL10?) {
-        GLES32.glClear(GLES32.GL_DEPTH_BUFFER_BIT and GLES32.GL_COLOR_BUFFER_BIT)
+        GLES32.glClear(GLES32.GL_DEPTH_BUFFER_BIT or GLES32.GL_COLOR_BUFFER_BIT)
 
         GLES32.glUseProgram(program)
+        val glColor=GLES32.glGetUniformLocation(program,"color")
+        GLES32.glUniform3f(glColor, 1.0F,1.0F,0F,)
         GLES32.glBindVertexArray(glArray1)
         GLES32.glDrawArrays(GLES32.GL_TRIANGLES,0,6)
 
+        GLES32.glUniform3f(glColor, 1.0F,1.0F,1F,)
         GLES32.glBindVertexArray(glArray2)
         GLES32.glDrawArrays(GLES32.GL_TRIANGLES,0,6)
 

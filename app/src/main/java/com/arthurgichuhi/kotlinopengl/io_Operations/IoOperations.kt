@@ -31,10 +31,11 @@ class MyIO(val context: Context) {
     }
 
     fun createFloatBuffer(data:FloatArray): FloatBuffer {
-        val buffer=ByteBuffer.allocate(data.size*4)
-            .order(ByteOrder.nativeOrder()).asFloatBuffer()
-        buffer.put(data).position(0)
-        return buffer
+        val vertices_data_bytes = ByteBuffer.allocateDirect(data.size * 4)
+            .order(ByteOrder.nativeOrder())
+        val vertices_data = vertices_data_bytes.asFloatBuffer()
+        vertices_data.put(data).position(0)
+        return vertices_data
     }
 
     fun createIntBuffer(data:IntArray):IntBuffer{
