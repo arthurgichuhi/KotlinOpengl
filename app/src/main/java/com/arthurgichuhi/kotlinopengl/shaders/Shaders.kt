@@ -5,8 +5,6 @@ import android.opengl.GLES20
 import android.opengl.GLES32
 import android.util.Log
 import com.arthurgichuhi.kotlinopengl.io_Operations.MyIO
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
 
 
 class Shaders(context: Context) {
@@ -50,12 +48,6 @@ class Shaders(context: Context) {
         return program
     }
     fun sendVertexDataToGL(data: FloatArray, gl_position: Int): IntArray {
-        val vertices_data_bytes = ByteBuffer.allocateDirect(data.size * 4)
-            .order(ByteOrder.nativeOrder())
-        val vertices_data = vertices_data_bytes.asFloatBuffer()
-        vertices_data.put(data).position(0)
-
-
         val tmp = IntArray(1)
         GLES32.glGenVertexArrays(1, tmp, 0)
         val gl_array_id = tmp[0]
