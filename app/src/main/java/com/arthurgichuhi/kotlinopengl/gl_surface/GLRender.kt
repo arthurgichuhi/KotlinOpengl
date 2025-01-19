@@ -1,18 +1,19 @@
 package com.arthurgichuhi.kotlinopengl.gl_surface
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.opengl.GLES20
 import android.opengl.GLES32
 import android.opengl.GLSurfaceView
 import android.opengl.Matrix
-import android.util.Log
-import com.arthurgichuhi.aopengl.models.Vec3
-import com.arthurgichuhi.kotlinopengl.io_Operations.MyIO
+import android.os.Build
+import com.arthurgichuhi.kotlinopengl.camera.MyCamera
 import com.arthurgichuhi.kotlinopengl.shaders.Shaders
+import java.util.Date
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
-class MyRender(context: Context):GLSurfaceView.Renderer {
+class MyRender(val context: Context,val camera: MyCamera):GLSurfaceView.Renderer {
     val shaders=Shaders(context)
     //
     var mWidth=0
@@ -69,7 +70,6 @@ class MyRender(context: Context):GLSurfaceView.Renderer {
         Matrix.setIdentityM(view,0)
         Matrix.setIdentityM(projection,0)
         Matrix.setIdentityM(identity,0)
-
         Matrix.translateM(view,0,0f,0f,-3f)
 
     }
@@ -77,6 +77,8 @@ class MyRender(context: Context):GLSurfaceView.Renderer {
     override fun onSurfaceChanged(p0: GL10?, width: Int, height: Int) {
         mWidth=width
         mHeight=height
+        camera.width=width
+        camera.height=height
         //set viewport
         GLES32.glViewport(0,0,width,height)
 
@@ -85,11 +87,24 @@ class MyRender(context: Context):GLSurfaceView.Renderer {
         Matrix.perspectiveM(projection,0,45.0f,aspect,.1f,100.0f)
 
     }
+    private var startTime:Long= Date().time
+    private var loop=0
+    private var frameRate=0.0
 
+    @SuppressLint("NewApi")
     override fun onDrawFrame(p0: GL10?) {
+
         GLES32.glClear(GLES32.GL_DEPTH_BUFFER_BIT or GLES32.GL_COLOR_BUFFER_BIT)
 
         Matrix.rotateM(model,0,3f,0f,1f,0f)
+
+        if(Build.VERSION.SDK_INT>Build.VERSION_CODES.TIRAMISU){
+            Matrix.setRotateEulerM2(view,0,camera.rotation.x,camera.rotation.y,0f)
+        }
+        else{
+            Matrix.setRotateEulerM(view,0,camera.rotation.x,camera.rotation.y,0f)
+        }
+        Matrix.translateM(view,0,camera.position.x,camera.position.y,camera.position.z)
 
         GLES32.glUseProgram(program)
 
@@ -107,6 +122,5 @@ class MyRender(context: Context):GLSurfaceView.Renderer {
         GLES32.glUniform3f(glColor, 1.0F,1.0F,1F,)
         GLES32.glBindVertexArray(glArray2)
         GLES32.glDrawArrays(GLES32.GL_TRIANGLES,0,6)
-
     }
 }

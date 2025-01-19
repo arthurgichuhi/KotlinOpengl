@@ -9,10 +9,12 @@ android {
 
     defaultConfig {
         applicationId = "com.arthurgichuhi.kotlinopengl"
-        minSdk = 21
+        minSdk = 25
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
+
+        multiDexEnabled = true
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -59,6 +61,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.ui.test.junit4.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
