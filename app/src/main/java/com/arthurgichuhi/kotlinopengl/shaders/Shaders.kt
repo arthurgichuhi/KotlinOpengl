@@ -47,7 +47,7 @@ class Shaders(context: Context) {
                 "")
         return program
     }
-    fun sendVertexDataToGL(data: FloatArray, gl_position: Int): IntArray {
+    fun sendVertexDataToGL(data: FloatArray, gl_position: Int,gl_Color:Int): IntArray {
         val tmp = IntArray(1)
         GLES32.glGenVertexArrays(1, tmp, 0)
         val gl_array_id = tmp[0]
@@ -67,8 +67,14 @@ class Shaders(context: Context) {
 
         GLES32.glEnableVertexAttribArray(gl_position)
         GLES32.glVertexAttribPointer(
-            gl_position, 3, GLES32.GL_FLOAT, false,
-            12, 0
+                gl_position, 3, GLES32.GL_FLOAT, false,
+        24, 0
+        )
+
+        GLES32.glEnableVertexAttribArray(gl_Color)
+        GLES32.glVertexAttribPointer(
+            gl_Color, 3, GLES32.GL_FLOAT, false,
+            24, 12
         )
 
         return intArrayOf(gl_array_id, gl_buffer_id)

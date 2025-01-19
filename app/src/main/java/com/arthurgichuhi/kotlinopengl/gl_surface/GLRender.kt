@@ -21,6 +21,7 @@ class MyRender(val context: Context,val camera: MyCamera):GLSurfaceView.Renderer
     //
     var program=0
     var position=0
+    var gl_Color=0
     var glArray1=0
     var glArray2=0
     //matrices
@@ -34,37 +35,38 @@ class MyRender(val context: Context,val camera: MyCamera):GLSurfaceView.Renderer
     var glView=0
     //objects
     val object1= floatArrayOf(
-        -0.5F, -0.5F, 0.0F,
-        -0.5F, -0.1F, 0.0F,
-        0.5F, -0.1F, 0.0F,
+        -0.5F, 0.5F, 0.0F, 0.0F, 0.0F, 0.0F,
+        -0.5F, 0.1F, 0.0F, 1.0F, 1.0F, 0.0F,
+        0.5F, 0.1F, 0.0F, 1.0F, 1.0F, 0.0F,
 
-        -0.5F, -0.5F, 0.0F,
-        0.5F, -0.1F, 0.0F,
-        0.5F, -0.5F, 0.0F,
+        -0.5F, 0.5F, 0.0F, 1.0F, 1.0F, 0.0F,
+        0.5F, 0.1F, 0.0F, 1.0F, 1.0F, 0.0F,
+        0.5F, 0.5F, 0.0F, 1.0F, 1.0F, 0.0F,
     )
     val object2= floatArrayOf(
-        -0.5F, 0.5F, 0.0F,
-        -0.5F, 0.1F, 0.0F,
-        0.5F, 0.1F, 0.0F,
+        -0.5F, -0.5F, 0.0F, 1.0F, 1.0F, 1.0F,
+        -0.5F, -0.1F, 0.0F, 1.0F, 1.0F, 1.0F,
+        0.5F, -0.1F, 0.0F, 1.0F, 1.0F, 1.0F,
 
-        -0.5F, 0.5F, 0.0F,
-        0.5F, 0.1F, 0.0F,
-        0.5F, 0.5F, 0.0F,
+        -0.5F, -0.5F, 0.0F, 1.0F, 1.0F, 1.0F,
+        0.5F, -0.1F, 0.0F, 1.0F, 1.0F, 1.0F,
+        0.5F, -0.5F, 0.0F, 1.0F, 1.0F, 1.0F,
     )
     //
     override fun onSurfaceCreated(p0: GL10?, p1: EGLConfig?) {
         GLES20.glClearColor(0f,.3f,1f,1.0f)
 
-        program=shaders.createProgram("mvpVs.txt","mvpFs.txt")
+        program=shaders.createProgram("texColorVs.txt","texColorFs.txt")
 
         GLES32.glUseProgram(program)
         position=GLES32.glGetAttribLocation(program,"position")
+        gl_Color=GLES32.glGetAttribLocation(program,"color")
         glModel=GLES32.glGetUniformLocation(program,"model")
         glView=GLES32.glGetUniformLocation(program,"view")
         glProjection=GLES32.glGetUniformLocation(program,"projection")
 
-        glArray1=shaders.sendVertexDataToGL(object1,position)[0]
-        glArray2=shaders.sendVertexDataToGL(object2,position)[0]
+        glArray1=shaders.sendVertexDataToGL(object1,position,gl_Color)[0]
+        glArray2=shaders.sendVertexDataToGL(object2,position,gl_Color)[0]
 
         Matrix.setIdentityM(model,0)
         Matrix.setIdentityM(view,0)
