@@ -2,6 +2,10 @@ package com.arthurgichuhi.kotlinopengl.io_Operations
 
 import android.content.Context
 import android.content.res.AssetManager
+import android.graphics.BitmapFactory
+import android.opengl.GLES20
+import android.opengl.GLES32
+import android.opengl.GLUtils
 import android.util.Log
 import java.io.BufferedReader
 import java.nio.ByteBuffer
@@ -10,7 +14,7 @@ import java.nio.FloatBuffer
 import java.nio.IntBuffer
 
 class MyIO(val context: Context) {
-    val TAG="MyIO"
+    private val TAG="MyIO"
     //read shader code stored in assets
     fun readShaders(fileName:String):String{
         val assetManager: AssetManager =context.assets
@@ -28,6 +32,34 @@ class MyIO(val context: Context) {
             shaderCodeBuffer.deleteCharAt(shaderCodeBuffer.length-1)
         }
         return shaderCodeBuffer.toString()
+    }
+
+    fun loadTexture(location:String):Int{
+        val textureHandle = IntArray(1)
+        GLES20.glGenTextures(1, textureHandle,0)
+        if(textureHandle[0]==0){
+            return 0
+        }
+        val options = BitmapFactory.Options()
+        // No pre-scaling
+        options.inScaled = false
+
+        var bitmap: android.graphics.Bitmap?
+        try {
+            context.assets.open(location).use { inputStream ->
+                bitmap = BitmapFactory.decodeStream(inputStream, null, options)
+            }
+        } catch (e: Exception) {
+            throw e
+        }
+
+        GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, textureHandle[0]);
+        GLES32.glTexParameteri(GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_MIN_FILTER, GLES32.GL_NEAREST);
+        GLUtils.texImage2D(GLES32.GL_TEXTURE_2D, 0, bitmap, 0);
+        GLES32.glGenerateMipmap(GLES32.GL_TEXTURE_2D);
+        bitmap?.recycle();
+        Log.d(TAG,"Texture Id-----------------${textureHandle[0]}")
+        return textureHandle[0]
     }
 
     fun createFloatBuffer(data:FloatArray): FloatBuffer {
