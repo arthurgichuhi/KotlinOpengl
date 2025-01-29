@@ -1,4 +1,4 @@
-package com.arthurgichuhi.kotlinopengl.my_ui.buttons
+package com.arthurgichuhi.kotlinopengl.my_ui
 
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton

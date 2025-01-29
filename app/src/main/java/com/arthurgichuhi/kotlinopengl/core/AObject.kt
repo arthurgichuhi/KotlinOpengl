@@ -1,14 +1,17 @@
-package com.arthurgichuhi.kotlinopengl.gl_objects
+package com.arthurgichuhi.kotlinopengl.core
 
 import android.opengl.GLES32.*
 import android.opengl.Matrix
-import android.os.Build
+import android.util.Log
 import com.arthurgichuhi.aopengl.models.Vec3
 import com.arthurgichuhi.kotlinopengl.utils.GlUtils
+import com.arthurgichuhi.kotlinopengl.utils.MathUtils
+import java.util.Date
 
 abstract class AObject {
     lateinit var mScene:AScene
     protected var modelMat:FloatArray
+    private var updateCall:ObjUpdateCall?=null
 
     init {
         modelMat=FloatArray(16)
@@ -17,7 +20,7 @@ abstract class AObject {
 
     abstract fun onInit()
     abstract fun destroy(aScene: AScene)
-    abstract fun update(time:Long)
+    abstract fun onUpdate(time:Long)
     abstract fun draw(viewMat:FloatArray,projectionMat:FloatArray)
 
     fun setup(scene:AScene){
@@ -27,16 +30,22 @@ abstract class AObject {
         onInit()
     }
 
+    fun setUpdateCall(call:ObjUpdateCall){
+        updateCall=call
+    }
+
+    fun update(ts:Long){
+        if(updateCall!=null){
+            updateCall?.update(ts,this)
+        }
+        onUpdate(ts)
+    }
+
     fun translate(move: Vec3){
         Matrix.translateM(modelMat,0,move.x,move.y,move.z)
     }
-     fun rotate(rot:Vec3){
-         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE){
-             Matrix.setRotateEulerM2(modelMat,0,rot.x,rot.y,rot.z)
-         }
-         else{
-             Matrix.setRotateEulerM(modelMat,0,rot.x,rot.y,rot.z)
-         }
+     fun rotate(angle:Float,rot:Vec3){
+         Matrix.rotateM(modelMat,0,angle,rot.x,rot.y,rot.z)
      }
 
     fun drawTriangles(first:Int,count:Int){

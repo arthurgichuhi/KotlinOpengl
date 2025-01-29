@@ -17,10 +17,18 @@ class Utils {
     val FloatsPerColor: Int = 3
     val FloatsPerTexture: Int = 2
 
-    fun readBitmapResource(ctx: Context, resourceId: Int): Bitmap {
+    fun getBitmapFromAssets(ctx: Context, name:String): Bitmap {
         val options = BitmapFactory.Options()
         options.inScaled = false
-        return BitmapFactory.decodeResource(ctx.resources, resourceId, options)
+        var bitmap: Bitmap?
+        try {
+            ctx.assets.open(name).use { inputStream ->
+                bitmap = BitmapFactory.decodeStream(inputStream, null, options)
+            }
+        } catch (e: Exception) {
+            throw e
+        }
+        return bitmap!!
     }
 
     fun readAssetFile(ctx: Context, fileName: String): String? {

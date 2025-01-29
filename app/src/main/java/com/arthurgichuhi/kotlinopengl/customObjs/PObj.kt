@@ -1,21 +1,23 @@
-package com.arthurgichuhi.kotlinopengl.gl_objects
+package com.arthurgichuhi.kotlinopengl.customObjs
 
 import android.content.Context
 import android.opengl.GLES32.*
 import android.util.Log
 import com.arthurgichuhi.aopengl.models.Vec3
+import com.arthurgichuhi.kotlinopengl.core.AObject
+import com.arthurgichuhi.kotlinopengl.core.AScene
+import com.arthurgichuhi.kotlinopengl.core.Program
+import com.arthurgichuhi.kotlinopengl.core.VertexBuffer
 import com.arthurgichuhi.kotlinopengl.utils.Utils
-import com.arthurgichuhi.kotlinopengl.shaders.Program
 
 //Position Object
-class PObj(val vertices:FloatArray,val color:Vec3,):AObject() {
-    val TAG="PObj"
-    lateinit var program: Program
-    lateinit var vertexBuffer: VertexBuffer
-    lateinit var ctx:Context
-    var mVertices:FloatArray = FloatArray(16)
-    lateinit var mColor:Vec3
-    var nVertices=0
+class PObj(vertices:FloatArray,color:Vec3,): AObject() {
+    private val TAG="PObj"
+    private lateinit var program: Program
+    private lateinit var vertexBuffer: VertexBuffer
+    private var mVertices:FloatArray = FloatArray(16)
+    private var mColor:Vec3
+    private var nVertices=0
 
     init {
         mVertices = vertices
@@ -24,8 +26,7 @@ class PObj(val vertices:FloatArray,val color:Vec3,):AObject() {
     }
 
     override fun onInit() {
-        ctx = super.mScene.context
-        program = mScene.loadProgram(ctx,"mvp")
+        program = mScene.loadProgram("mvp")
         vertexBuffer = VertexBuffer()
         vertexBuffer.load(mVertices,true)
         program.use()
@@ -36,13 +37,14 @@ class PObj(val vertices:FloatArray,val color:Vec3,):AObject() {
         TODO("Not yet implemented")
     }
 
-    override fun update(time: Long) {
+    override fun onUpdate(time: Long) {
+
     }
 
     override fun draw(viewMat: FloatArray, projectionMat: FloatArray) {
         program.use()
         vertexBuffer.bind()
-        program.setUniform3f("color",color)
+        program.setUniform3f("color",mColor)
         program.setUniformMat("model",modelMat)
         program.setUniformMat("view",viewMat)
         program.setUniformMat("projection",projectionMat)

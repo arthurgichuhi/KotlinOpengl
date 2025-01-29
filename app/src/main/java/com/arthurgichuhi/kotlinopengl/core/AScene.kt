@@ -1,10 +1,12 @@
-package com.arthurgichuhi.kotlinopengl.gl_objects
+package com.arthurgichuhi.kotlinopengl.core
 
 import android.content.Context
-import android.util.Log
+import android.opengl.GLES32.GL_COLOR_BUFFER_BIT
+import android.opengl.GLES32.GL_DEPTH_BUFFER_BIT
+import android.opengl.GLES32.glClear
 import com.arthurgichuhi.kotlinopengl.camera.MyCamera
-import com.arthurgichuhi.kotlinopengl.shaders.Program
 import java.util.Date
+import javax.microedition.khronos.opengles.GL10
 
 open class AScene(val context: Context) {
     private val TAG="AScene"
@@ -15,7 +17,7 @@ open class AScene(val context: Context) {
     val mContext=context
 
     private var objects:MutableList<AObject> = ArrayList()
-    private var programs:MutableMap<String,Program> = HashMap()
+    private var programs:MutableMap<String, Program> = HashMap()
     private var textures:MutableMap<String,Texture> = HashMap()
 
     var camera=MyCamera()
@@ -43,7 +45,7 @@ open class AScene(val context: Context) {
         }
     }
 
-    fun loadProgram(ctx:Context,name:String):Program{
+    fun loadProgram(name:String): Program {
         if(programs.containsKey(name)){
                 return programs[name]!!
         }
@@ -52,15 +54,20 @@ open class AScene(val context: Context) {
         return p
     }
 
-    fun loadTexture(name:String):Texture{
-        if(textures.containsKey(name)){
-            return textures[name]!!
+    fun loadTexture(path:String):Texture{
+        if(textures.containsKey(path)){
+            return textures[path]!!
         }
         val t=Texture()
-        textures[name]=t
-        return t.loadTexture(name,context)
+        textures[path]=t
+        return t.loadTexture(context,path)
     }
 
+    fun draw(gl10: GL10?){
+        glClear(GL_DEPTH_BUFFER_BIT or GL_COLOR_BUFFER_BIT)
+        updateObjects()
+        drawObjects()
+    }
 
 
 }

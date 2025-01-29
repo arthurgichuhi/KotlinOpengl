@@ -1,4 +1,4 @@
-package com.arthurgichuhi.kotlinopengl.gl_objects
+package com.arthurgichuhi.kotlinopengl.core
 
 import android.opengl.GLES32.*
 import android.util.Log

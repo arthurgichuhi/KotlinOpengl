@@ -22,39 +22,37 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import com.arthurgichuhi.aopengl.models.Vec3
-import com.arthurgichuhi.kotlinopengl.gl_objects.PObj
+import com.arthurgichuhi.kotlinopengl.core.AObject
+import com.arthurgichuhi.kotlinopengl.core.ObjUpdateCall
+import com.arthurgichuhi.kotlinopengl.customObjs.Cube
+import com.arthurgichuhi.kotlinopengl.customObjs.PCTObj
+import com.arthurgichuhi.kotlinopengl.customObjs.PObj
 import com.arthurgichuhi.kotlinopengl.gl_surface.MyScene
 import com.arthurgichuhi.kotlinopengl.gl_surface.MySurfaceView
-import com.arthurgichuhi.kotlinopengl.my_ui.buttons.HomeButton
+import com.arthurgichuhi.kotlinopengl.my_ui.HomeButton
 import com.arthurgichuhi.kotlinopengl.viewModel.MyViewModel
 
 class MainActivity : ComponentActivity(){
     private val myModel:MyViewModel by viewModels<MyViewModel>()
     private lateinit var myScene:MyScene
-    private val object1= floatArrayOf(
-        -0.5F, 0.5F, 0.0F,
-        -0.5F, 0.1F, 0.0F,
-        0.5F, 0.1F, 0.0F,
-
-        -0.5F, 0.5F, 0.0F,
-        0.5F, 0.1F, 0.0F,
-        0.5F, 0.5F, 0.0F
-    )
-
-    private val object2= floatArrayOf(
-        -0.5F, -0.5F, 0.0F,
-        -0.5F, -0.1F, 0.0F,
-        0.5F, -0.1F, 0.0F,
-
-        -0.5F, -0.5F, 0.0F,
-        0.5F, -0.1F, 0.0F,
-        0.5F, -0.5F, 0.0F
-    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        myScene=MyScene(this)
-        myScene.addObject(PObj(object1, Vec3(.0f,.5f,0f)))
+
+        myScene=MyScene(this,this@MainActivity)
+
+        val cube=PObj(Cube().create(Vec3(1f,1f,1f)), Vec3(.5f,.5f,0f))
+
+        val verts=Cube().createWithOneFileTex(Vec3(1f,1f,1f),4,2)
+        val cube2=PCTObj(verts,false,true,"textures/eightcolors.png",false)
+
+        myScene.addObject(cube2)
+
+        cube2.setUpdateCall(object:ObjUpdateCall{
+            override fun update(time: Long, obj: AObject) {
+                obj.rotate(1f,Vec3(1f,0f,0f))
+            }
+        })
         setContent{
             HomeScreen()
         }
@@ -69,29 +67,79 @@ class MainActivity : ComponentActivity(){
             )
             Text("Frame Rate:00FPS", modifier = Modifier.align(alignment = Alignment.TopEnd))
 
-            Column(
-                modifier = Modifier.fillMaxWidth(.3f).align(Alignment.CenterStart,),
-                horizontalAlignment = Alignment.CenterHorizontally
+            Row(modifier = Modifier.fillMaxWidth(.6f).align(Alignment.CenterStart,),) {
+                //Position
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                HomeButton(
-                    callback = { myScene.camera.position.z +=.5f },
-                    icon=Icons.Filled.KeyboardArrowUp,
+                    HomeButton(
+                        callback = {
+                            myScene.camera.position.z +=.5f
+                            myScene.camera.update()
+                        },
+                        icon=Icons.Filled.KeyboardArrowUp,
                     )
+                    Row(horizontalArrangement = Arrangement.SpaceBetween) {
+                        HomeButton(
+                            callback = {
+                                myScene.camera.position.x +=.5f
+                                myScene.camera.update()
 
-                Row(horizontalArrangement = Arrangement.SpaceBetween) {
+                            },
+                            icon=Icons.Filled.KeyboardArrowLeft
+                        )
+                        HomeButton(
+                            callback = {
+                                myScene.camera.position.x -=.5f
+                                myScene.camera.update()
+                            },
+                            icon=Icons.Filled.KeyboardArrowRight
+                        )
+                    }
                     HomeButton(
-                        callback = { myScene.camera.rotation.y+=20f },
-                        icon=Icons.Filled.KeyboardArrowLeft
-                    )
+                        callback = {
+                            myScene.camera.position.z -=.5f
+                            myScene.camera.update()
+                        },
+                        icon = Icons.Default.KeyboardArrowDown
+                    ) }
+                //Rotation
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
                     HomeButton(
-                        callback = { myScene.camera.rotation.y-=20f },
-                        icon=Icons.Filled.KeyboardArrowRight
+                        callback = {
+                            myScene.camera.rotation.y+=10f
+                            myScene.camera.update()
+                        },
+                        icon=Icons.Filled.KeyboardArrowUp,
                     )
-                }
-                HomeButton(
-                    callback = { myScene.camera.position.z -=.5f },
-                    icon = Icons.Default.KeyboardArrowDown
-                ) }
+                    Row(horizontalArrangement = Arrangement.SpaceBetween) {
+                        HomeButton(
+                            callback = {
+                                myScene.camera.rotation.z+=10f
+                                myScene.camera.update()
+
+                            },
+                            icon=Icons.Filled.KeyboardArrowLeft
+                        )
+                        HomeButton(
+                            callback = {
+                                myScene.camera.rotation.z-=10f
+                                myScene.camera.update()
+                            },
+                            icon=Icons.Filled.KeyboardArrowRight
+                        )
+                    }
+                    HomeButton(
+                        callback = {
+                            myScene.camera.rotation.y-=10f
+                            myScene.camera.update()
+                        },
+                        icon = Icons.Default.KeyboardArrowDown
+                    ) }
+            }
+
                 HomeButton(
                     callback ={ myScene.camera.resetCamera() },
                     icon = Icons.Default.Home

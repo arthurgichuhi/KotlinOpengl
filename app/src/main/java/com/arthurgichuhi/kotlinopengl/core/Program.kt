@@ -1,4 +1,4 @@
-package com.arthurgichuhi.kotlinopengl.shaders
+package com.arthurgichuhi.kotlinopengl.core
 
 import android.content.Context
 import android.opengl.GLES32.*
@@ -10,13 +10,14 @@ import com.arthurgichuhi.kotlinopengl.utils.GlUtils
 class Program {
     private val TAG="Program"
     var progID=-1
+    private var utils=Utils()
     private var mVertexShaderId = -1
     private var mFragmentShaderId = -1
     private var mVertCode: String = ""
     private var mFragCode: String = ""
 
-    fun loadProgram(context: Context,name:String):Program{
-        val p=Program()
+    fun loadProgram(context: Context,name:String): Program {
+        val p= Program()
         p.createProgram(context,name)
         return p
     }
@@ -37,7 +38,7 @@ class Program {
         // error
         if (success[0] == 0) {
             val str = glGetProgramInfoLog(progID)
-            Log.e(TAG, str)
+            Log.e(TAG, "Error Linking Program : $str")
         }
     }
 
@@ -80,12 +81,19 @@ class Program {
     ) {
         val loc=getAttribLoc(name)
         glEnableVertexAttribArray(loc)
-        glVertexAttribPointer(loc,size, GL_FLOAT,false,stride*4,offset)
+        glVertexAttribPointer(
+            loc,size, GL_FLOAT,false,
+            stride*utils.BytesPerFloat,offset*utils.BytesPerFloat)
     }
 
     fun setUniform3f(name:String,value: Vec3){
         val loc=getUniformLoc(name)
         glUniform3f(loc,value.x,value.y,value.z)
+    }
+
+    fun setUniformInt(name:String,value:Int){
+        val loc=getUniformLoc(name)
+        glUniform1i(loc,value)
     }
 
     fun setUniformMat(name:String,data:FloatArray){

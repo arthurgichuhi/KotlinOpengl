@@ -2,10 +2,7 @@ package com.arthurgichuhi.kotlinopengl.camera
 
 import android.opengl.GLES32.*
 import android.opengl.Matrix
-import com.arthurgichuhi.aopengl.models.Vec2f
 import com.arthurgichuhi.aopengl.models.Vec3
-import com.arthurgichuhi.kotlinopengl.alearnTest.gl.core.LScene
-import com.arthurgichuhi.kotlinopengl.gl_objects.AScene
 import com.arthurgichuhi.kotlinopengl.gl_surface.MyScene
 
 class MyCamera {
@@ -19,7 +16,7 @@ class MyCamera {
     }
 
     var position:Vec3=Vec3(0f,0f,-3f)
-    var rotation:Vec2f=Vec2f(0f,0f)
+    var rotation:Vec3=Vec3(0f,0f,0f)
 
     var width=0
     var height=0
@@ -33,11 +30,23 @@ class MyCamera {
     fun update(){
         glViewport(0,0,width,height)
         val aspect = width.toFloat()/height.toFloat()
+
+        Matrix.setIdentityM(viewMat,0)
+
+        Matrix.rotateM(viewMat, 0, rotation.x, 1f, 0f, 0f) // Rotate around X-axis
+        Matrix.rotateM(viewMat, 0, rotation.y, 0f, 1f, 0f)
+        Matrix.rotateM(viewMat,0,rotation.z,0f,0f,1f)
+
+        Matrix.translateM(viewMat, 0, position.x, position.y, position.z)
+
         Matrix.perspectiveM(projectionMat,0,45f,aspect,.1f,100f)
     }
 
     fun resetCamera(){
         position=Vec3(0f,0f,-3f)
-        rotation=Vec2f(0f,0f)
+        rotation=Vec3(0f,0f,0f)
+        Matrix.setIdentityM(viewMat,0)
+        Matrix.translateM(viewMat,0,position.x, position.y, position.z)
+
     }
 }
