@@ -52,4 +52,9 @@ abstract class AObject {
         glDrawArrays(GL_TRIANGLES,first,count)
         GlUtils().checkErr(2)
     }
+
+    fun drawLines(first:Int,count: Int,lineWidth:Float){
+        glLineWidth(lineWidth)
+        glDrawArrays(GL_LINES,first, count)
+    }
 }

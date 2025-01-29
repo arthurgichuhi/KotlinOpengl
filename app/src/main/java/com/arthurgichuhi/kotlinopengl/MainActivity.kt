@@ -27,9 +27,11 @@ import com.arthurgichuhi.kotlinopengl.core.ObjUpdateCall
 import com.arthurgichuhi.kotlinopengl.customObjs.Cube
 import com.arthurgichuhi.kotlinopengl.customObjs.PCTObj
 import com.arthurgichuhi.kotlinopengl.customObjs.PObj
+import com.arthurgichuhi.kotlinopengl.customObjs.WireObj
 import com.arthurgichuhi.kotlinopengl.gl_surface.MyScene
 import com.arthurgichuhi.kotlinopengl.gl_surface.MySurfaceView
 import com.arthurgichuhi.kotlinopengl.my_ui.HomeButton
+import com.arthurgichuhi.kotlinopengl.utils.Utils
 import com.arthurgichuhi.kotlinopengl.viewModel.MyViewModel
 
 class MainActivity : ComponentActivity(){
@@ -46,13 +48,25 @@ class MainActivity : ComponentActivity(){
         val verts=Cube().createWithOneFileTex(Vec3(1f,1f,1f),4,2)
         val cube2=PCTObj(verts,false,true,"textures/eightcolors.png",false)
 
-        myScene.addObject(cube2)
-
         cube2.setUpdateCall(object:ObjUpdateCall{
             override fun update(time: Long, obj: AObject) {
                 obj.rotate(1f,Vec3(1f,0f,0f))
             }
         })
+        myScene.addObject(cube2)
+
+        val wireObj=WireObj()
+        wireObj.setColor(Vec3(0f,1f,0f))
+        wireObj.setVerticesFromTriangleBuffer(verts,0,Utils().FloatsPerPosition+Utils().FloatsPerTexture)
+
+        wireObj.setUpdateCall(object:ObjUpdateCall{
+            override fun update(time: Long, obj: AObject) {
+                obj.rotate(1f,Vec3(1f,0f,0f))
+            }
+        })
+
+        myScene.addObject(wireObj)
+
         setContent{
             HomeScreen()
         }
