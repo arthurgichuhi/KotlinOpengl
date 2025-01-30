@@ -3,6 +3,7 @@ package com.arthurgichuhi.kotlinopengl.utils
 import com.arthurgichuhi.aopengl.models.Vec3
 import kotlin.math.cos
 import kotlin.math.sin
+import kotlin.math.sqrt
 
 
 class MathUtils {
@@ -44,9 +45,48 @@ class MathUtils {
         rm[rmOffset + 15] = 1.0f
     }
 
+    fun translateMat4(mat4:FloatArray,xyz:FloatArray){
+        for (i in 0..<3){
+            mat4[12+i]+=xyz[i]
+        }
+    }
+
+    fun addFloatArrays(a:FloatArray,b:FloatArray):FloatArray{
+        val ret = FloatArray(a.size)
+        for(i in a.indices){
+            ret[i] = a[i] + b[i]
+        }
+        return ret
+    }
+
+    fun subFloatArrays(a:FloatArray,b:FloatArray):FloatArray{
+        val ret = FloatArray(a.size)
+        for(i in a.indices){
+            ret[i] = a[i] - b[i]
+        }
+        return ret
+    }
+
     fun scale(a: FloatArray, s: Float) {
         for (i in a.indices) {
             a[i] *= s
+        }
+    }
+
+    fun norm(a:FloatArray):Float{
+        var n=0f
+        for(i in a.indices){
+            n += a[i] * a[i]
+
+        }
+        return sqrt(n.toDouble()).toFloat()
+    }
+
+    fun normalize(a:FloatArray){
+        var s = norm(a)
+        if(s!=0f){
+            s=1f/s
+            scale(a,s)
         }
     }
 

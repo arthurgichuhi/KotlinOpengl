@@ -27,6 +27,7 @@ import com.arthurgichuhi.kotlinopengl.core.ObjUpdateCall
 import com.arthurgichuhi.kotlinopengl.customObjs.Cube
 import com.arthurgichuhi.kotlinopengl.customObjs.PCTObj
 import com.arthurgichuhi.kotlinopengl.customObjs.PObj
+import com.arthurgichuhi.kotlinopengl.customObjs.Sphere
 import com.arthurgichuhi.kotlinopengl.customObjs.WireObj
 import com.arthurgichuhi.kotlinopengl.gl_surface.MyScene
 import com.arthurgichuhi.kotlinopengl.gl_surface.MySurfaceView
@@ -35,7 +36,7 @@ import com.arthurgichuhi.kotlinopengl.utils.Utils
 import com.arthurgichuhi.kotlinopengl.viewModel.MyViewModel
 
 class MainActivity : ComponentActivity(){
-    private val myModel:MyViewModel by viewModels<MyViewModel>()
+    //private val myModel:MyViewModel by viewModels<MyViewModel>()
     private lateinit var myScene:MyScene
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,28 +44,48 @@ class MainActivity : ComponentActivity(){
 
         myScene=MyScene(this,this@MainActivity)
 
-        val cube=PObj(Cube().create(Vec3(1f,1f,1f)), Vec3(.5f,.5f,0f))
+//        val cube=PObj(Cube().create(Vec3(1f,1f,1f)), Vec3(.5f,.5f,0f))
+//
+//        val verts=Cube().createWithOneFileTex(Vec3(1f,1f,1f),4,2)
+//        val cube2=PCTObj(verts,false,true,"textures/eightcolors.png",false)
+//
+//        cube2.setUpdateCall(object:ObjUpdateCall{
+//            override fun update(time: Long, obj: AObject) {
+//                obj.rotate(1f,Vec3(1f,0f,0f))
+//            }
+//        })
+//        myScene.addObject(cube2)
+//
+//        val wireObj=WireObj()
+//        wireObj.setColor(Vec3(0f,1f,0f))
+//        wireObj.setVerticesFromTriangleBuffer(verts,0,Utils().FloatsPerPosition+Utils().FloatsPerTexture)
+//
+//        wireObj.setUpdateCall(object:ObjUpdateCall{
+//            override fun update(time: Long, obj: AObject) {
+//                obj.rotate(1f,Vec3(1f,0f,0f))
+//            }
+//        })
+//        myScene.addObject(wireObj)
 
-        val verts=Cube().createWithOneFileTex(Vec3(1f,1f,1f),4,2)
-        val cube2=PCTObj(verts,false,true,"textures/eightcolors.png",false)
-
-        cube2.setUpdateCall(object:ObjUpdateCall{
+        val sv=Sphere(2)
+        val verts = sv.getPositions()
+        val sphere = PObj(verts,Vec3(1f,1f,0f))
+        sphere.setUpdateCall(object:ObjUpdateCall{
             override fun update(time: Long, obj: AObject) {
                 obj.rotate(1f,Vec3(1f,0f,0f))
             }
         })
-        myScene.addObject(cube2)
+        myScene.addObject(sphere)
 
         val wireObj=WireObj()
         wireObj.setColor(Vec3(0f,1f,0f))
-        wireObj.setVerticesFromTriangleBuffer(verts,0,Utils().FloatsPerPosition+Utils().FloatsPerTexture)
+        wireObj.setVerticesFromTriangleBuffer(verts,0,Utils().FloatsPerPosition)
 
         wireObj.setUpdateCall(object:ObjUpdateCall{
             override fun update(time: Long, obj: AObject) {
                 obj.rotate(1f,Vec3(1f,0f,0f))
             }
         })
-
         myScene.addObject(wireObj)
 
         setContent{

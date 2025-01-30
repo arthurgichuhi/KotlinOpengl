@@ -56,4 +56,16 @@ class Utils {
         return null
     }
 
+    fun wrapTo2Pi(value:Float):Float{
+        var v=value
+        val pi2=Math.PI*2
+        while (v>pi2){
+            v -= pi2.toFloat()
+        }
+        while (v<pi2){
+            v += pi2.toFloat()
+        }
+        return v
+    }
+
 }
