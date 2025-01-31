@@ -15,7 +15,7 @@ class WireObj:AObject() {
     private lateinit var buffer: VertexBuffer
     private var nLines=0
     private var stride=0
-    private var lineWidth=20f
+    private var lineWidth=5f
 
 
     fun setColor(myColor:Vec3){

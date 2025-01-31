@@ -67,19 +67,19 @@ class MainActivity : ComponentActivity(){
 //        })
 //        myScene.addObject(wireObj)
 
-        val sv=Sphere(2)
-        val verts = sv.getPositions()
-        val sphere = PObj(verts,Vec3(1f,1f,0f))
+        val sv=Sphere(5)
+        val verts = sv.getPositionsAndTexture()
+        val sphere = PCTObj(verts,false,true,"textures/earth.png")
         sphere.setUpdateCall(object:ObjUpdateCall{
             override fun update(time: Long, obj: AObject) {
-                obj.rotate(1f,Vec3(1f,0f,0f))
+                obj.rotate(1f,Vec3(0f,1f,0f))
             }
         })
         myScene.addObject(sphere)
 
         val wireObj=WireObj()
         wireObj.setColor(Vec3(0f,1f,0f))
-        wireObj.setVerticesFromTriangleBuffer(verts,0,Utils().FloatsPerPosition)
+        wireObj.setVerticesFromTriangleBuffer(verts,0,Utils().FloatsPerPosition+Utils().FloatsPerTexture)
 
         wireObj.setUpdateCall(object:ObjUpdateCall{
             override fun update(time: Long, obj: AObject) {

@@ -11,7 +11,7 @@ import com.arthurgichuhi.kotlinopengl.utils.Utils
 
 class PCTObj(
     vertices:FloatArray,hasColor:Boolean,hasTex:Boolean,
-    texPath:String,wireFrame:Boolean
+    texPath:String
 ):AObject() {
     private var utils= Utils()
     private lateinit var program: Program
@@ -24,7 +24,6 @@ class PCTObj(
     private var mHasTex=hasTex
     private var mTexPath=texPath
     private lateinit var mTex: Texture
-    private var mWireFrame=wireFrame
 
     init {
         mHasTex=hasTex
@@ -32,7 +31,6 @@ class PCTObj(
         stride+=if(hasColor)utils.FloatsPerColor else 0
         stride+=if(hasTex)utils.FloatsPerTexture else 0
         mHasColor=hasColor
-        mWireFrame=wireFrame
         nVertices=vertices.size/stride
     }
 

@@ -1,6 +1,7 @@
 package com.arthurgichuhi.kotlinopengl.customObjs
 
 import android.util.Log
+import android.util.Pair
 import com.arthurgichuhi.kotlinopengl.utils.MathUtils
 import com.arthurgichuhi.kotlinopengl.utils.Utils
 import kotlin.math.acos
@@ -127,7 +128,7 @@ class Sphere(divide:Int) {
     }
 
     fun oneTriangleTex(triangleVertIds:IntArray):Pair<FloatArray,FloatArray>{
-        val us =FloatArray(triangleVertIds.size)
+        val us = FloatArray(triangleVertIds.size)
         val vs = FloatArray(triangleVertIds.size)
 
         for(i in us.indices){
@@ -135,8 +136,8 @@ class Sphere(divide:Int) {
             val vert = vertices[vertIdx]
             val rho = mathUtils.norm(vert)
             val theta = utils.wrapTo2Pi(atan2(vert[0].toDouble(),vert[2].toDouble()).toFloat())
-            val phi = utils.wrapTo2Pi(acos(vert[1]/rho))
-            val u = theta/(2*Math.PI).toFloat()
+            val phi = utils.wrapTo2Pi(acos((vert[1]/rho).toDouble()).toFloat())
+            val u = theta/(2*Math.PI.toFloat())
             if(u>(2*Math.PI)||u<0){
                 Log.e(TAG,"${u/Math.PI.toFloat()}")
             }
@@ -145,9 +146,32 @@ class Sphere(divide:Int) {
                 Log.e(TAG,"${v/Math.PI.toFloat()}")
             }
             us[i] = u
-            vs[i] = u
+            vs[i] = v
         }
         return Pair(us,vs)
+    }
+
+    fun oneTriangleTexture(triangleVertIdxs: IntArray): Pair<FloatArray, FloatArray> {
+        val us = FloatArray(triangleVertIdxs.size)
+        val vs = FloatArray(triangleVertIdxs.size)
+        for (i in us.indices) {
+            val vertIdx = triangleVertIdxs[i]
+            val vert = vertices[vertIdx]
+            val rho: Float = mathUtils.norm(vert)
+            val theta = utils.wrapTo2Pi(atan2(vert[0].toDouble(), vert[2].toDouble()).toFloat())
+            val phi: Float = utils.wrapTo2Pi(acos((vert[1]/rho).toDouble()).toFloat())
+            val u = theta / (2 * Math.PI.toFloat())
+            if ((u > (2 * Math.PI)) || (u < 0)) {
+                Log.e(TAG, (u / Math.PI).toString() + "")
+            }
+            val v = phi / Math.PI.toFloat()
+            if ((v > (2 * Math.PI)) || (v < 0)) {
+                Log.e(TAG, (v / Math.PI).toString() + "")
+            }
+            us[i] = u
+            vs[i] = v
+        }
+        return Pair(us, vs)
     }
 
     fun getPositionsAndTexture():FloatArray{
@@ -156,10 +180,10 @@ class Sphere(divide:Int) {
         val buff = FloatArray(size)
         var buffId = 0
         for(triVerts in triangles){
-            var uvs = oneTriangleTex(triVerts)
+            val uvs = oneTriangleTex(triVerts)
             for(i in triVerts.indices){
                 val vertId=triVerts[i]
-                val vert = vertices[i]
+                val vert = vertices[vertId]
                 for(c in vert){
                     buff[buffId]=c
                     buffId++
