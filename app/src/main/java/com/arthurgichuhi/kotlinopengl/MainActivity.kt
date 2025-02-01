@@ -1,6 +1,7 @@
 package com.arthurgichuhi.kotlinopengl
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -28,6 +29,7 @@ import com.arthurgichuhi.kotlinopengl.customObjs.Cube
 import com.arthurgichuhi.kotlinopengl.customObjs.PCTObj
 import com.arthurgichuhi.kotlinopengl.customObjs.PObj
 import com.arthurgichuhi.kotlinopengl.customObjs.Sphere
+import com.arthurgichuhi.kotlinopengl.customObjs.Sphere2
 import com.arthurgichuhi.kotlinopengl.customObjs.WireObj
 import com.arthurgichuhi.kotlinopengl.gl_surface.MyScene
 import com.arthurgichuhi.kotlinopengl.gl_surface.MySurfaceView
@@ -67,8 +69,9 @@ class MainActivity : ComponentActivity(){
 //        })
 //        myScene.addObject(wireObj)
 
-        val sv=Sphere(5)
-        val verts = sv.getPositionsAndTexture()
+        val sv=Sphere2(.5f,30)
+        val verts = sv.getPositionsAndTex()
+
         val sphere = PCTObj(verts,false,true,"textures/earth.png")
         sphere.setUpdateCall(object:ObjUpdateCall{
             override fun update(time: Long, obj: AObject) {
@@ -83,7 +86,7 @@ class MainActivity : ComponentActivity(){
 
         wireObj.setUpdateCall(object:ObjUpdateCall{
             override fun update(time: Long, obj: AObject) {
-                obj.rotate(1f,Vec3(1f,0f,0f))
+                obj.rotate(1f,Vec3(0f,1f,0f))
             }
         })
         myScene.addObject(wireObj)

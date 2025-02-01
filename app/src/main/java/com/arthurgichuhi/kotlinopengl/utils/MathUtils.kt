@@ -1,6 +1,8 @@
 package com.arthurgichuhi.kotlinopengl.utils
 
+import android.opengl.Matrix
 import com.arthurgichuhi.aopengl.models.Vec3
+import kotlin.math.acos
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
@@ -90,6 +92,14 @@ class MathUtils {
         }
     }
 
+    fun setIdentity4Matrix(mat:FloatArray){
+        for(i in 0..3){
+            for(j in 0..3){
+                mat[i*4+j] = if(i==j)1f else 0f
+            }
+        }
+    }
+
     fun scaleMatColumn(mat:FloatArray,colIdx:Int,nColumns:Int,scale:Float){
         var i: Int = colIdx
         while (i < mat.size) {
@@ -114,5 +124,51 @@ class MathUtils {
                 i += destNCols
                 j += srcNCols
             }
+    }
+
+    fun cross(a:FloatArray,b: FloatArray):FloatArray{
+        val x = a[1] * b[2] - a[2] * b[2]
+        val y = a[2] * b[0] - a[0] * b[2]
+        val z = a[0] * b[1] - a[1] * b[0]
+
+        return floatArrayOf(x,y,z)
+    }
+
+    fun rotateVec3(v:FloatArray,angle:Float,axis:Vec3):FloatArray{
+        val m = FloatArray(16)
+        setIdentity4Matrix(m)
+        Matrix.rotateM(m,0,angle,axis.x,axis.y,axis.z)
+        return matVecMultiply(m,v,4)
+    }
+
+    fun matVecMultiply(m:FloatArray,v:FloatArray,nRows:Int):FloatArray{
+        val l =v.size
+        val res = FloatArray(l)
+        for(i in 0..<l){
+            res[i]=0f
+            for(j in 0..<l){
+                res[i]+=m[j*nRows+i]*v[j]
+            }
+        }
+        return res
+    }
+
+    fun angle(a:FloatArray,b: FloatArray):Float{
+        val d = dot(a,b)
+        val na = norm(a)
+        val nb = norm(b)
+        if(na!=0f && nb!=0f){
+            val cosAngle = d/(na*nb)
+            return (acos(cosAngle) - Math.PI.toFloat()/2f)*180f/Math.PI.toFloat()
+        }
+        return 0f
+    }
+
+    fun dot(a:FloatArray,b:FloatArray):Float{
+        var d = 0f
+        for(i in a.indices){
+            d=a[i]*b[i]
+        }
+        return d
     }
 }

@@ -4,10 +4,13 @@ import android.opengl.GLES32.*
 import android.opengl.Matrix
 import com.arthurgichuhi.aopengl.models.Vec3
 import com.arthurgichuhi.kotlinopengl.gl_surface.MyScene
+import com.arthurgichuhi.kotlinopengl.utils.MathUtils
 
 class MyCamera {
+    val matUtils = MathUtils()
     val viewMat=FloatArray(16)
     val projectionMat=FloatArray(16)
+    val myOrientation=FloatArray(16)
 
     init {
         Matrix.setIdentityM(viewMat,0)
@@ -17,6 +20,9 @@ class MyCamera {
 
     var position:Vec3=Vec3(0f,0f,-3f)
     var rotation:Vec3=Vec3(0f,0f,0f)
+    var mUp = floatArrayOf(0f,1f,0f)
+    var defaultPos = intArrayOf(0,0,10)
+    var defaultOrientation = Vec3(0f,0f,-1f)
 
     var width=0
     var height=0
@@ -40,6 +46,10 @@ class MyCamera {
         Matrix.translateM(viewMat, 0, position.x, position.y, position.z)
 
         Matrix.perspectiveM(projectionMat,0,45f,aspect,.1f,100f)
+    }
+
+    fun updateViewMatrix(){
+        val cross = matUtils.cross(myOrientation,mUp)
     }
 
     fun resetCamera(){
