@@ -57,4 +57,12 @@ abstract class AObject {
         glLineWidth(lineWidth)
         glDrawArrays(GL_LINES,first, count)
     }
+
+    fun setDepthFunEqual(){
+        glDepthFunc(GL_EQUAL)
+    }
+
+    fun setDepthTestFunLess(){
+        glDepthFunc(GL_LESS)
+    }
 }

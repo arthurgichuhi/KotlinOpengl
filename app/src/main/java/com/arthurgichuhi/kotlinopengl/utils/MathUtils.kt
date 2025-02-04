@@ -134,10 +134,16 @@ class MathUtils {
         return floatArrayOf(x,y,z)
     }
 
-    fun rotateVec3(v:FloatArray,angle:Float,axis:Vec3):FloatArray{
+    fun makeANewCopy(a:FloatArray):FloatArray{
+        val ret = FloatArray(a.size)
+        System.arraycopy(a,0,ret,0,ret.size)
+        return ret
+    }
+
+    fun rotateVec3(v:FloatArray,angle:Float,axis:FloatArray):FloatArray{
         val m = FloatArray(16)
         setIdentity4Matrix(m)
-        Matrix.rotateM(m,0,angle,axis.x,axis.y,axis.z)
+        Matrix.rotateM(m,0,angle,axis[0],axis[1],axis[2])
         return matVecMultiply(m,v,4)
     }
 

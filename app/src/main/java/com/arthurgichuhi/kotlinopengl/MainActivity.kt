@@ -12,11 +12,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -24,15 +27,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import com.arthurgichuhi.aopengl.models.Vec3
 import com.arthurgichuhi.kotlinopengl.core.AObject
+import com.arthurgichuhi.kotlinopengl.core.InputMode
 import com.arthurgichuhi.kotlinopengl.core.ObjUpdateCall
 import com.arthurgichuhi.kotlinopengl.customObjs.Cube
 import com.arthurgichuhi.kotlinopengl.customObjs.PCTObj
 import com.arthurgichuhi.kotlinopengl.customObjs.PObj
+import com.arthurgichuhi.kotlinopengl.customObjs.SkyBox
 import com.arthurgichuhi.kotlinopengl.customObjs.Sphere
 import com.arthurgichuhi.kotlinopengl.customObjs.Sphere2
 import com.arthurgichuhi.kotlinopengl.customObjs.WireObj
 import com.arthurgichuhi.kotlinopengl.gl_surface.MyScene
 import com.arthurgichuhi.kotlinopengl.gl_surface.MySurfaceView
+import com.arthurgichuhi.kotlinopengl.io_Operations.Input
 import com.arthurgichuhi.kotlinopengl.my_ui.HomeButton
 import com.arthurgichuhi.kotlinopengl.utils.Utils
 import com.arthurgichuhi.kotlinopengl.viewModel.MyViewModel
@@ -40,11 +46,12 @@ import com.arthurgichuhi.kotlinopengl.viewModel.MyViewModel
 class MainActivity : ComponentActivity(){
     //private val myModel:MyViewModel by viewModels<MyViewModel>()
     private lateinit var myScene:MyScene
+    private lateinit var input:Input
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        myScene=MyScene(this,this@MainActivity)
+        input=Input(this)
+        myScene=MyScene(this,input,this@MainActivity)
 
 //        val cube=PObj(Cube().create(Vec3(1f,1f,1f)), Vec3(.5f,.5f,0f))
 //
@@ -68,6 +75,16 @@ class MainActivity : ComponentActivity(){
 //            }
 //        })
 //        myScene.addObject(wireObj)
+
+        val sb = SkyBox(300f,
+            "textures/milkyway2/right.png",
+            "textures/milkyway2/left.png",
+            "textures/milkyway2/top.png",
+            "textures/milkyway2/bottom.png",
+            "textures/milkyway2/front.png",
+            "textures/milkyway2/back.png")
+
+        myScene.addObject(sb)
 
         val sv=Sphere2(.5f,30)
         val verts = sv.getPositionsAndTex()
@@ -101,88 +118,30 @@ class MainActivity : ComponentActivity(){
         Box{
             AndroidView(
                 modifier = Modifier.fillMaxSize(),
-                factory = {context-> MySurfaceView(context,myScene) }
+                factory = {context-> MySurfaceView(context,myScene,input) }
             )
             Text("Frame Rate:00FPS", modifier = Modifier.align(alignment = Alignment.TopEnd))
-
-            Row(modifier = Modifier.fillMaxWidth(.6f).align(Alignment.CenterStart,),) {
-                //Position
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    HomeButton(
-                        callback = {
-                            myScene.camera.position.z +=.5f
-                            myScene.camera.update()
-                        },
-                        icon=Icons.Filled.KeyboardArrowUp,
-                    )
-                    Row(horizontalArrangement = Arrangement.SpaceBetween) {
-                        HomeButton(
-                            callback = {
-                                myScene.camera.position.x +=.5f
-                                myScene.camera.update()
-
-                            },
-                            icon=Icons.Filled.KeyboardArrowLeft
-                        )
-                        HomeButton(
-                            callback = {
-                                myScene.camera.position.x -=.5f
-                                myScene.camera.update()
-                            },
-                            icon=Icons.Filled.KeyboardArrowRight
-                        )
-                    }
-                    HomeButton(
-                        callback = {
-                            myScene.camera.position.z -=.5f
-                            myScene.camera.update()
-                        },
-                        icon = Icons.Default.KeyboardArrowDown
-                    ) }
-                //Rotation
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    HomeButton(
-                        callback = {
-                            myScene.camera.rotation.y+=10f
-                            myScene.camera.update()
-                        },
-                        icon=Icons.Filled.KeyboardArrowUp,
-                    )
-                    Row(horizontalArrangement = Arrangement.SpaceBetween) {
-                        HomeButton(
-                            callback = {
-                                myScene.camera.rotation.z+=10f
-                                myScene.camera.update()
-
-                            },
-                            icon=Icons.Filled.KeyboardArrowLeft
-                        )
-                        HomeButton(
-                            callback = {
-                                myScene.camera.rotation.z-=10f
-                                myScene.camera.update()
-                            },
-                            icon=Icons.Filled.KeyboardArrowRight
-                        )
-                    }
-                    HomeButton(
-                        callback = {
-                            myScene.camera.rotation.y-=10f
-                            myScene.camera.update()
-                        },
-                        icon = Icons.Default.KeyboardArrowDown
-                    ) }
-            }
-
+            HomeButton(
+                callback ={ myScene.camera.resetCamera() },
+                icon = Icons.Default.Home
+            )
+            Row(modifier = Modifier.fillMaxWidth(.6f).align(Alignment.BottomStart,),) {
+                //move
                 HomeButton(
-                    callback ={ myScene.camera.resetCamera() },
-                    icon = Icons.Default.Home
+                    callback = {input.setCurrentMode(InputMode.MOVE)},
+                    icon = Icons.Filled.AddCircle
                 )
-
-        }
+                //rotate
+                HomeButton(
+                    callback={input.setCurrentMode(InputMode.ROTATE)},
+                    icon = Icons.Filled.Refresh
+                )
+                //up_down
+               HomeButton(
+                   callback={input.setCurrentMode(InputMode.UP_DOWN)},
+                   icon = Icons.Filled.KeyboardArrowUp
+               )
+            }
     }
+}
 }

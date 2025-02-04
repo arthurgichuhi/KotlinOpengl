@@ -63,6 +63,15 @@ open class AScene(val context: Context) {
         return t.loadTexture(context,path)
     }
 
+    fun loadCubeTex(paths:List<String>):Texture{
+        if(textures.containsKey(paths[0])){
+            return textures[paths[0]]!!
+        }
+        val t = Texture().loadCubeTex(context,paths)
+        textures[paths[0]]=t
+        return t
+    }
+
     fun draw(gl10: GL10?){
         glClear(GL_DEPTH_BUFFER_BIT or GL_COLOR_BUFFER_BIT)
         updateObjects()
