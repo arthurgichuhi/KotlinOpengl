@@ -34,9 +34,6 @@ class MyScene(context: Context, input: Input, activity: MainActivity):AScene(con
     }
 
     override fun onDrawFrame(p0: GL10?) {
-        //super.draw(p0)
-        glClear(GL_DEPTH_BUFFER_BIT or GL_COLOR_BUFFER_BIT)
-        super.updateObjects()
-        super.drawObjects()
+        super.draw(p0)
     }
 }

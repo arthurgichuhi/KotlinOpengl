@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -32,9 +33,11 @@ import com.arthurgichuhi.kotlinopengl.core.ObjUpdateCall
 import com.arthurgichuhi.kotlinopengl.customObjs.Cube
 import com.arthurgichuhi.kotlinopengl.customObjs.PCTObj
 import com.arthurgichuhi.kotlinopengl.customObjs.PObj
+import com.arthurgichuhi.kotlinopengl.customObjs.PathVert
 import com.arthurgichuhi.kotlinopengl.customObjs.SkyBox
 import com.arthurgichuhi.kotlinopengl.customObjs.Sphere
 import com.arthurgichuhi.kotlinopengl.customObjs.Sphere2
+import com.arthurgichuhi.kotlinopengl.customObjs.SphereObj
 import com.arthurgichuhi.kotlinopengl.customObjs.WireObj
 import com.arthurgichuhi.kotlinopengl.gl_surface.MyScene
 import com.arthurgichuhi.kotlinopengl.gl_surface.MySurfaceView
@@ -76,9 +79,9 @@ class MainActivity : ComponentActivity(){
 //        })
 //        myScene.addObject(wireObj)
 
-        val sb = SkyBox(300f,
-            "textures/milkyway2/right.png",
+        val sb = SkyBox(1f,
             "textures/milkyway2/left.png",
+            "textures/milkyway2/right.png",
             "textures/milkyway2/top.png",
             "textures/milkyway2/bottom.png",
             "textures/milkyway2/front.png",
@@ -86,31 +89,73 @@ class MainActivity : ComponentActivity(){
 
         myScene.addObject(sb)
 
-        val sv=Sphere2(.5f,30)
-        val verts = sv.getPositionsAndTex()
-
-        val sphere = PCTObj(verts,false,true,"textures/earth.png")
-        sphere.setUpdateCall(object:ObjUpdateCall{
+        val earth=SphereObj(
+            1f,3,
+            "textures/earth/left.png",
+            "textures/earth/right.png",
+            "textures/earth/top.png",
+            "textures/earth/bottom.png",
+            "textures/earth/front.png",
+            "textures/earth/back.png")
+        earth.setUpdateCall(object:ObjUpdateCall{
             override fun update(time: Long, obj: AObject) {
-                obj.rotate(1f,Vec3(0f,1f,0f))
+                moveEarth(time,obj)
             }
         })
-        myScene.addObject(sphere)
+        myScene.addObject(earth)
 
-        val wireObj=WireObj()
-        wireObj.setColor(Vec3(0f,1f,0f))
-        wireObj.setVerticesFromTriangleBuffer(verts,0,Utils().FloatsPerPosition+Utils().FloatsPerTexture)
-
-        wireObj.setUpdateCall(object:ObjUpdateCall{
+        val sun = PCTObj(
+            Sphere2(1f,10).getPositionsAndTex(),
+            false,true,"textures/sun.jpg")
+        sun.setUpdateCall(object:ObjUpdateCall{
             override fun update(time: Long, obj: AObject) {
-                obj.rotate(1f,Vec3(0f,1f,0f))
+                moveSun(time,obj)
             }
         })
-        myScene.addObject(wireObj)
+
+        myScene.addObject(sun)
+
+        val ellipses = WireObj()
+        ellipses.setColor(Vec3(.75f,.6f,.45f))
+        val ellipsesVert = PathVert().generateEllipses(3f,.5f,100,0f)
+        ellipses.setVerticesFromPath(ellipsesVert,3,0)
+        myScene.addObject(ellipses)
+//        val wireObj=WireObj()
+//        wireObj.setColor(Vec3(0f,1f,0f))
+//        wireObj.setVerticesFromTriangleBuffer(earth,0,Utils().FloatsPerPosition+Utils().FloatsPerTexture)
+//
+//        wireObj.setUpdateCall(object:ObjUpdateCall{
+//            override fun update(time: Long, obj: AObject) {
+//                obj.rotate(1f,Vec3(0f,1f,0f))
+//            }
+//        })
+//        myScene.addObject(wireObj)
 
         setContent{
             HomeScreen()
         }
+    }
+    private var theta = 0f
+    private fun moveEarth(time: Long, earth: AObject) {
+        theta -= (1f/180f*Math.PI.toFloat())
+        val res = PathVert().ellipse(3f,.5f,theta)
+        val currentPos = floatArrayOf(res[1],0f,res[2])
+        earth.setTransMat4(Vec3())
+        earth.rotate(5f, Vec3(0f,1f,0f))
+        earth.setTransMat4(Vec3(currentPos[0],currentPos[1],currentPos[2]))
+    }
+    var currentView = 0
+    private fun changeView(){
+        if(currentView==0){
+            myScene.camera.setDefaultView(Vec3(0f,0f,10f), Vec3(0f,0f,-.1f))
+        }
+        else if(currentView==1){
+            myScene.camera.setDefaultView(Vec3(0f,25f,1f), Vec3(0f,-1f,-.1f))
+        }
+    }
+
+    private fun moveSun(time: Long,sun:AObject){
+        sun.rotate(1.5f, Vec3(0f,1f,0f))
     }
 
     @Composable
@@ -121,10 +166,22 @@ class MainActivity : ComponentActivity(){
                 factory = {context-> MySurfaceView(context,myScene,input) }
             )
             Text("Frame Rate:00FPS", modifier = Modifier.align(alignment = Alignment.TopEnd))
-            HomeButton(
-                callback ={ myScene.camera.resetCamera() },
-                icon = Icons.Default.Home
-            )
+            Row(modifier=Modifier.align(Alignment.TopStart)) {
+                HomeButton(
+                    callback ={
+                        currentView=0
+                        changeView()
+                         },
+                    icon = Icons.Default.Home
+                )
+                HomeButton(
+                    callback = {
+                        currentView=1
+                        changeView()
+                    },
+                    icon = Icons.Filled.Star
+                )
+            }
             Row(modifier = Modifier.fillMaxWidth(.6f).align(Alignment.BottomStart,),) {
                 //move
                 HomeButton(

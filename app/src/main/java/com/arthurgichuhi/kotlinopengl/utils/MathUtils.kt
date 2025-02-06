@@ -53,6 +53,12 @@ class MathUtils {
         }
     }
 
+    fun setTransMat4(mat4:FloatArray,xyz: FloatArray){
+        for(i in xyz.indices){
+            mat4[12+i] = xyz[i]
+        }
+    }
+
     fun addFloatArrays(a:FloatArray,b:FloatArray):FloatArray{
         val ret = FloatArray(a.size)
         for(i in a.indices){

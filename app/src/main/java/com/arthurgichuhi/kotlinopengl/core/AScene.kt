@@ -14,7 +14,6 @@ open class AScene(val context: Context) {
     var width=0f
     var height=0f
 
-    val mContext=context
 
     private var objects:MutableList<AObject> = ArrayList()
     private var programs:MutableMap<String, Program> = HashMap()

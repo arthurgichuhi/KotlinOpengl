@@ -12,6 +12,7 @@ abstract class AObject {
     lateinit var mScene:AScene
     protected var modelMat:FloatArray
     private var updateCall:ObjUpdateCall?=null
+    private val mathUtils =MathUtils()
 
     init {
         modelMat=FloatArray(16)
@@ -42,9 +43,14 @@ abstract class AObject {
     }
 
     fun translate(move: Vec3){
-        Matrix.translateM(modelMat,0,move.x,move.y,move.z)
+        mathUtils.translateMat4(modelMat,move.toArray())
     }
-     fun rotate(angle:Float,rot:Vec3){
+
+    fun setTransMat4(move: Vec3){
+        mathUtils.setTransMat4(modelMat,move.toArray())
+    }
+
+    fun rotate(angle:Float,rot:Vec3){
          Matrix.rotateM(modelMat,0,angle,rot.x,rot.y,rot.z)
      }
 

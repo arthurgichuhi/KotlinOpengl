@@ -15,7 +15,7 @@ class MyCamera:IReceiveInput {
     val projectionMat=FloatArray(16)
     lateinit var myOrientation:FloatArray
 
-    var pos:Vec3=Vec3(0f,0f,10f)
+    var defaultPos:Vec3=Vec3(0f,0f,-3f)
     var rotation:Vec3=Vec3(0f,0f,0f)
     var mUp = Vec3(0f,1f,0f)
 
@@ -27,8 +27,9 @@ class MyCamera:IReceiveInput {
     init {
         Matrix.setIdentityM(viewMat,0)
         Matrix.setIdentityM(projectionMat,0)
-//        Matrix.translateM(viewMat,0,0f,0f,-3f)
-        resetCamera()
+        Matrix.translateM(viewMat,0,0f,0f,-10f)
+        myOrientation=matUtils.makeANewCopy(defaultOrientation.toArray())
+        //resetCamera()
     }
 
 
@@ -41,14 +42,11 @@ class MyCamera:IReceiveInput {
 
     fun update(){
         val aspect = width/height
+//        Matrix.rotateM(viewMat, 0, rotation.x, 1f, 0f, 0f) // Rotate around X-axis
+//        Matrix.rotateM(viewMat, 0, rotation.y, 0f, 1f, 0f)
+//        Matrix.rotateM(viewMat,0,rotation.z,0f,0f,1f)
 
-        Matrix.setIdentityM(viewMat,0)
-
-        Matrix.rotateM(viewMat, 0, rotation.x, 1f, 0f, 0f) // Rotate around X-axis
-        Matrix.rotateM(viewMat, 0, rotation.y, 0f, 1f, 0f)
-        Matrix.rotateM(viewMat,0,rotation.z,0f,0f,1f)
-
-        Matrix.translateM(viewMat, 0, pos.x, pos.y, pos.z)
+//        Matrix.translateM(viewMat, 0, defaultPos.x, defaultPos.y, defaultPos.z)
 
         Matrix.perspectiveM(projectionMat,0,45f,aspect,.1f,100f)
     }
@@ -64,7 +62,7 @@ class MyCamera:IReceiveInput {
         myOrientation = matUtils.rotateVec3(myOrientation,angleY, mUp.toArray())
 
         val cent = matUtils.addFloatArrays(mUp.toArray(),myOrientation)
-        Matrix.setLookAtM(viewMat,0,pos.x,pos.y,pos.z,cent[0],cent[1],cent[2],mUp.x,mUp.y,mUp.z)
+        Matrix.setLookAtM(viewMat,0,defaultPos.x,defaultPos.y,defaultPos.z,cent[0],cent[1],cent[2],mUp.x,mUp.y,mUp.z)
     }
 
     override fun scroll(mode: InputMode, xDist: Float, yDist: Float) {
@@ -72,24 +70,30 @@ class MyCamera:IReceiveInput {
         var yAngle = 0f
         when(mode){
             InputMode.MOVE->{
-                pos.x -= 10f*xDist/myScene.width
-                pos.z -= 10f*yDist/myScene.height
+                defaultPos.x -= 10f*xDist/myScene.width
+                defaultPos.z -= 10f*yDist/myScene.height
             }
             InputMode.ROTATE->{
                 xAngle = 30f*yDist/myScene.height
                 yAngle = 30f*xDist/myScene.width
             }
             InputMode.UP_DOWN->{
-                pos.y += 10f*yDist/myScene.height
+                defaultPos.y += 10f*yDist/myScene.height
             }
         }
         updateViewMatrix(xAngle,yAngle)
     }
 
     override fun resetCamera(){
-        pos=Vec3(0f,0f,-3f)
+        defaultPos=Vec3(0f,0f,-3f)
         mUp = Vec3(0f,1f,0f)
         myOrientation=matUtils.makeANewCopy(defaultOrientation.toArray())
+        //updateViewMatrix(0f,0f)
+    }
+
+    fun setDefaultView(pos: Vec3, orientation: Vec3) {
+        defaultPos = pos
+        defaultOrientation = orientation
         updateViewMatrix(0f,0f)
     }
 }
