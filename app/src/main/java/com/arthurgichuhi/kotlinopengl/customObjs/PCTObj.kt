@@ -10,8 +10,9 @@ import com.arthurgichuhi.kotlinopengl.core.VertexBuffer
 import com.arthurgichuhi.kotlinopengl.utils.Utils
 
 class PCTObj(
-    vertices:FloatArray,hasColor:Boolean,hasTex:Boolean,
-    texPath:String
+    vertices:FloatArray,hasColor:Boolean,
+    hasNormal:Boolean,
+    hasTex:Boolean, texPath:String
 ):AObject() {
     private var utils= Utils()
     private lateinit var program: Program
@@ -23,6 +24,7 @@ class PCTObj(
     private var mHasColor=hasColor
     private var mHasTex=hasTex
     private var mTexPath=texPath
+    private var mHasNormal = hasNormal
     private lateinit var mTex: Texture
 
     init {
@@ -30,6 +32,7 @@ class PCTObj(
         mTexPath=texPath
         stride+=if(hasColor)utils.FloatsPerColor else 0
         stride+=if(hasTex)utils.FloatsPerTexture else 0
+        stride+=if(hasNormal)utils.FloatsPerNormal else 0
         mHasColor=hasColor
         nVertices=vertices.size/stride
     }
@@ -49,6 +52,11 @@ class PCTObj(
         if(mHasTex){
             program.setFloat("tex",utils.FloatsPerTexture,stride,offset)
             mTex=mScene.loadTexture(mTexPath)
+            offset+=utils.FloatsPerTexture
+        }
+        if(mHasNormal){
+            program.setFloat("normal",utils.FloatsPerNormal,stride,offset)
+            offset+=utils.FloatsPerNormal
         }
     }
 
@@ -67,9 +75,25 @@ class PCTObj(
         }
         program.setUniformInt("hasColor",if(mHasColor)1 else 0)
         program.setUniformInt("hasTex",if(mHasTex)1 else 0)
+        program.setUniformInt("hasNormal",if(mHasNormal)1 else 0)
+
         program.setUniformMat("model",modelMat)
         program.setUniformMat("view",viewMat)
         program.setUniformMat("projection",projectionMat)
+
+        val lightPos = Vec3()
+
+        program.setUniform3fv("light.position",lightPos.toArray())
+        program.setUniform3fv("cameraPos",mScene.camera.defaultPos.toArray())
+
+        program.setUniform3fv("light.ambient", Vec3(1f,1f,0f).toArray())
+        program.setUniform3fv("light.diffuse", Vec3(1f,1f,0f).toArray())
+        program.setUniform3fv("light.specular", Vec3(1f,1f,0f).toArray())
+
+        program.setUniform3fv("material.ambient", Vec3(.1f,.1f,.1f).toArray())
+        program.setUniform3fv("material.diffuse", Vec3(.7f,.7f,.7f).toArray())
+        program.setUniform3fv("material.specular",Vec3(1f,1f,1f).toArray())
+        program.setUniformFloat("material.shininess",20f)
 
         drawTriangles(0, nVertices)
     }

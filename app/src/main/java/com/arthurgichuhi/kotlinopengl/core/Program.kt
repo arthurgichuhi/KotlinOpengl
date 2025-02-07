@@ -46,10 +46,10 @@ class Program {
     private fun compileShader(ctx: Context, name: String, type: Int): Int {
         val shaderCode: String
         if (type == GL_VERTEX_SHADER) {
-            shaderCode = Utils().readAssetFile(ctx, "$name.vert")!!
+            shaderCode = Utils().readAssetFile(ctx, "shaders/$name.vert")!!
             mVertCode = shaderCode
         } else {
-            shaderCode = Utils().readAssetFile(ctx, "$name.frag")!!
+            shaderCode = Utils().readAssetFile(ctx, "shaders/$name.frag")!!
             mFragCode = shaderCode
         }
         val shaderId = glCreateShader(type)

@@ -48,8 +48,8 @@ class MathUtils {
     }
 
     fun translateMat4(mat4:FloatArray,xyz:FloatArray){
-        for (i in 0..<3){
-            mat4[12+i]+=xyz[i]
+        for (i in 0..2){
+            mat4[12 + i] += xyz[i]
         }
     }
 

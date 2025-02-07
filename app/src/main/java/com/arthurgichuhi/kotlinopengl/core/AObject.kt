@@ -25,8 +25,6 @@ abstract class AObject {
     abstract fun draw(viewMat:FloatArray,projectionMat:FloatArray)
 
     fun setup(scene:AScene){
-        modelMat=FloatArray(16)
-        Matrix.setIdentityM(modelMat,0)
         mScene=scene
         onInit()
     }

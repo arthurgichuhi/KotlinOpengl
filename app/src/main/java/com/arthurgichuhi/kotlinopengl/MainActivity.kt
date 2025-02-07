@@ -30,6 +30,7 @@ import com.arthurgichuhi.aopengl.models.Vec3
 import com.arthurgichuhi.kotlinopengl.core.AObject
 import com.arthurgichuhi.kotlinopengl.core.InputMode
 import com.arthurgichuhi.kotlinopengl.core.ObjUpdateCall
+import com.arthurgichuhi.kotlinopengl.core.WaveFrontLoader
 import com.arthurgichuhi.kotlinopengl.customObjs.Cube
 import com.arthurgichuhi.kotlinopengl.customObjs.PCTObj
 import com.arthurgichuhi.kotlinopengl.customObjs.PObj
@@ -106,7 +107,7 @@ class MainActivity : ComponentActivity(){
 
         val sun = PCTObj(
             Sphere2(1f,10).getPositionsAndTex(),
-            false,true,"textures/sun.jpg")
+            false,false,true,"textures/sun.jpg")
         sun.setUpdateCall(object:ObjUpdateCall{
             override fun update(time: Long, obj: AObject) {
                 moveSun(time,obj)
@@ -120,6 +121,16 @@ class MainActivity : ComponentActivity(){
         val ellipsesVert = PathVert().generateEllipses(3f,.5f,100,0f)
         ellipses.setVerticesFromPath(ellipsesVert,3,0)
         myScene.addObject(ellipses)
+
+        val wvLoader = WaveFrontLoader(this,"models/cubelike/cube-like.obj")
+        val cubeLike = PCTObj(wvLoader.getFaces(true,true),false,true,true,"models/cubelike/simpletexture.png")
+        cubeLike.translate(Vec3(0f,3f,3f))
+        cubeLike.setUpdateCall(object:ObjUpdateCall{
+            override fun update(time: Long, obj: AObject) {
+                obj.rotate(2f,Vec3(1f,1f,0f))
+            }
+        })
+        myScene.addObject(cubeLike)
 //        val wireObj=WireObj()
 //        wireObj.setColor(Vec3(0f,1f,0f))
 //        wireObj.setVerticesFromTriangleBuffer(earth,0,Utils().FloatsPerPosition+Utils().FloatsPerTexture)

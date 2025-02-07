@@ -10,10 +10,10 @@ import com.arthurgichuhi.kotlinopengl.utils.MathUtils
 import kotlin.math.abs
 
 class MyCamera:IReceiveInput {
-    val matUtils = MathUtils()
+    private val matUtils = MathUtils()
     val viewMat=FloatArray(16)
     val projectionMat=FloatArray(16)
-    lateinit var myOrientation:FloatArray
+    var myOrientation:FloatArray
 
     var defaultPos:Vec3=Vec3(0f,0f,-3f)
     var rotation:Vec3=Vec3(0f,0f,0f)

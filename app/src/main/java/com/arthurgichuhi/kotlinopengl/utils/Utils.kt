@@ -16,6 +16,7 @@ class Utils {
     val FloatsPerPosition: Int = 3
     val FloatsPerColor: Int = 3
     val FloatsPerTexture: Int = 2
+    val FloatsPerNormal:Int =3
 
     fun getBitmapFromAssets(ctx: Context, name:String): Bitmap {
         val options = BitmapFactory.Options()
@@ -34,7 +35,7 @@ class Utils {
     fun readAssetFile(ctx: Context, fileName: String): String? {
         var reader: BufferedReader? = null
         try {
-            reader = BufferedReader(InputStreamReader(ctx.assets.open("shaders/$fileName")))
+            reader = BufferedReader(InputStreamReader(ctx.assets.open("$fileName")))
             val sb = StringBuilder()
             var mLine: String?
             while ((reader.readLine().also { mLine = it }) != null) {
@@ -66,6 +67,12 @@ class Utils {
             v += pi2.toFloat()
         }
         return v
+    }
+
+    fun isNullOrEmpty(str:String?):Boolean{
+        if(str==null)return true
+        if(str.isEmpty())return true
+        return false
     }
 
 }
