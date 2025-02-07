@@ -79,7 +79,7 @@ class MainActivity : ComponentActivity(){
 //        })
 //        myScene.addObject(wireObj)
 
-        val sb = SkyBox(1f,
+        val sb = SkyBox(300f,
             "textures/milkyway2/left.png",
             "textures/milkyway2/right.png",
             "textures/milkyway2/top.png",
@@ -168,15 +168,16 @@ class MainActivity : ComponentActivity(){
             Text("Frame Rate:00FPS", modifier = Modifier.align(alignment = Alignment.TopEnd))
             Row(modifier=Modifier.align(Alignment.TopStart)) {
                 HomeButton(
-                    callback ={
-                        currentView=0
-                        changeView()
-                         },
+                    callback ={ myScene.camera.resetCamera() },
                     icon = Icons.Default.Home
                 )
                 HomeButton(
                     callback = {
-                        currentView=1
+                        currentView = if(currentView==0) {
+                            1
+                        } else {
+                            0
+                        }
                         changeView()
                     },
                     icon = Icons.Filled.Star

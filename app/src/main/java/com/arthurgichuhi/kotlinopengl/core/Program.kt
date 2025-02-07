@@ -1,6 +1,7 @@
 package com.arthurgichuhi.kotlinopengl.core
 
 import android.content.Context
+import android.opengl.GLES20
 import android.opengl.GLES32.*
 import android.util.Log
 import com.arthurgichuhi.aopengl.models.Vec3
@@ -86,6 +87,11 @@ class Program {
             stride*utils.BytesPerFloat,offset*utils.BytesPerFloat)
     }
 
+    fun setUniform3fv(name:String,value:FloatArray){
+        val loc = getUniformLoc(name)
+        GLES20.glUniform3fv(loc,1,value,0)
+    }
+
     fun setUniform3f(name:String,value: Vec3){
         val loc=getUniformLoc(name)
         glUniform3f(loc,value.x,value.y,value.z)
@@ -94,6 +100,11 @@ class Program {
     fun setUniformInt(name:String,value:Int){
         val loc=getUniformLoc(name)
         glUniform1i(loc,value)
+    }
+
+    fun setUniformFloat(name:String,value:Float){
+        val loc = getUniformLoc(name)
+        glUniform1f(loc,value)
     }
 
     fun setUniformMat(name:String,data:FloatArray){

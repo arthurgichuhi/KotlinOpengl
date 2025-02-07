@@ -63,6 +63,19 @@ class SphereObj(
         program.setUniformMat("view",viewMat)
         program.setUniformMat("projection",projectionMat)
 
+        val lightPos = Vec3()
+
+        program.setUniform3fv("light.position",lightPos.toArray())
+        program.setUniform3fv("cameraPos",mScene.camera.defaultPos.toArray())
+
+        program.setUniform3fv("light.ambient", Vec3(1f,1f,0f).toArray())
+        program.setUniform3fv("light.diffuse", Vec3(1f,1f,0f).toArray())
+        program.setUniform3fv("light.specular", Vec3(1f,1f,0f).toArray())
+
+        program.setUniform3fv("material.ambient", Vec3(.1f,.1f,.1f).toArray())
+        program.setUniform3fv("material.diffuse", Vec3(.7f,.7f,.7f).toArray())
+        program.setUniform3fv("material.specular",Vec3(1f,1f,1f).toArray())
+        program.setUniformFloat("material.shininess",20f)
         drawTriangles(0,nVertices)
 
         //setDepthTestFunLess()
