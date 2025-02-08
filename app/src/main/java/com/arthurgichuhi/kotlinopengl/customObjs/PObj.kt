@@ -1,11 +1,10 @@
 package com.arthurgichuhi.kotlinopengl.customObjs
 
-import android.content.Context
-import android.opengl.GLES32.*
+import android.opengl.GLES32.GL_NO_ERROR
+import android.opengl.GLES32.glGetError
 import android.util.Log
 import com.arthurgichuhi.aopengl.models.Vec3
 import com.arthurgichuhi.kotlinopengl.core.AObject
-import com.arthurgichuhi.kotlinopengl.core.AScene
 import com.arthurgichuhi.kotlinopengl.core.Program
 import com.arthurgichuhi.kotlinopengl.core.VertexBuffer
 import com.arthurgichuhi.kotlinopengl.utils.Utils
@@ -33,8 +32,10 @@ class PObj(vertices:FloatArray,color:Vec3,): AObject() {
         program.setFloat("position", Utils().FloatsPerPosition, Utils().FloatsPerPosition,0)
     }
 
-    override fun destroy(aScene: AScene) {
-        TODO("Not yet implemented")
+    override fun destroy() {
+        if(::vertexBuffer.isInitialized){
+            vertexBuffer.destroy()
+        }
     }
 
     override fun onUpdate(time: Long) {

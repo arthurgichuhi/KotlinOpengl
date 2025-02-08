@@ -41,8 +41,10 @@ class SkyBox(
         texture = mScene.loadCubeTex(textureIds.toList())
     }
 
-    override fun destroy(aScene: AScene) {
-
+    override fun destroy() {
+        if(::buffer.isInitialized){
+            buffer.destroy()
+        }
     }
 
     override fun onUpdate(time: Long) {

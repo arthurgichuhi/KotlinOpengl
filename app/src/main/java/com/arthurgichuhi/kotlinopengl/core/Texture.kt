@@ -1,9 +1,22 @@
 package com.arthurgichuhi.kotlinopengl.core
 
 import android.content.Context
-import android.opengl.GLES32.*
+import android.opengl.GLES32.GL_CLAMP_TO_EDGE
+import android.opengl.GLES32.GL_NEAREST
+import android.opengl.GLES32.GL_TEXTURE_2D
+import android.opengl.GLES32.GL_TEXTURE_CUBE_MAP
+import android.opengl.GLES32.GL_TEXTURE_CUBE_MAP_POSITIVE_X
+import android.opengl.GLES32.GL_TEXTURE_MAG_FILTER
+import android.opengl.GLES32.GL_TEXTURE_MIN_FILTER
+import android.opengl.GLES32.GL_TEXTURE_WRAP_R
+import android.opengl.GLES32.GL_TEXTURE_WRAP_S
+import android.opengl.GLES32.GL_TEXTURE_WRAP_T
+import android.opengl.GLES32.glBindTexture
+import android.opengl.GLES32.glDeleteTextures
+import android.opengl.GLES32.glGenTextures
+import android.opengl.GLES32.glGenerateMipmap
+import android.opengl.GLES32.glTexParameteri
 import android.opengl.GLUtils
-import android.util.Log
 import com.arthurgichuhi.kotlinopengl.utils.Utils
 import javax.microedition.khronos.opengles.GL10.GL_LINEAR
 
@@ -73,6 +86,12 @@ class Texture {
         }
         else{
             glBindTexture(GL_TEXTURE_2D,id)
+        }
+    }
+
+    fun destroy(){
+        if(id!=-1){
+            glDeleteTextures(1, intArrayOf(id),0)
         }
     }
 }

@@ -14,26 +14,55 @@ open class AScene(val context: Context) {
     var width=0f
     var height=0f
 
-
     private var objects:MutableList<AObject> = ArrayList()
     private var programs:MutableMap<String, Program> = HashMap()
     private var textures:MutableMap<String,Texture> = HashMap()
 
     var camera=MyCamera()
 
+    protected var sceneUpdate:SceneUpdateCall?=null
+    fun setUpdateCall(sceneUpdateCall: SceneUpdateCall){
+        sceneUpdate = sceneUpdateCall
+    }
+
     fun initObjects(){
         for(obj in objects){
             obj.setup(this)
+            obj.initialize(true)
         }
+    }
+
+    open fun destroy(){
+        for(obj in objects){
+            obj.destroy()
+        }
+        objects.clear()
+        for(prog in programs.values){
+            prog.destroy()
+        }
+        programs.clear()
+        for(tex in textures.values){
+            tex.destroy()
+        }
+        textures.clear()
     }
 
     fun addObject(obj:AObject){
         objects.add(obj)
     }
 
+    fun removeObj(obj: AObject){
+        objects.remove(obj)
+        obj.destroy()
+    }
+
     fun updateObjects(){
         val time= Date().time
         for(obj in objects){
+            if(!obj.isInitialized()){
+                obj.onInit()
+                obj.initialize(true)
+            }
             obj.update(time)
         }
     }
@@ -72,8 +101,12 @@ open class AScene(val context: Context) {
     }
 
     fun draw(gl10: GL10?){
+        val ts = Date().time
         glClear(GL_DEPTH_BUFFER_BIT or GL_COLOR_BUFFER_BIT)
         updateObjects()
+        if(sceneUpdate!=null){
+            sceneUpdate?.updateScene(ts,this)
+        }
         drawObjects()
     }
 

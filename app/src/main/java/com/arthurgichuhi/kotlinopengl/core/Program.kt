@@ -41,6 +41,8 @@ class Program {
             val str = glGetProgramInfoLog(progID)
             Log.e(TAG, "Error Linking Program : $str")
         }
+        glDeleteShader(mVertexShaderId)
+        glDeleteShader(mFragmentShaderId)
     }
 
     private fun compileShader(ctx: Context, name: String, type: Int): Int {
@@ -66,6 +68,13 @@ class Program {
             return -1
         }
         return shaderId
+    }
+
+    fun destroy(){
+        if(progID != -1){
+            glDeleteShader(progID)
+            progID = -1
+        }
     }
 
     private fun getAttribLoc(name:String):Int{

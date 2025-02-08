@@ -10,19 +10,27 @@ import java.util.Date
 
 abstract class AObject {
     lateinit var mScene:AScene
-    protected var modelMat:FloatArray
+    protected var modelMat:FloatArray = FloatArray(16)
     private var updateCall:ObjUpdateCall?=null
     private val mathUtils =MathUtils()
+    private var initialized:Boolean=false
 
     init {
-        modelMat=FloatArray(16)
         Matrix.setIdentityM(modelMat,0)
     }
 
     abstract fun onInit()
-    abstract fun destroy(aScene: AScene)
+    abstract fun destroy()
     abstract fun onUpdate(time:Long)
     abstract fun draw(viewMat:FloatArray,projectionMat:FloatArray)
+
+    fun isInitialized():Boolean{
+        return initialized
+    }
+
+    fun initialize(value:Boolean){
+        initialized = value
+    }
 
     fun setup(scene:AScene){
         mScene=scene

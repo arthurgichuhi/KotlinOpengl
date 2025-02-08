@@ -10,9 +10,17 @@ import com.arthurgichuhi.kotlinopengl.core.InputMode
 import java.util.ArrayList
 
 class Input(ctx: Context): OnTouchListener, GestureDetector.OnGestureListener {
-    private val gestureDetector=GestureDetector(ctx,this)
+    private var gestureDetector:GestureDetector?=null
     private var mode= InputMode.MOVE
     private val receivers:MutableList<IReceiveInput> = ArrayList()
+    init {
+        gestureDetector=GestureDetector(ctx,this)
+    }
+
+    fun destroy(){
+        gestureDetector = null
+        receivers.clear()
+    }
 
     fun addReceiver(camera:IReceiveInput){
         receivers.add(camera)
@@ -29,7 +37,7 @@ class Input(ctx: Context): OnTouchListener, GestureDetector.OnGestureListener {
     }
 
     override fun onTouch(v: View?, event: MotionEvent?): Boolean {
-        gestureDetector.onTouchEvent(event!!)
+        gestureDetector?.onTouchEvent(event!!)
         return true
     }
 

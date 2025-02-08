@@ -9,7 +9,7 @@ import com.arthurgichuhi.kotlinopengl.core.Texture
 import com.arthurgichuhi.kotlinopengl.core.VertexBuffer
 import com.arthurgichuhi.kotlinopengl.utils.Utils
 
-class PCTObj(
+class PCTNObj(
     vertices:FloatArray,hasColor:Boolean,
     hasNormal:Boolean,
     hasTex:Boolean, texPath:String
@@ -60,8 +60,10 @@ class PCTObj(
         }
     }
 
-    override fun destroy(aScene: AScene) {
-        TODO("Not yet implemented")
+    override fun destroy() {
+        if(::mBuffer.isInitialized){
+            mBuffer.destroy()
+        }
     }
 
     override fun onUpdate(time: Long) {

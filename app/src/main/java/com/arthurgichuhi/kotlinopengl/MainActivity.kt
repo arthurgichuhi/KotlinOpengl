@@ -32,7 +32,7 @@ import com.arthurgichuhi.kotlinopengl.core.InputMode
 import com.arthurgichuhi.kotlinopengl.core.ObjUpdateCall
 import com.arthurgichuhi.kotlinopengl.core.WaveFrontLoader
 import com.arthurgichuhi.kotlinopengl.customObjs.Cube
-import com.arthurgichuhi.kotlinopengl.customObjs.PCTObj
+import com.arthurgichuhi.kotlinopengl.customObjs.PCTNObj
 import com.arthurgichuhi.kotlinopengl.customObjs.PObj
 import com.arthurgichuhi.kotlinopengl.customObjs.PathVert
 import com.arthurgichuhi.kotlinopengl.customObjs.SkyBox
@@ -56,29 +56,6 @@ class MainActivity : ComponentActivity(){
         super.onCreate(savedInstanceState)
         input=Input(this)
         myScene=MyScene(this,input,this@MainActivity)
-
-//        val cube=PObj(Cube().create(Vec3(1f,1f,1f)), Vec3(.5f,.5f,0f))
-//
-//        val verts=Cube().createWithOneFileTex(Vec3(1f,1f,1f),4,2)
-//        val cube2=PCTObj(verts,false,true,"textures/eightcolors.png",false)
-//
-//        cube2.setUpdateCall(object:ObjUpdateCall{
-//            override fun update(time: Long, obj: AObject) {
-//                obj.rotate(1f,Vec3(1f,0f,0f))
-//            }
-//        })
-//        myScene.addObject(cube2)
-//
-//        val wireObj=WireObj()
-//        wireObj.setColor(Vec3(0f,1f,0f))
-//        wireObj.setVerticesFromTriangleBuffer(verts,0,Utils().FloatsPerPosition+Utils().FloatsPerTexture)
-//
-//        wireObj.setUpdateCall(object:ObjUpdateCall{
-//            override fun update(time: Long, obj: AObject) {
-//                obj.rotate(1f,Vec3(1f,0f,0f))
-//            }
-//        })
-//        myScene.addObject(wireObj)
 
         val sb = SkyBox(300f,
             "textures/milkyway2/left.png",
@@ -105,7 +82,7 @@ class MainActivity : ComponentActivity(){
         })
         myScene.addObject(earth)
 
-        val sun = PCTObj(
+        val sun = PCTNObj(
             Sphere2(1f,10).getPositionsAndTex(),
             false,false,true,"textures/sun.jpg")
         sun.setUpdateCall(object:ObjUpdateCall{
@@ -123,7 +100,7 @@ class MainActivity : ComponentActivity(){
         myScene.addObject(ellipses)
 
         val wvLoader = WaveFrontLoader(this,"models/cubelike/cube-like.obj")
-        val cubeLike = PCTObj(wvLoader.getFaces(true,true),false,true,true,"models/cubelike/simpletexture.png")
+        val cubeLike = PCTNObj(wvLoader.getFaces(true,true),false,true,true,"models/cubelike/simpletexture.png")
         cubeLike.translate(Vec3(0f,3f,3f))
         cubeLike.setUpdateCall(object:ObjUpdateCall{
             override fun update(time: Long, obj: AObject) {
@@ -146,6 +123,12 @@ class MainActivity : ComponentActivity(){
             HomeScreen()
         }
     }
+
+    override fun onDestroy() {
+        myScene.destroy()
+        super.onDestroy()
+    }
+
     private var theta = 0f
     private fun moveEarth(time: Long, earth: AObject) {
         theta -= (1f/180f*Math.PI.toFloat())

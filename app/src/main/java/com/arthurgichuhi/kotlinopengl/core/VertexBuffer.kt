@@ -1,6 +1,17 @@
 package com.arthurgichuhi.kotlinopengl.core
 
-import android.opengl.GLES32.*
+import android.opengl.GLES32.GL_ARRAY_BUFFER
+import android.opengl.GLES32.GL_DYNAMIC_DRAW
+import android.opengl.GLES32.GL_NO_ERROR
+import android.opengl.GLES32.GL_STATIC_DRAW
+import android.opengl.GLES32.glBindBuffer
+import android.opengl.GLES32.glBindVertexArray
+import android.opengl.GLES32.glBufferData
+import android.opengl.GLES32.glDeleteBuffers
+import android.opengl.GLES32.glDeleteVertexArrays
+import android.opengl.GLES32.glGenBuffers
+import android.opengl.GLES32.glGenVertexArrays
+import android.opengl.GLES32.glGetError
 import android.util.Log
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -29,6 +40,15 @@ class VertexBuffer {
 
     fun bind(){
         glBindVertexArray(vaoID)
+    }
+
+    fun destroy(){
+        if(vaoID!=-1){
+            glDeleteVertexArrays(1, intArrayOf(vaoID),0)
+        }
+        if(vboID!=-1){
+            glDeleteBuffers(1, intArrayOf(vboID),0)
+        }
     }
 
     private fun createFloatBuffer(data:FloatArray): FloatBuffer {
