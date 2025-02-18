@@ -127,7 +127,7 @@ class WireObj:AObject() {
 
     }
 
-    override fun destroy(aScene: AScene) {
+    override fun destroy() {
 
     }
 

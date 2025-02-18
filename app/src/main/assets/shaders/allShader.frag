@@ -2,7 +2,7 @@
 precision mediump float;
 
 in vec3 oColor;
-in vec3 oTex;
+in vec2 oTex;
 in vec3 oNorm;
 in vec3 oFragPos;
 

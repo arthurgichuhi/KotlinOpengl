@@ -1,9 +1,7 @@
 package com.arthurgichuhi.kotlinopengl.customObjs
 
-import android.util.Log
 import com.arthurgichuhi.aopengl.models.Vec3
 import com.arthurgichuhi.kotlinopengl.core.AObject
-import com.arthurgichuhi.kotlinopengl.core.AScene
 import com.arthurgichuhi.kotlinopengl.core.Program
 import com.arthurgichuhi.kotlinopengl.core.Texture
 import com.arthurgichuhi.kotlinopengl.core.VertexBuffer
@@ -38,7 +36,7 @@ class PCTNObj(
     }
 
     override fun onInit() {
-        program=mScene.loadProgram("texColor")
+        program=mScene.loadProgram("allShader")
         mBuffer=VertexBuffer()
         mBuffer.load(mVertices,true)
         program.use()
@@ -61,9 +59,8 @@ class PCTNObj(
     }
 
     override fun destroy() {
-        if(::mBuffer.isInitialized){
-            mBuffer.destroy()
-        }
+
+
     }
 
     override fun onUpdate(time: Long) {

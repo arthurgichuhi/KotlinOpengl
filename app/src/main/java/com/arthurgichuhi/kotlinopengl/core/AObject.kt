@@ -1,5 +1,6 @@
 package com.arthurgichuhi.kotlinopengl.core
 
+import android.opengl.GLES20
 import android.opengl.GLES32.*
 import android.opengl.Matrix
 import android.util.Log
@@ -68,6 +69,11 @@ abstract class AObject {
     fun drawLines(first:Int,count: Int,lineWidth:Float){
         glLineWidth(lineWidth)
         glDrawArrays(GL_LINES,first, count)
+    }
+
+    fun drawElements(verticesNo:Int){
+        GLES20.glDrawElements(GL_TRIANGLES,verticesNo, GL_UNSIGNED_INT,0)
+
     }
 
     fun setDepthFunEqual(){

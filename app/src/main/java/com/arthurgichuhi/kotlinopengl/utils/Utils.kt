@@ -13,10 +13,14 @@ class Utils {
 
     val BytesPerFloat: Int = 4
     val BytesPerShort: Int = 2
+    val BytesPerInt: Int = 4
     val FloatsPerPosition: Int = 3
     val FloatsPerColor: Int = 3
     val FloatsPerTexture: Int = 2
     val FloatsPerNormal:Int =3
+    val FloatsPerJoint : Int = 3
+    val IntsPerJoint: Int = 3
+    val FloatsPerWeight: Int = 3
 
     fun getBitmapFromAssets(ctx: Context, name:String): Bitmap {
         val options = BitmapFactory.Options()
@@ -35,10 +39,12 @@ class Utils {
     fun readAssetFile(ctx: Context, fileName: String): String? {
         var reader: BufferedReader? = null
         try {
-            reader = BufferedReader(InputStreamReader(ctx.assets.open("$fileName")))
+            reader = BufferedReader(InputStreamReader(ctx.assets.open(fileName)))
             val sb = StringBuilder()
             var mLine: String?
-            while ((reader.readLine().also { mLine = it }) != null) {
+            while ((reader.readLine().also {
+                Log.d("TAG","BFReader:--$it$")
+                mLine = it }) != null) {
                 sb.append(mLine)
                 sb.append("\n")
             }
@@ -55,6 +61,10 @@ class Utils {
             }
         }
         return null
+    }
+
+    fun readXMLFile(ctx: Context,fileName:String):BufferedReader{
+        return BufferedReader(InputStreamReader(ctx.assets.open(fileName)))
     }
 
     fun wrapTo2Pi(value:Float):Float{

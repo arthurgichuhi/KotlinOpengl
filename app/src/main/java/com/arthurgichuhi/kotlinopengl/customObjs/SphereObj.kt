@@ -44,7 +44,7 @@ class SphereObj(
         texture = mScene.loadCubeTex(textureIds.toList())
     }
 
-    override fun destroy(aScene: AScene) {
+    override fun destroy() {
 
     }
 

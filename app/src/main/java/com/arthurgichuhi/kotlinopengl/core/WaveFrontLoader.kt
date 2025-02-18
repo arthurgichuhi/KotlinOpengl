@@ -2,7 +2,6 @@ package com.arthurgichuhi.kotlinopengl.core
 
 import android.content.Context
 import com.arthurgichuhi.kotlinopengl.utils.Utils
-import java.text.NumberFormat
 
 class WaveFrontLoader(context: Context,name:String) {
     private val utils = Utils()

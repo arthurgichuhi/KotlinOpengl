@@ -31,6 +31,8 @@ import com.arthurgichuhi.kotlinopengl.core.AObject
 import com.arthurgichuhi.kotlinopengl.core.InputMode
 import com.arthurgichuhi.kotlinopengl.core.ObjUpdateCall
 import com.arthurgichuhi.kotlinopengl.core.WaveFrontLoader
+import com.arthurgichuhi.kotlinopengl.core.collada.ColladaLoader
+import com.arthurgichuhi.kotlinopengl.customObjs.ColladaObj
 import com.arthurgichuhi.kotlinopengl.customObjs.Cube
 import com.arthurgichuhi.kotlinopengl.customObjs.PCTNObj
 import com.arthurgichuhi.kotlinopengl.customObjs.PObj
@@ -93,21 +95,25 @@ class MainActivity : ComponentActivity(){
 
         myScene.addObject(sun)
 
-        val ellipses = WireObj()
-        ellipses.setColor(Vec3(.75f,.6f,.45f))
-        val ellipsesVert = PathVert().generateEllipses(3f,.5f,100,0f)
-        ellipses.setVerticesFromPath(ellipsesVert,3,0)
-        myScene.addObject(ellipses)
+//        val ellipses = WireObj()
+//        ellipses.setColor(Vec3(.75f,.6f,.45f))
+//        val ellipsesVert = PathVert().generateEllipses(3f,.5f,100,0f)
+//        ellipses.setVerticesFromPath(ellipsesVert,3,0)
+//        myScene.addObject(ellipses)
+//
+//        val wvLoader = WaveFrontLoader(this,"models/grassTerrain/grassterrain.obj")
+//        val terrain = PCTNObj(wvLoader.getFaces(true,true),false,true,true,"models/grassTerrain/grass.png")
+//        terrain.translate(Vec3(0f,3f,3f))
+//        cubeLike.setUpdateCall(object:ObjUpdateCall{
+//            override fun update(time: Long, obj: AObject) {
+//                obj.rotate(2f,Vec3(1f,1f,0f))
+//            }
+//        })
+//        myScene.addObject(terrain)
 
-        val wvLoader = WaveFrontLoader(this,"models/cubelike/cube-like.obj")
-        val cubeLike = PCTNObj(wvLoader.getFaces(true,true),false,true,true,"models/cubelike/simpletexture.png")
-        cubeLike.translate(Vec3(0f,3f,3f))
-        cubeLike.setUpdateCall(object:ObjUpdateCall{
-            override fun update(time: Long, obj: AObject) {
-                obj.rotate(2f,Vec3(1f,1f,0f))
-            }
-        })
-        myScene.addObject(cubeLike)
+        val mLoader = ColladaLoader(this,"models/model/model.dae")
+        val collObj = ColladaObj(mLoader.loadColladaModel(3).mesh,"models/model/diffuse.png")
+        myScene.addObject(collObj)
 //        val wireObj=WireObj()
 //        wireObj.setColor(Vec3(0f,1f,0f))
 //        wireObj.setVerticesFromTriangleBuffer(earth,0,Utils().FloatsPerPosition+Utils().FloatsPerTexture)

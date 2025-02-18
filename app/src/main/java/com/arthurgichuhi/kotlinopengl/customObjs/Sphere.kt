@@ -151,29 +151,6 @@ class Sphere(divide:Int) {
         return Pair(us,vs)
     }
 
-    fun oneTriangleTexture(triangleVertIdxs: IntArray): Pair<FloatArray, FloatArray> {
-        val us = FloatArray(triangleVertIdxs.size)
-        val vs = FloatArray(triangleVertIdxs.size)
-        for (i in us.indices) {
-            val vertIdx = triangleVertIdxs[i]
-            val vert = vertices[vertIdx]
-            val rho: Float = mathUtils.norm(vert)
-            val theta = utils.wrapTo2Pi(atan2(vert[0].toDouble(), vert[2].toDouble()).toFloat())
-            val phi: Float = utils.wrapTo2Pi(acos((vert[1]/rho).toDouble()).toFloat())
-            val u = theta / (2 * Math.PI.toFloat())
-            if ((u > (2 * Math.PI)) || (u < 0)) {
-                Log.e(TAG, (u / Math.PI).toString() + "")
-            }
-            val v = phi / Math.PI.toFloat()
-            if ((v > (2 * Math.PI)) || (v < 0)) {
-                Log.e(TAG, (v / Math.PI).toString() + "")
-            }
-            us[i] = u
-            vs[i] = v
-        }
-        return Pair(us, vs)
-    }
-
     fun getPositionsAndTexture():FloatArray{
         val triangleVerts = 3
         val size =triangleVerts *(utils.FloatsPerPosition+utils.FloatsPerTexture)*triangles.size

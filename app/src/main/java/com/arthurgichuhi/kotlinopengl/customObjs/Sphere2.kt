@@ -124,7 +124,7 @@ class Sphere2(radius:Float,gradation: Int) {
 
     fun getPositionsAndTex():FloatArray{
         val vertsTri= 3
-        val size = vertsTri * (utils.FloatsPerPosition+utils.FloatsPerPosition) * triangles.size
+        val size = vertsTri * (utils.FloatsPerPosition+utils.FloatsPerTexture) * triangles.size
         val buff = FloatArray(size)
         var buffId = 0
 

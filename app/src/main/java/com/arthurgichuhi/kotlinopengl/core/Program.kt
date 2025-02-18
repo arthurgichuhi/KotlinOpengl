@@ -125,4 +125,11 @@ class Program {
         glUseProgram(progID)
     }
 
+    fun setInt(name: String, size: Int, stride: Int, offset: Int) {
+        val loc=getAttribLoc(name)
+        glEnableVertexAttribArray(loc)
+        glVertexAttribPointer(loc,size, GL_INT,false,
+                stride*utils.BytesPerInt,offset*utils.BytesPerInt)
+    }
+
 }
