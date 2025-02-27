@@ -1,6 +1,7 @@
 package com.arthurgichuhi.kotlinopengl.core.collada
 
 import android.opengl.Matrix
+import android.util.Log
 import com.arthurgichuhi.aopengl.models.Vec3
 import com.arthurgichuhi.kotlinopengl.core.collada.dataStructures.SkeletonData
 import com.arthurgichuhi.kotlinopengl.core.xmlParser.XmlNode
@@ -18,8 +19,9 @@ class SkeletonLoader(vsNode:XmlNode,boneBorder:List<String>) {
     var jointCount = 0
 
     init {
-        this.armatureData = vsNode.getChild("node")!!
-            .getChildWithAttribute("node","id","Armature")!!
+        Log.d("TAG","SL:${vsNode.getChildWithAttribute("node","id","Armature")?.attributes?.toList()}")
+        Log.d("TAG","Bone Order -- $boneBorder")
+        this.armatureData = vsNode.getChild("visual_scene")?.getChildWithAttribute("node","id","Armature")!!
         this.boneOrder = boneBorder
     }
 
@@ -31,8 +33,8 @@ class SkeletonLoader(vsNode:XmlNode,boneBorder:List<String>) {
 
     private fun loadJointData(jointNode:XmlNode,isRoot:Boolean):JointData{
         val joint = extractMainJointData(jointNode,isRoot)
-        for(childeNode in jointNode.getChildren("node")){
-            joint.addChild(loadJointData(childeNode,false))
+        for(childNode in jointNode.getChildren("node")){
+            joint.addChild(loadJointData(childNode,false))
         }
         return joint
     }
@@ -40,17 +42,17 @@ class SkeletonLoader(vsNode:XmlNode,boneBorder:List<String>) {
     private fun extractMainJointData(jointNode: XmlNode,isRoot:Boolean):JointData{
         val name = jointNode.getAttribute("id")
         val index = boneOrder.indexOf(name!!)
-        val matrixData = jointNode.getChild("matrix")?.data?.split("")
-        var matrix = converData(matrixData!!)
+        val matrixData = jointNode.getChild("matrix")?.data?.trim()?.split(" ")
+        var matrix = convertData(matrixData!!)
         Matrix.transposeM(matrix,0,matrix,0)
         if(isRoot){
-            matrix = MathUtils.rotateVec3(matrix,-90f, Vec3(x=1f).toArray())
+            matrix = MathUtils.rotateVec3(Vec3(x=1f).toArray(),-90f, matrix)
         }
         jointCount++
         return JointData(index,name,matrix)
     }
 
-    private fun converData(data:List<String>):FloatArray{
+    private fun convertData(data:List<String>):FloatArray{
         val matrixData = FloatArray(16)
         for(i in matrixData.indices){
             matrixData[i] = data[i].toFloat()

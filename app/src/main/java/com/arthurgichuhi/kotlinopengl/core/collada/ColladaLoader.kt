@@ -1,6 +1,7 @@
 package com.arthurgichuhi.kotlinopengl.core.collada
 
 import android.content.Context
+import android.util.Log
 import com.arthurgichuhi.kotlinopengl.core.collada.dataStructures.AnimatedModelData
 import com.arthurgichuhi.kotlinopengl.core.xmlParser.XmlParser
 import com.arthurgichuhi.kotlinopengl.utils.MathUtils
@@ -15,7 +16,7 @@ class ColladaLoader(private val ctx: Context,private val fileName: String) {
         val node = XmlParser.readXMLFile(ctx,fileName)
         val skinLoader = SkinLoader(node!!, maxWeights)
         val skinningData = skinLoader.extractSkinData()
-        val jointsLoader = SkeletonLoader(node.getChild("library_visual_scenes")!!,skinningData.jointOrder)
+        val jointsLoader = SkeletonLoader(node,skinningData.jointOrder)
         val jointsData = jointsLoader.extractBoneData()
         val geoLoader = GeometryLoader(node.getChild("library_geometries")!!,skinningData.verticesSkinData)
         val meshData = geoLoader.extractModelData()

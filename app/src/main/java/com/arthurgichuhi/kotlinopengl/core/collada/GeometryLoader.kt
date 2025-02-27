@@ -1,5 +1,8 @@
 package com.arthurgichuhi.kotlinopengl.core.collada
 
+import android.opengl.Matrix
+import android.renderscript.Matrix4f
+import android.util.Log
 import com.arthurgichuhi.aopengl.models.Vec2f
 import com.arthurgichuhi.aopengl.models.Vec3
 import com.arthurgichuhi.kotlinopengl.core.collada.dataStructures.MeshData
@@ -8,13 +11,17 @@ import com.arthurgichuhi.kotlinopengl.core.collada.dataStructures.VertexSkinData
 import com.arthurgichuhi.kotlinopengl.core.xmlParser.XmlNode
 import com.arthurgichuhi.kotlinopengl.utils.MathUtils
 
-class GeometryLoader(val geometryNode:XmlNode,val vertexWeights:List<VertexSkinData>) {
+class GeometryLoader(geometryNode:XmlNode, private val vertexWeights:List<VertexSkinData>) {
     companion object{
         private val MathUtils = MathUtils()
-        private val CORRECTION = MathUtils.rotateVec3(Vec3().toArray(),-90f,Vec3(x=1f).toArray())
+        private var CORRECTION = FloatArray(16)
+    }
+    init {
+        MathUtils.setIdentity4Matrix(CORRECTION)
+        Matrix.rotateM(CORRECTION,0,-90f,1f,0f,0f)
     }
 
-    private lateinit var meshData : XmlNode
+    private var meshData : XmlNode = geometryNode.getChild("geometry")?.getChild("mesh")!!
     private lateinit var verticesArray : FloatArray
     private lateinit var texturesArray : FloatArray
     private lateinit var normalsArray : FloatArray
@@ -23,13 +30,9 @@ class GeometryLoader(val geometryNode:XmlNode,val vertexWeights:List<VertexSkinD
     private lateinit var weightsArray : FloatArray
 
     val vertices : MutableList<Vertex> = ArrayList()
-    val textures : MutableList<Vec2f> = ArrayList()
-    val normals : MutableList<Vec3> =  ArrayList()
+    private val textures : MutableList<Vec2f> = ArrayList()
+    private val normals : MutableList<Vec3> =  ArrayList()
     val indices : MutableList<Int> = ArrayList()
-
-    init {
-        this.meshData = geometryNode.getChild("geometry")?.getChild("mesh")!!
-    }
 
     fun extractModelData(): MeshData {
         readRawData()
@@ -46,6 +49,7 @@ class GeometryLoader(val geometryNode:XmlNode,val vertexWeights:List<VertexSkinD
         readPositions()
         readNormals()
         readTexCoords()
+        Log.d("TAG","RRD:${vertices.size}:${normals.size}:${textures.size}")
     }
 
     private fun readPositions() {
@@ -54,12 +58,14 @@ class GeometryLoader(val geometryNode:XmlNode,val vertexWeights:List<VertexSkinD
         val positionsData = meshData.getChildWithAttribute("source","id",positionId!!)
             ?.getChild("float_array")
         val count = positionsData?.getAttribute("count")?.toInt()
-        val posData = positionsData?.data?.split(" ")
+        Log.d("TAG","RP:$count")
+        val posData = positionsData?.data?.trim()?.split(" ")
         for(i in 0..<(count!!/3)){
             val x = posData!![i*3].toFloat()
             val y = posData[i*3+1].toFloat()
             val z = posData[i*3+2].toFloat()
-            val position = MathUtils.matVecMultiply(CORRECTION, floatArrayOf(x,y,z),4)
+            val position = MathUtils.matVecMultiply(CORRECTION, floatArrayOf(x,y,z),3)
+            Log.d("TAG","RP1:$x,$y,$z:${position.toList()}")
             vertices.add(Vertex(Vec3(position[0],position[1],position[2]),vertices.size,vertexWeights[vertices.size]))
         }
     }
@@ -72,7 +78,7 @@ class GeometryLoader(val geometryNode:XmlNode,val vertexWeights:List<VertexSkinD
             .getChildWithAttribute("source","id",normalId!!)
             ?.getChild("float_array")
         val count = normalsData?.getAttribute("count")?.toInt()
-        val normData = normalsData?.data?.split(" ")
+        val normData = normalsData?.data?.trim()?.split(" ")
         for(i in 0..<(count!!/3)){
             val x = normData!![i*3].toFloat()
             val y = normData[i*3+1].toFloat()
@@ -89,7 +95,7 @@ class GeometryLoader(val geometryNode:XmlNode,val vertexWeights:List<VertexSkinD
         val texCoordsData = meshData.getChildWithAttribute("source","id",texCordId!!)
             ?.getChild("float_array")
         val count = texCoordsData?.getAttribute("count")?.toInt()
-        val texData = texCoordsData?.data?.split(" ")
+        val texData = texCoordsData?.data?.trim()?.split(" ")
         for(i in 0..<(count!!/2)){
             val s = texData!![i*2].toFloat()
             val t = texData[i * 2 + 1].toFloat()
@@ -100,7 +106,7 @@ class GeometryLoader(val geometryNode:XmlNode,val vertexWeights:List<VertexSkinD
     private fun assembleVertices() {
         val poly = meshData.getChild("polylist")
         val typeCount = poly?.getChildren("input")?.size
-        val indexData = poly?.getChild("p")?.data?.split(" ")
+        val indexData = poly?.getChild("p")?.data?.trim()?.split(" ")
         for(i in 0..<(indexData!!.size/typeCount!!)){
             val positionIndex = indexData[i*typeCount].toInt()
             val normalIndex = indexData[i*typeCount + 1].toInt()
@@ -165,7 +171,10 @@ class GeometryLoader(val geometryNode:XmlNode,val vertexWeights:List<VertexSkinD
     }
 
     private fun convertDataToArrays() {
+        Log.d("TAG","CDTA:${vertices.size}")
+        var count = 0
         for(i in vertices.indices){
+            count++
             val currentVert = vertices[i]
             val weights = currentVert.weightsData
             val position = currentVert.position
@@ -173,28 +182,29 @@ class GeometryLoader(val geometryNode:XmlNode,val vertexWeights:List<VertexSkinD
             val normalVector = normals[currentVert.normalIndex]
 
             verticesArray[i * 3] = position.x
-            verticesArray[i * 3 + 1] = position.y
-            verticesArray[i * 3 + 2] = position.z
+            verticesArray[(i * 3) + 1] = position.y
+            verticesArray[(i * 3) + 2] = position.z
 
-            texturesArray[i * 2] = texCoord.x
-            texturesArray[i * 2 +1] = 1 - texCoord.y
+            texturesArray[(i * 2)] = texCoord.x
+            texturesArray[(i * 2) +1] = 1 - texCoord.y
 
             normalsArray[i * 3] = normalVector.x
-            normalsArray[i * 3 + 1] = normalVector.y
-            normalsArray[i * 3 + 2] = normalVector.z
+            normalsArray[(i * 3) + 1] = normalVector.y
+            normalsArray[(i * 3) + 2] = normalVector.z
 
             jointIds[i * 3] = weights.jointIds[0]
-            jointIds[i * 3 +1] = weights.jointIds[1]
-            jointIds[i * 3 + 2] = weights.jointIds[2]
+            jointIds[(i * 3) + 1] = if(weights.jointIds.size>1)weights.jointIds[1] else weights.jointIds[0]
+            jointIds[(i * 3) + 2] = if(weights.jointIds.size>2)weights.jointIds[2]  else weights.jointIds[0]
 
             weightsArray[i * 3] = weights.weights[0]
-            weightsArray[i * 3 + 1] = weights.weights[1]
-            weightsArray[i * 3 + 2] =  weights.weights[2]
-
+            weightsArray[(i * 3) + 1] = weights.weights[1]
+            weightsArray[(i * 3) + 2] =  weights.weights[2]
+            Log.d("TAG","CDA:$count")
         }
     }
 
     private fun convertIndicesToListArray():IntArray{
+        indicesArray = IntArray(indices.size)
         for(i in indices.indices){
             indicesArray[i] = indices[i]
         }

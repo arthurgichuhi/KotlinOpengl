@@ -47,48 +47,52 @@ class VertexBuffer {
     }
 
     fun loadIndexVertex(meshData: MeshData,staticDraw: Boolean){
-        val indices = createIntBuffer(meshData.indices)
-        val vertex = createFloatBuffer(meshData.vertices)
-        val texCord = createFloatBuffer(meshData.textureCords)
-        val normals = createFloatBuffer(meshData.normals)
-        val jointIds = createIntBuffer(meshData.jointIds)
-        val weights = createFloatBuffer(meshData.vertexWeights)
+        try{
+            val indices = createIntBuffer(meshData.indices).asReadOnlyBuffer()
+            val vertex = createFloatBuffer(meshData.vertices).asReadOnlyBuffer()
+            val texCord = createFloatBuffer(meshData.textureCords).asReadOnlyBuffer()
+            val normals = createFloatBuffer(meshData.normals).asReadOnlyBuffer()
+            val jointIds = createIntBuffer(meshData.jointIds).asReadOnlyBuffer()
+            val weights = createFloatBuffer(meshData.vertexWeights).asReadOnlyBuffer()
 
-        glBindVertexArray(vaoID)
-        val tmp = IntArray(1)
-        //bind indices
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,vboID)
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER,meshData.indices.size*4,indices,if(staticDraw)GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
+            glBindVertexArray(vaoID)
+            val tmp = IntArray(1)
+            //bind indices
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,vboID)
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER,meshData.indices.size*4,indices,if(staticDraw)GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
+            //bind position
+            glGenBuffers(1,tmp,0)
+            glBindBuffer(GL_ARRAY_BUFFER,tmp[0])
+            glBufferData(GL_ARRAY_BUFFER,meshData.vertices.size * Utils.BytesPerFloat,vertex,
+                if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
 
-        //bind position
-        glGenBuffers(1,tmp,0)
-        glBindBuffer(GL_ARRAY_BUFFER,tmp[0])
-        glBufferData(GL_ARRAY_BUFFER,meshData.vertices.size * Utils.BytesPerFloat,vertex,
-            if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
+            //bind texCoords
+            glGenBuffers(1,tmp,0)
+            glBindBuffer(GL_ARRAY_BUFFER,tmp[0])
+            glBufferData(GL_ARRAY_BUFFER,meshData.textureCords.size * Utils.FloatsPerTexture,texCord,
+                if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
 
-        //bind texCoords
-        glGenBuffers(1,tmp,0)
-        glBindBuffer(GL_ARRAY_BUFFER,tmp[0])
-        glBufferData(GL_ARRAY_BUFFER,meshData.textureCords.size * Utils.FloatsPerTexture,texCord,
-            if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
+            //bind normals
+            glGenBuffers(1,tmp,0)
+            glBindBuffer(GL_ARRAY_BUFFER,tmp[0])
+            glBufferData(GL_ARRAY_BUFFER,meshData.normals.size * Utils.FloatsPerNormal,normals,
+                if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
 
-        //bind normals
-        glGenBuffers(1,tmp,0)
-        glBindBuffer(GL_ARRAY_BUFFER,tmp[0])
-        glBufferData(GL_ARRAY_BUFFER,meshData.normals.size * Utils.FloatsPerNormal,normals,
-            if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
+            //bind jointIds
+            glGenBuffers(1,tmp,0)
+            glBindBuffer(GL_ARRAY_BUFFER,tmp[0])
+            glBufferData(GL_ARRAY_BUFFER,meshData.jointIds.size * Utils.IntsPerJoint, jointIds,
+                if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
 
-        //bind jointIds
-        glGenBuffers(1,tmp,0)
-        glBindBuffer(GL_ARRAY_BUFFER,tmp[0])
-        glBufferData(GL_ARRAY_BUFFER,meshData.jointIds.size * Utils.IntsPerJoint, jointIds,
-            if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
+            //bind weights
+            GLES20.glGenBuffers(1,tmp,0)
+            glBindBuffer(GL_ARRAY_BUFFER,tmp[0])
+            glBufferData(GL_ARRAY_BUFFER,meshData.vertexWeights.size * Utils.FloatsPerWeight, weights,
+                if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
 
-        //bind weights
-        GLES20.glGenBuffers(1,tmp,0)
-        glBindBuffer(GL_ARRAY_BUFFER,tmp[0])
-        glBufferData(GL_ARRAY_BUFFER,meshData.vertexWeights.size * Utils.FloatsPerWeight, weights,
-            if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
+        }catch (e:Exception){
+            Log.e("TAG","LIV:$e")
+        }
     }
 
     fun bind(){

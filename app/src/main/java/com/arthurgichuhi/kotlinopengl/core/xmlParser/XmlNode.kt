@@ -7,10 +7,7 @@ class XmlNode(private val name:String) {
     var data = ""
     var attributes : MutableMap<String,String> = HashMap()
     var childNodes: MutableMap<String,MutableList<XmlNode>> = HashMap()
-
-    init {
-        Log.d("TAG","XMLNODE name:$name")
-    }
+    var line = ""
 
         /**
      * Gets the value of a certain attribute of the node. Returns {@code null}
@@ -52,10 +49,9 @@ class XmlNode(private val name:String) {
      */
     fun getChildWithAttribute(childName: String,attr: String,value:String):XmlNode?{
         val children = getChildren(childName)
-
         if(children.isEmpty())return null
-
         for(child in children){
+//            Log.d("TAG","$value Child------${child.myName}")
             val tmp = child.getAttribute(attr)
             if(tmp==value){
                 return child
@@ -73,7 +69,7 @@ class XmlNode(private val name:String) {
      *         an empty list is returned.
      */
     fun getChildren(name: String):List<XmlNode>{
-        return childNodes[name] ?:ArrayList()
+        return childNodes[name]?.toList()?:ArrayList()
     }
     /**
      * Adds a new attribute to this node. An attribute has a name and a value.
@@ -86,6 +82,9 @@ class XmlNode(private val name:String) {
      *            - the value of the attribute.
      */
     fun addAttribute(attr:String,value:String){
+        if(attributes[attr]!=null){
+            Log.d("TAG","Attributes $attr exist")
+        }
         attributes[attr] = value
     }
 
@@ -98,6 +97,11 @@ class XmlNode(private val name:String) {
     fun addChild(child:XmlNode){
         if(childNodes[child.myName]==null){
             childNodes[child.myName]= listOf(child).toMutableList()
+        }
+        else{
+            val prevChildren = childNodes[child.myName] as MutableList<XmlNode>
+            prevChildren.add(child)
+            childNodes[child.myName] = prevChildren
         }
     }
 

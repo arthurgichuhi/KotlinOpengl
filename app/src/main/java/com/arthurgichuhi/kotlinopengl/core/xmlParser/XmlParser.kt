@@ -15,15 +15,12 @@ class XmlParser {
         private val ATTR_VAL = Pattern.compile("\"(.+?)\"")
         private val CLOSED = Pattern.compile("(</|/>)")
     }
-    var attributes : MutableMap<String,String> = HashMap()
-    var children: MutableMap<String,MutableList<XmlNode>> = HashMap()
+    private val attributes : MutableMap<String,String> = HashMap()
+    private val children: MutableMap<String,MutableList<XmlNode>> = HashMap()
 
     fun readXMLFile(ctx:Context,name:String):XmlNode?{
         val reader = utils.readXMLFile(ctx,name)
         val node = loadNode(reader)
-        children.forEach({
-            Log.d("TAG","Children:${it.key}:${it.value[0].childNodes.size}")
-        })
         node?.childNodes=children
         node?.attributes=attributes
         reader.close()
@@ -32,8 +29,8 @@ class XmlParser {
 
     fun loadNode(reader:BufferedReader):XmlNode?{
         try{
-            val line = reader.readLine()?.trim()
-            if(line==null || line.startsWith("</")){
+            val line = reader.readLine()?.trim() ?: return null
+            if(line.startsWith("</")){
                 return null
             }
             val startTagParts = getStartTag(line).split(" ")
@@ -43,6 +40,7 @@ class XmlParser {
             //Log.d("TAG","Attributes Size${node.myName}:${attributes.size}:${children.size}")
             attributes.putAll(node.attributes)
             if(CLOSED.matcher(line).find()){
+                children.putAll(node.childNodes)
                 return node
             }
             var child: XmlNode?
@@ -78,7 +76,13 @@ class XmlParser {
         nameMatch.find()
         val valMatch = ATTR_VAL.matcher(attrLine)
         valMatch.find()
-        node.attributes[nameMatch.group(1)!!] = valMatch.group(1)!!
+        if(node.attributes[nameMatch.group(1)!!]!=null){
+            node.attributes[nameMatch.group(1)!!] = "${node.attributes[nameMatch.group(1)!!]}${valMatch.group(1)!!}"
+        }
+        else{
+            node.attributes[nameMatch.group(1)!!] = valMatch.group(1)!!
+        }
+
     }
 
     fun getStartTag(line:String):String{

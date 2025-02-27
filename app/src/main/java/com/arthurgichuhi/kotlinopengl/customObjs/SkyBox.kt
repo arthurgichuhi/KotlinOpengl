@@ -1,9 +1,7 @@
 package com.arthurgichuhi.kotlinopengl.customObjs
 
-import android.util.Log
 import com.arthurgichuhi.aopengl.models.Vec3
 import com.arthurgichuhi.kotlinopengl.core.AObject
-import com.arthurgichuhi.kotlinopengl.core.AScene
 import com.arthurgichuhi.kotlinopengl.core.Program
 import com.arthurgichuhi.kotlinopengl.core.Texture
 import com.arthurgichuhi.kotlinopengl.core.VertexBuffer

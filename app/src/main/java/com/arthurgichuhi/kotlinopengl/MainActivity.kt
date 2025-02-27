@@ -55,6 +55,7 @@ class MainActivity : ComponentActivity(){
     private lateinit var input:Input
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
         input=Input(this)
         myScene=MyScene(this,input,this@MainActivity)

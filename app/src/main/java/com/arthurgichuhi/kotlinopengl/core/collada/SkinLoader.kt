@@ -5,7 +5,7 @@ import com.arthurgichuhi.kotlinopengl.core.collada.dataStructures.SkinningData
 import com.arthurgichuhi.kotlinopengl.core.collada.dataStructures.VertexSkinData
 import com.arthurgichuhi.kotlinopengl.core.xmlParser.XmlNode
 
-class SkinLoader(controllerNode:XmlNode,maxWeights:Int) {
+class SkinLoader(private val controllerNode:XmlNode,maxWeights:Int) {
     var cNode : XmlNode
     var mWeights : Int =0
 
@@ -24,9 +24,9 @@ class SkinLoader(controllerNode:XmlNode,maxWeights:Int) {
     }
 
     private fun loadJointsList():List<String>{
-        val inputNode = cNode.getChild("vertex_weights")!!
+        val inputNode = cNode.getChild("joints")!!
         val jointDataId = inputNode
-            .getChildWithAttribute("source","id","JOINT")!!
+            .getChildWithAttribute("input","semantic","JOINT")!!
             .getAttribute("source")?.substring(1)
         val jointsNode = cNode.getChildWithAttribute("source","id",jointDataId!!)!!
             .getChild("Name_array")
@@ -39,11 +39,11 @@ class SkinLoader(controllerNode:XmlNode,maxWeights:Int) {
     }
 
     private fun loadWeights():FloatArray{
-        val inputNode = cNode.getChild("vertex_weights")
-        val weightsDataId = inputNode!!
+        val inputNode = controllerNode.getChild("vertex_weights")!!
+        val weightsDataId = inputNode
             .getChildWithAttribute("input","semantic","WEIGHT")!!
-            .data.substring(1)
-        val weightsNode = cNode.getChildWithAttribute("source","id",weightsDataId)!!
+            .attributes["source"]!!.substring(1)
+        val weightsNode = controllerNode.getChildWithAttribute("source","id",weightsDataId)!!
             .getChild("float_array")
         val rawData = weightsNode?.data?.split(" ")
         val weights = FloatArray(rawData?.size?:0)
@@ -53,29 +53,32 @@ class SkinLoader(controllerNode:XmlNode,maxWeights:Int) {
         return weights
     }
 
-    private fun getEffectiveJointsCount(weightsDataNode:XmlNode):IntArray{
-        val rawData = weightsDataNode
-            .getChild("vcount")?.data?.split(" ")
-        val counts = IntArray(rawData?.size?:0)
+    private fun getEffectiveJointsCount(weightsDataNode:XmlNode):LongArray{
+        val rawData = weightsDataNode.getChild("vcount")
+            ?.data?.trim()?.split(" ")
+        val counts = LongArray(rawData?.size?:0)
         for(i in rawData?.indices!!){
-            counts[i] = rawData[i].toInt()
+            counts[i] = rawData[i].toInt().toLong()
         }
         return counts
     }
 
-    private fun getSkinData(weightsNode:XmlNode,counts:IntArray,weights:FloatArray):List<VertexSkinData>{
-        val rawData = weightsNode.getChild("v")?.data?.split(" ")
+    private fun getSkinData(weightsNode:XmlNode,counts:LongArray,weights:FloatArray):List<VertexSkinData>{
+        val rawData = weightsNode.getChild("v")?.data?.trim()?.split(" ")
         val ret :MutableList<VertexSkinData> = ArrayList()
         var pointer = 0
+        var counting = 0
         for(count in counts){
+            counting++
             val skinData = VertexSkinData()
-            for(i in counts.indices){
+            for(i in 0..<count){
                 val jointId = rawData!![pointer++].toInt()
                 val weightId = rawData[pointer++].toInt()
                 skinData.addJointEffect(jointId,weights[weightId])
             }
             skinData.limitJointNumber(mWeights)
             ret.add(skinData)
+            Log.d("TAG","GSD:${ret.size}:${skinData.jointIds.size}:${skinData.weights.size}")
         }
         return ret
     }

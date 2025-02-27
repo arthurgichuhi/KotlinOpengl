@@ -1,5 +1,7 @@
 package com.arthurgichuhi.kotlinopengl.core.collada.dataStructures
 
+import android.util.Log
+
 class VertexSkinData {
     var jointIds : MutableList<Int> = ArrayList()
     var weights : MutableList<Float> = ArrayList()
@@ -22,7 +24,8 @@ class VertexSkinData {
             val total = saveTopWeights(topWeights)
             refillWeights(topWeights,total)
             removeExcessJointIds(max)
-        }else if(jointIds.size<max){
+        }
+        else if(jointIds.size<max){
             fillEmptyWeights(max)
         }
     }
@@ -46,13 +49,13 @@ class VertexSkinData {
     private fun refillWeights(topWeights:FloatArray,total:Float){
         weights.clear()
         for(i in topWeights.indices){
-            weights.add(Math.min(topWeights[i]/total,1f))
+            weights.add((topWeights[i] / total).coerceAtMost(1f))
         }
     }
 
     private fun removeExcessJointIds(max:Int){
         while(jointIds.size>max){
-            jointIds.remove(jointIds.size-1)
+            jointIds.removeAll {it1-> it1>max }
         }
     }
 }
