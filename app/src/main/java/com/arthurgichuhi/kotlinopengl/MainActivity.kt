@@ -34,6 +34,7 @@ import com.arthurgichuhi.kotlinopengl.core.WaveFrontLoader
 import com.arthurgichuhi.kotlinopengl.core.collada.ColladaLoader
 import com.arthurgichuhi.kotlinopengl.customObjs.ColladaObj
 import com.arthurgichuhi.kotlinopengl.customObjs.Cube
+import com.arthurgichuhi.kotlinopengl.customObjs.IPCTN
 import com.arthurgichuhi.kotlinopengl.customObjs.PCTNObj
 import com.arthurgichuhi.kotlinopengl.customObjs.PObj
 import com.arthurgichuhi.kotlinopengl.customObjs.PathVert
@@ -113,7 +114,9 @@ class MainActivity : ComponentActivity(){
 //        myScene.addObject(terrain)
 
         val mLoader = ColladaLoader(this,"models/model/model.dae")
-        val collObj = ColladaObj(mLoader.loadColladaModel(3).mesh,"models/model/diffuse.png")
+       val collObj = IPCTN(mLoader.loadOneVBO(3),false,true,true,"models/model/diffuse.png")
+         //val collObj = ColladaObj(mLoader.loadColladaModel(3).mesh,"models/model/diffuse.png")
+
         myScene.addObject(collObj)
 //        val wireObj=WireObj()
 //        wireObj.setColor(Vec3(0f,1f,0f))

@@ -72,8 +72,7 @@ abstract class AObject {
     }
 
     fun drawElements(verticesNo:Int){
-        GLES20.glDrawElements(GL_TRIANGLES,verticesNo, GL_UNSIGNED_INT,0)
-
+       glDrawElements(GL_TRIANGLES,verticesNo, GL_UNSIGNED_SHORT,0)
     }
 
     fun setDepthFunEqual(){

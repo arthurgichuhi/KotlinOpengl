@@ -1,6 +1,6 @@
 package com.arthurgichuhi.kotlinopengl.customObjs
 
-import com.arthurgichuhi.aopengl.models.Vec3
+import android.util.Log
 import com.arthurgichuhi.kotlinopengl.core.AObject
 import com.arthurgichuhi.kotlinopengl.core.Program
 import com.arthurgichuhi.kotlinopengl.core.Texture
@@ -18,15 +18,15 @@ class ColladaObj(private val meshData: MeshData,private val texPath:String):AObj
     override fun onInit() {
         program = mScene.loadProgram("armateur")
         mBuffer=VertexBuffer()
-        mBuffer.loadIndexVertex(meshData,true)
+        //mBuffer.loadSkinData(meshData,true, loadTex = {mTex=mScene.loadTexture(texPath)})
+        mBuffer.loadVertexData(meshData,true, loadTex = {mTex=mScene.loadTexture(texPath)})
         program.use()
-        program.setFloat("position",utils.FloatsPerPosition,0,0)
-        program.setFloat("tex",utils.FloatsPerTexture,0,0)
-        mTex=mScene.loadTexture(texPath)
-        program.setFloat("normal",utils.FloatsPerNormal,0,0)
-        program.setInt("jointIndices",utils.FloatsPerJoint,0,0)
-        program.setFloat("weights",utils.FloatsPerWeight,0,0)
 
+//        program.setFloat("pos",utils.FloatsPerPosition,3,0)
+//        program.setFloat("tex",utils.FloatsPerTexture,2,3)
+//        program.setFloat("norm",utils.FloatsPerNormal,3,5)
+//        program.setInt("jointIndices",utils.FloatsPerJoint,3,0)
+//        program.setFloat("weights",utils.FloatsPerWeight,3,0)
     }
 
     override fun destroy() {
@@ -43,11 +43,12 @@ class ColladaObj(private val meshData: MeshData,private val texPath:String):AObj
         program.use()
         mBuffer.bind()
         mTex.bindTexture()
-
+        mBuffer.checkGlError("DRAW1")
         program.setUniformMat("model",modelMat)
         program.setUniformMat("view",viewMat)
         program.setUniformMat("projection",projectionMat)
 
-        drawElements(meshData.vertices.size)
+        drawElements(meshData.indices.size)
+        mBuffer.checkGlError("Draw ELEMENTS")
     }
 }

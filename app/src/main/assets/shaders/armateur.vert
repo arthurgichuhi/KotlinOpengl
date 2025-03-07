@@ -32,7 +32,7 @@ void main(void){
 		totalNormal += worldNormal * weights[i];
 	}
 	
-	gl_Position = projection* view * model * totalLocalPos;
+	gl_Position = projection * view * model * totalLocalPos;
 	oNorm = totalNormal.xyz;
 	oTex = tex;
 

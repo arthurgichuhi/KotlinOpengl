@@ -1,6 +1,6 @@
 #version 300 es
-
-const vec2 lightBias = vec2(0.7, 0.6);//just indicates the balance between diffuse and ambient lighting
+precision mediump float;
+const vec2 lightBias = vec2(0.7, 0.6);
 
 in vec2 oTex;
 in vec3 oNorm;

@@ -5,18 +5,19 @@ import com.arthurgichuhi.kotlinopengl.core.AObject
 import com.arthurgichuhi.kotlinopengl.core.Program
 import com.arthurgichuhi.kotlinopengl.core.Texture
 import com.arthurgichuhi.kotlinopengl.core.VertexBuffer
+import com.arthurgichuhi.kotlinopengl.core.collada.dataStructures.MeshData
 import com.arthurgichuhi.kotlinopengl.utils.Utils
 
-class PCTNObj(
-    vertices:FloatArray,hasColor:Boolean,
-    hasNormal:Boolean,
-    hasTex:Boolean, texPath:String
-):AObject() {
+class IPCTN(data:Pair<FloatArray,MeshData>,hasColor:Boolean,
+            hasNormal:Boolean,
+            hasTex:Boolean, texPath:String
+): AObject() {
     private var utils= Utils()
     private lateinit var program: Program
     private lateinit var mColor: Vec3
-    private var mVertices:FloatArray = vertices
-    private lateinit var mBuffer:VertexBuffer
+    private var mVertices:FloatArray = data.first
+    private var mesh:MeshData = data.second
+    private lateinit var mBuffer: VertexBuffer
     private var nVertices:Int=0
     private var stride:Int=utils.FloatsPerPosition
     private var mHasColor=hasColor
@@ -32,13 +33,14 @@ class PCTNObj(
         stride+=if(hasTex)utils.FloatsPerTexture else 0
         stride+=if(hasNormal)utils.FloatsPerNormal else 0
         mHasColor=hasColor
-        nVertices=vertices.size/stride
+        nVertices=data.second.indices.size
     }
 
     override fun onInit() {
-        program=mScene.loadProgram("allShader")
-        mBuffer=VertexBuffer()
+        program=mScene.loadProgram("allShader2")
+        mBuffer= VertexBuffer()
         mBuffer.load(mVertices,true)
+        mBuffer.loadIndicesBuffer(mesh.indices,true)
         program.use()
         var offset=0
         program.setFloat("position",utils.FloatsPerPosition,stride,offset)
@@ -56,6 +58,7 @@ class PCTNObj(
             program.setFloat("normal",utils.FloatsPerNormal,stride,offset)
             offset+=utils.FloatsPerNormal
         }
+
     }
 
     override fun destroy() {
@@ -91,9 +94,10 @@ class PCTNObj(
 
         program.setUniform3fv("material.ambient", Vec3(.1f,.1f,.1f).toArray())
         program.setUniform3fv("material.diffuse", Vec3(.7f,.7f,.7f).toArray())
-        program.setUniform3fv("material.specular",Vec3(1f,1f,1f).toArray())
+        program.setUniform3fv("material.specular", Vec3(1f,1f,1f).toArray())
         program.setUniformFloat("material.shininess",20f)
 
-        drawTriangles(0, nVertices)
+        drawElements(nVertices)
+        mBuffer.checkGlError("IPCTN-Draw")
     }
 }

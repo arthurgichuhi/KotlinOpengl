@@ -43,7 +43,6 @@ class Utils {
             val sb = StringBuilder()
             var mLine: String?
             while ((reader.readLine().also {
-                Log.d("TAG","BFReader:--$it$")
                 mLine = it }) != null) {
                 sb.append(mLine)
                 sb.append("\n")

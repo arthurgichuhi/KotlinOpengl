@@ -53,17 +53,17 @@ class SkinLoader(private val controllerNode:XmlNode,maxWeights:Int) {
         return weights
     }
 
-    private fun getEffectiveJointsCount(weightsDataNode:XmlNode):LongArray{
+    private fun getEffectiveJointsCount(weightsDataNode:XmlNode):IntArray{
         val rawData = weightsDataNode.getChild("vcount")
             ?.data?.trim()?.split(" ")
-        val counts = LongArray(rawData?.size?:0)
+        val counts = IntArray(rawData?.size?:0)
         for(i in rawData?.indices!!){
-            counts[i] = rawData[i].toInt().toLong()
+            counts[i] = rawData[i].toInt()
         }
         return counts
     }
 
-    private fun getSkinData(weightsNode:XmlNode,counts:LongArray,weights:FloatArray):List<VertexSkinData>{
+    private fun getSkinData(weightsNode:XmlNode,counts:IntArray,weights:FloatArray):List<VertexSkinData>{
         val rawData = weightsNode.getChild("v")?.data?.trim()?.split(" ")
         val ret :MutableList<VertexSkinData> = ArrayList()
         var pointer = 0
@@ -78,7 +78,6 @@ class SkinLoader(private val controllerNode:XmlNode,maxWeights:Int) {
             }
             skinData.limitJointNumber(mWeights)
             ret.add(skinData)
-            Log.d("TAG","GSD:${ret.size}:${skinData.jointIds.size}:${skinData.weights.size}")
         }
         return ret
     }

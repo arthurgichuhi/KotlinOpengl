@@ -12,18 +12,12 @@ class SkeletonLoader(vsNode:XmlNode,boneBorder:List<String>) {
     companion object{
         val MathUtils = MathUtils()
     }
-    private lateinit var armatureData:XmlNode
+    private var armatureData:XmlNode =
+        vsNode.getChild("visual_scene")?.getChildWithAttribute("node","id","Armature")!!
 
-    private lateinit var boneOrder:List<String>
+    private var boneOrder:List<String> = boneBorder
 
-    var jointCount = 0
-
-    init {
-        Log.d("TAG","SL:${vsNode.getChildWithAttribute("node","id","Armature")?.attributes?.toList()}")
-        Log.d("TAG","Bone Order -- $boneBorder")
-        this.armatureData = vsNode.getChild("visual_scene")?.getChildWithAttribute("node","id","Armature")!!
-        this.boneOrder = boneBorder
-    }
+    private var jointCount = 0
 
     fun extractBoneData():SkeletonData{
         val headNode = armatureData.getChild("node")

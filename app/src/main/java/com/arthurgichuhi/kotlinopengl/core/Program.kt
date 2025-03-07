@@ -22,6 +22,11 @@ class Program {
         p.createProgram(context,name)
         return p
     }
+    /**
+     * Creates a shader Program
+     * @param context MainActivity Context
+     * @param name Name of the program and name of files(.vert,.frag) where shader code is
+     */
 
     private fun createProgram(context: Context,name:String){
         mVertexShaderId=compileShader(context,name, GL_VERTEX_SHADER)
@@ -44,6 +49,12 @@ class Program {
         glDeleteShader(mVertexShaderId)
         glDeleteShader(mFragmentShaderId)
     }
+    /**
+    *Compiles the programs shader using
+    *@param ctx Context of the Activity
+    *@param name  Name of fragment and vertex shader stored in assets
+    *@param type Which is the shader type
+     */
 
     private fun compileShader(ctx: Context, name: String, type: Int): Int {
         val shaderCode: String
@@ -76,8 +87,7 @@ class Program {
             progID = -1
         }
     }
-
-    private fun getAttribLoc(name:String):Int{
+    fun getAttribLoc(name:String):Int{
         return glGetAttribLocation(progID,name)
     }
 
@@ -90,6 +100,7 @@ class Program {
         stride:Int,offset:Int
     ) {
         val loc=getAttribLoc(name)
+
         glEnableVertexAttribArray(loc)
         glVertexAttribPointer(
             loc,size, GL_FLOAT,false,
@@ -98,7 +109,7 @@ class Program {
 
     fun setUniform3fv(name:String,value:FloatArray){
         val loc = getUniformLoc(name)
-        GLES20.glUniform3fv(loc,1,value,0)
+        glUniform3fv(loc,1,value,0)
     }
 
     fun setUniform3f(name:String,value: Vec3){

@@ -99,7 +99,7 @@ class WaveFrontLoader(context: Context,name:String) {
         return ret
     }
 
-    fun getInts(str: String):IntArray{
+    private fun getInts(str: String):IntArray{
         val res = str.trim().split("\\s".toRegex())
         val ret = IntArray(9)
 
