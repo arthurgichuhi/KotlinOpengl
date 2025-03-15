@@ -1,6 +1,7 @@
 package com.arthurgichuhi.kotlinopengl.customObjs
 
-import com.arthurgichuhi.aopengl.models.Vec3
+import android.util.Log
+import com.arthurgichuhi.aopengl.models.Vec3f
 import com.arthurgichuhi.kotlinopengl.core.AObject
 import com.arthurgichuhi.kotlinopengl.core.Program
 import com.arthurgichuhi.kotlinopengl.core.Texture
@@ -8,15 +9,24 @@ import com.arthurgichuhi.kotlinopengl.core.VertexBuffer
 import com.arthurgichuhi.kotlinopengl.core.collada.dataStructures.MeshData
 import com.arthurgichuhi.kotlinopengl.utils.Utils
 
-class IPCTN(data:Pair<FloatArray,MeshData>,hasColor:Boolean,
+/**
+ * This class is similar to the PCTNObj
+ * class with the only difference is its configured to use an indices buffer to render
+ * I - Indices
+ * P - Position
+ * C - Color
+ * T - Texture
+ * N - normals
+ */
+
+class IPCTN(data:MeshData,hasColor:Boolean,
             hasNormal:Boolean,
             hasTex:Boolean, texPath:String
 ): AObject() {
     private var utils= Utils()
     private lateinit var program: Program
-    private lateinit var mColor: Vec3
-    private var mVertices:FloatArray = data.first
-    private var mesh:MeshData = data.second
+    private lateinit var mColor: Vec3f
+    private var mesh:MeshData = data
     private lateinit var mBuffer: VertexBuffer
     private var nVertices:Int=0
     private var stride:Int=utils.FloatsPerPosition
@@ -25,6 +35,7 @@ class IPCTN(data:Pair<FloatArray,MeshData>,hasColor:Boolean,
     private var mTexPath=texPath
     private var mHasNormal = hasNormal
     private lateinit var mTex: Texture
+    private val locs: MutableMap<String,Int> = HashMap()
 
     init {
         mHasTex=hasTex
@@ -33,31 +44,18 @@ class IPCTN(data:Pair<FloatArray,MeshData>,hasColor:Boolean,
         stride+=if(hasTex)utils.FloatsPerTexture else 0
         stride+=if(hasNormal)utils.FloatsPerNormal else 0
         mHasColor=hasColor
-        nVertices=data.second.indices.size
+        nVertices=data.indices.size
     }
 
     override fun onInit() {
         program=mScene.loadProgram("allShader2")
         mBuffer= VertexBuffer()
-        mBuffer.load(mVertices,true)
         mBuffer.loadIndicesBuffer(mesh.indices,true)
+        locs["position"] = program.getAttribLoc("position")
+        locs["tex"] = program.getAttribLoc("tex")
+        locs["normal"] = program.getAttribLoc("normal")
+        mBuffer.loadFloatVertexData(mesh,locs,true, loadTex = {mTex=mScene.loadTexture(mTexPath)})
         program.use()
-        var offset=0
-        program.setFloat("position",utils.FloatsPerPosition,stride,offset)
-        offset+=utils.FloatsPerPosition
-        if(mHasColor){
-            program.setFloat("color",utils.FloatsPerColor,stride,offset)
-            offset+=utils.FloatsPerColor
-        }
-        if(mHasTex){
-            program.setFloat("tex",utils.FloatsPerTexture,stride,offset)
-            mTex=mScene.loadTexture(mTexPath)
-            offset+=utils.FloatsPerTexture
-        }
-        if(mHasNormal){
-            program.setFloat("normal",utils.FloatsPerNormal,stride,offset)
-            offset+=utils.FloatsPerNormal
-        }
 
     }
 
@@ -75,6 +73,8 @@ class IPCTN(data:Pair<FloatArray,MeshData>,hasColor:Boolean,
         if(mHasTex){
             mTex.bindTexture()
         }
+        Log.d("TAG","JointTransform:${program.getUniformLoc("jointTransforms[1]")}")
+        mBuffer.checkGlError("IPCTN-Draw")
         program.setUniformInt("hasColor",if(mHasColor)1 else 0)
         program.setUniformInt("hasTex",if(mHasTex)1 else 0)
         program.setUniformInt("hasNormal",if(mHasNormal)1 else 0)
@@ -83,18 +83,18 @@ class IPCTN(data:Pair<FloatArray,MeshData>,hasColor:Boolean,
         program.setUniformMat("view",viewMat)
         program.setUniformMat("projection",projectionMat)
 
-        val lightPos = Vec3()
+        val lightPos = Vec3f()
 
         program.setUniform3fv("light.position",lightPos.toArray())
         program.setUniform3fv("cameraPos",mScene.camera.defaultPos.toArray())
 
-        program.setUniform3fv("light.ambient", Vec3(1f,1f).toArray())
-        program.setUniform3fv("light.diffuse", Vec3(1f,1f).toArray())
-        program.setUniform3fv("light.specular", Vec3(1f,1f).toArray())
+        program.setUniform3fv("light.ambient", Vec3f(1f,1f).toArray())
+        program.setUniform3fv("light.diffuse", Vec3f(1f,1f).toArray())
+        program.setUniform3fv("light.specular", Vec3f(1f,1f).toArray())
 
-        program.setUniform3fv("material.ambient", Vec3(.1f,.1f,.1f).toArray())
-        program.setUniform3fv("material.diffuse", Vec3(.7f,.7f,.7f).toArray())
-        program.setUniform3fv("material.specular", Vec3(1f,1f,1f).toArray())
+        program.setUniform3fv("material.ambient", Vec3f(.1f,.1f,.1f).toArray())
+        program.setUniform3fv("material.diffuse", Vec3f(.7f,.7f,.7f).toArray())
+        program.setUniform3fv("material.specular", Vec3f(1f,1f,1f).toArray())
         program.setUniformFloat("material.shininess",20f)
 
         drawElements(nVertices)

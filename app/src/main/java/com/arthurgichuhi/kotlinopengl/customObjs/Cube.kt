@@ -1,6 +1,6 @@
 package com.arthurgichuhi.kotlinopengl.customObjs
 
-import com.arthurgichuhi.aopengl.models.Vec3
+import com.arthurgichuhi.aopengl.models.Vec3f
 import com.arthurgichuhi.kotlinopengl.utils.MathUtils
 import com.arthurgichuhi.kotlinopengl.utils.Utils
 import kotlin.math.sign
@@ -53,7 +53,7 @@ class Cube {
 
     )
 
-    fun create(scale: Vec3):FloatArray{
+    fun create(scale: Vec3f):FloatArray{
         val ret=FloatArray(vertices.size)
         val myScale= floatArrayOf(scale.x,scale.y,scale.z)
         var i=0
@@ -65,7 +65,7 @@ class Cube {
         return ret
     }
 
-    fun createWithOneFileTex(scale: Vec3,cols:Int,rows:Int):FloatArray{
+    fun createWithOneFileTex(scale: Vec3f, cols:Int, rows:Int):FloatArray{
         val nVertices = vertices.size/utils.FloatsPerPosition
         val stride = utils.FloatsPerPosition + utils.FloatsPerTexture
         val ret = FloatArray(nVertices*stride)

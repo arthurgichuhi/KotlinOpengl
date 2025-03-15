@@ -1,10 +1,9 @@
 package com.arthurgichuhi.kotlinopengl.core.collada
 
 import android.opengl.Matrix
-import android.renderscript.Matrix4f
 import android.util.Log
 import com.arthurgichuhi.aopengl.models.Vec2f
-import com.arthurgichuhi.aopengl.models.Vec3
+import com.arthurgichuhi.aopengl.models.Vec3f
 import com.arthurgichuhi.kotlinopengl.core.collada.dataStructures.MeshData
 import com.arthurgichuhi.kotlinopengl.core.collada.dataStructures.Vertex
 import com.arthurgichuhi.kotlinopengl.core.collada.dataStructures.VertexSkinData
@@ -31,7 +30,7 @@ class GeometryLoader(geometryNode:XmlNode, private val vertexWeights:List<Vertex
 
     val vertices : MutableList<Vertex> = ArrayList()
     private val textures : MutableList<Vec2f> = ArrayList()
-    private val normals : MutableList<Vec3> =  ArrayList()
+    private val normals : MutableList<Vec3f> =  ArrayList()
     val indices : MutableList<Short> = ArrayList()
 
     fun extractModelData(): MeshData {
@@ -62,9 +61,9 @@ class GeometryLoader(geometryNode:XmlNode, private val vertexWeights:List<Vertex
             val x = posData!![i*3].toFloat()
             val y = posData[i*3+1].toFloat()
             val z = posData[i*3+2].toFloat()
-            val pos = Vec3(x, y, z)
+            val pos = Vec3f(x, y, z)
             val position = MathUtils.matVecMultiply(CORRECTION, pos.toArray(),4)
-            vertices.add(Vertex(Vec3(position),vertices.size,vertexWeights[vertices.size]))
+            vertices.add(Vertex(Vec3f(position),vertices.size,vertexWeights[vertices.size]))
         }
     }
 
@@ -81,9 +80,9 @@ class GeometryLoader(geometryNode:XmlNode, private val vertexWeights:List<Vertex
             val x = normData!![i*3].toFloat()
             val y = normData[i*3+1].toFloat()
             val z = normData[i*3+2].toFloat()
-            val norm = Vec3(x, y, z)
+            val norm = Vec3f(x, y, z)
             val normal = MathUtils.matVecMultiply(CORRECTION, norm.toArray(),4)
-            normals.add(Vec3(normal))
+            normals.add(Vec3f(normal))
         }
     }
 

@@ -1,13 +1,10 @@
 package com.arthurgichuhi.kotlinopengl.core
 
-import android.opengl.GLES20
 import android.opengl.GLES32.*
 import android.opengl.Matrix
-import android.util.Log
-import com.arthurgichuhi.aopengl.models.Vec3
+import com.arthurgichuhi.aopengl.models.Vec3f
 import com.arthurgichuhi.kotlinopengl.utils.GlUtils
 import com.arthurgichuhi.kotlinopengl.utils.MathUtils
-import java.util.Date
 
 abstract class AObject {
     lateinit var mScene:AScene
@@ -49,15 +46,15 @@ abstract class AObject {
         onUpdate(ts)
     }
 
-    fun translate(move: Vec3){
+    fun translate(move: Vec3f){
         mathUtils.translateMat4(modelMat,move.toArray())
     }
 
-    fun setTransMat4(move: Vec3){
+    fun setTransMat4(move: Vec3f){
         mathUtils.setTransMat4(modelMat,move.toArray())
     }
 
-    fun rotate(angle:Float,rot:Vec3){
+    fun rotate(angle:Float,rot:Vec3f){
          Matrix.rotateM(modelMat,0,angle,rot.x,rot.y,rot.z)
      }
 

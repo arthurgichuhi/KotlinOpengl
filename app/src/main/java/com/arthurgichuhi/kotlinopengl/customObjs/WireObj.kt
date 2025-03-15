@@ -1,8 +1,7 @@
 package com.arthurgichuhi.kotlinopengl.customObjs
 
-import com.arthurgichuhi.aopengl.models.Vec3
+import com.arthurgichuhi.aopengl.models.Vec3f
 import com.arthurgichuhi.kotlinopengl.core.AObject
-import com.arthurgichuhi.kotlinopengl.core.AScene
 import com.arthurgichuhi.kotlinopengl.core.Program
 import com.arthurgichuhi.kotlinopengl.core.VertexBuffer
 import com.arthurgichuhi.kotlinopengl.utils.Utils
@@ -10,7 +9,7 @@ import com.arthurgichuhi.kotlinopengl.utils.Utils
 class WireObj:AObject() {
     private var Utils=Utils()
     private lateinit var program: Program
-    private lateinit var color:Vec3
+    private lateinit var color:Vec3f
     private lateinit var mVertices:FloatArray
     private lateinit var buffer: VertexBuffer
     private var nLines=0
@@ -18,7 +17,7 @@ class WireObj:AObject() {
     private var lineWidth=5f
 
 
-    fun setColor(myColor:Vec3){
+    fun setColor(myColor:Vec3f){
         color=myColor
     }
 

@@ -19,7 +19,7 @@ class ColladaObj(private val meshData: MeshData,private val texPath:String):AObj
         program = mScene.loadProgram("armateur")
         mBuffer=VertexBuffer()
         //mBuffer.loadSkinData(meshData,true, loadTex = {mTex=mScene.loadTexture(texPath)})
-        mBuffer.loadVertexData(meshData,true, loadTex = {mTex=mScene.loadTexture(texPath)})
+        //mBuffer.loadVertexData(meshData,,true, loadTex = {mTex=mScene.loadTexture(texPath)})
         program.use()
 
 //        program.setFloat("pos",utils.FloatsPerPosition,3,0)

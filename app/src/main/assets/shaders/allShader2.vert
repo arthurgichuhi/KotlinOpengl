@@ -1,4 +1,6 @@
 #version 300 es
+const int MAX_JOINTS = 50;
+
 in vec3 position;
 in vec3 color;
 in vec2 tex;
@@ -20,6 +22,8 @@ uniform int hasNormal;
 uniform mat4 model;
 uniform mat4 projection;
 uniform mat4 view;
+
+uniform mat4 jointTransforms[MAX_JOINTS];
 
 void main(){
     gl_Position = projection * view * model * vec4(position,1.0f);

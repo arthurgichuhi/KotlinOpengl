@@ -34,36 +34,4 @@ class MyIO(val context: Context) {
         }
         return shaderCodeBuffer.toString()
     }
-
-    fun loadTexture(location:String): Bitmap? {
-        val options = BitmapFactory.Options()
-        // No pre-scaling
-        options.inScaled = false
-
-        var bitmap: Bitmap?
-        try {
-            context.assets.open(location).use { inputStream ->
-                bitmap = BitmapFactory.decodeStream(inputStream, null, options)
-            }
-        } catch (e: Exception) {
-            throw e
-        }
-        return bitmap
-    }
-
-    fun createFloatBuffer(data:FloatArray): FloatBuffer {
-        val verticesDataBytes = ByteBuffer.allocateDirect(data.size * 4)
-            .order(ByteOrder.nativeOrder())
-        val verticesData = verticesDataBytes.asFloatBuffer()
-        verticesData.put(data).position(0)
-        return verticesData
-    }
-
-    fun createIntBuffer(data:IntArray):IntBuffer{
-        val buffer=ByteBuffer.allocate(data.size*4)
-            .order(ByteOrder.nativeOrder()).asIntBuffer()
-        buffer.put(data)
-        buffer.flip()
-        return buffer
-    }
 }

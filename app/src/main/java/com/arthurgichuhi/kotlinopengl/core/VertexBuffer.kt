@@ -5,6 +5,7 @@ import android.opengl.GLES20.GL_FLOAT
 import android.opengl.GLES20.GL_INT
 import android.opengl.GLES20.glEnableVertexAttribArray
 import android.opengl.GLES20.glVertexAttribPointer
+import android.opengl.GLES30
 import android.opengl.GLES32.GL_ARRAY_BUFFER
 import android.opengl.GLES32.GL_DYNAMIC_DRAW
 import android.opengl.GLES32.GL_ELEMENT_ARRAY_BUFFER
@@ -18,6 +19,7 @@ import android.opengl.GLES32.glDeleteVertexArrays
 import android.opengl.GLES32.glGenBuffers
 import android.opengl.GLES32.glGenVertexArrays
 import android.opengl.GLES32.glGetError
+import android.opengl.GLES32.glVertexAttribIPointer
 import android.util.Log
 import com.arthurgichuhi.kotlinopengl.core.collada.dataStructures.MeshData
 import com.arthurgichuhi.kotlinopengl.utils.Utils
@@ -61,116 +63,67 @@ class VertexBuffer {
         glBindVertexArray(vaoID)
         glGenBuffers(1,tmp,0)
         eboId = tmp[0]
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,tmp[0])
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,eboId)
         glBufferData(GL_ELEMENT_ARRAY_BUFFER,indices.size * 2,buffer,if(staticDraw)GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
     }
 
     /**
      * Buffer vertice, texture Coordinates, Normals, JointIds, Weights and indices buffer
      * @param meshData contains all the data needed for buffering
+     * @param locs a HashMap that contains buffer locations
      * @param staticDraw determines whether the buffered data will be static or dynamic
      * @param loadTex this is function trigger to send the texture data to OpenGL on the ColladaObj
      */
-    fun loadSkinData(meshData: MeshData, staticDraw: Boolean,loadTex:()->Unit){
 
-        val indices = ShortBuffer.wrap(meshData.indices)
+    fun loadFloatVertexData(meshData: MeshData,locs:Map<String,Int>,staticDraw: Boolean,loadTex: () -> Unit){
         val vertex = FloatBuffer.wrap(meshData.vertices)
         val texCord = FloatBuffer.wrap(meshData.textureCords)
         val normals = FloatBuffer.wrap(meshData.normals)
-        val jointIds = IntBuffer.wrap(meshData.jointIds)
-        val weights = FloatBuffer.wrap(meshData.vertexWeights)
-
+        val weights = if(locs.size>3)FloatBuffer.wrap(meshData.vertexWeights) else null
         glBindVertexArray(vaoID)
-
-        try{
-            val tmp = IntArray(5)
-            glGenBuffers(tmp.size,tmp,0)
-            //bind position
-            Log.d("TAG","POS:${tmp[0]}-TEX:${tmp[1]}")
-            glBindBuffer(GL_ARRAY_BUFFER,tmp[0])
-            glBufferData(GL_ARRAY_BUFFER,meshData.vertices.size * 4,vertex,
-                if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
-            glEnableVertexAttribArray(1)
-            glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, 0)
-
-            //bind texCoords
-            glBindBuffer(GL_ARRAY_BUFFER,tmp[1])
-            glBufferData(GL_ARRAY_BUFFER,meshData.textureCords.size * 4,texCord,
-                if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
-            glEnableVertexAttribArray(4)
-            glVertexAttribPointer(4, 2, GL_FLOAT, false, 0, 0)
-            loadTex()
-
-            //bind normals
-            glBindBuffer(GL_ARRAY_BUFFER,tmp[2])
-            glBufferData(GL_ARRAY_BUFFER,meshData.normals.size * 4,normals,
-                if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
-            glEnableVertexAttribArray(3)
-            glVertexAttribPointer(3, 3, GL_FLOAT, false, 0, 0)
-
-            //bind jointIds
-            glBindBuffer(GL_ARRAY_BUFFER,tmp[3])
-            glBufferData(GL_ARRAY_BUFFER,meshData.jointIds.size * 4, jointIds,
-                if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
-            glEnableVertexAttribArray(0)
-            glVertexAttribPointer(0, 3, GL_INT, false, 0, 0)
-
-            //bind weights
-            glBindBuffer(GL_ARRAY_BUFFER,tmp[4])
-            glBufferData(GL_ARRAY_BUFFER,meshData.vertexWeights.size * 4, weights,
-                if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
-            glEnableVertexAttribArray(2)
-            glVertexAttribPointer(2, 3, GL_FLOAT, false, 0, 0)
-
-            //bind indices
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,vboID)
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER,meshData.indices.size * 2,indices,
-                if(staticDraw)GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
-            //glBindBuffer(GL_ARRAY_BUFFER,0)
-//            glBindBuffer(GL_ARRAY_BUFFER,1)
-//            glBindBuffer(GL_ARRAY_BUFFER,2)
-//            glBindBuffer(GL_ARRAY_BUFFER,3)
-//            glBindBuffer(GL_ARRAY_BUFFER,4)
-//            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,5)
-        }catch (e:Exception){
-            Log.e("TAG","LIV:$e")
-        }
-    }
-    fun loadVertexData(meshData: MeshData,staticDraw: Boolean,loadTex: () -> Unit){
-        val indices = ShortBuffer.wrap(meshData.indices)
-        val vertex = FloatBuffer.wrap(meshData.vertices)
-        val texCord = FloatBuffer.wrap(meshData.textureCords)
-        val normals = FloatBuffer.wrap(meshData.normals)
-        glBindVertexArray(vaoID)
-        val tmp = IntArray(3)
-        glGenBuffers(tmp.size,tmp,0)
+        val tmp = IntArray(locs.size)
+        glGenBuffers(locs.size,tmp,0)
         //bind position
         glBindBuffer(GL_ARRAY_BUFFER,tmp[0])
         glBufferData(GL_ARRAY_BUFFER,meshData.vertices.size * 4,vertex,
             if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
-        glEnableVertexAttribArray(0)
-        glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0)
+        glEnableVertexAttribArray(locs["position"]!!)
+        glVertexAttribPointer(locs["position"]!!, 3, GL_FLOAT, false, 0, 0)
 
         //bind texCoords
         glBindBuffer(GL_ARRAY_BUFFER,tmp[1])
         glBufferData(GL_ARRAY_BUFFER,meshData.textureCords.size * 4,texCord,
             if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
-        glEnableVertexAttribArray(2)
-        glVertexAttribPointer(2, 2, GL_FLOAT, false, 0, 0)
+        glEnableVertexAttribArray(locs["tex"]!!)
+        glVertexAttribPointer(locs["tex"]!!, 2, GL_FLOAT, false, 0, 0)
         loadTex()
 
         //bind normals
         glBindBuffer(GL_ARRAY_BUFFER,tmp[2])
         glBufferData(GL_ARRAY_BUFFER,meshData.normals.size * 4,normals,
             if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
-        glEnableVertexAttribArray(3)
-        glVertexAttribPointer(3, 3, GL_FLOAT, false, 0, 0)
+        glEnableVertexAttribArray(locs["normal"]!!)
+        glVertexAttribPointer(locs["normal"]!!, 3, GL_FLOAT, false, 0, 0)
 
-        //bind indices
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,vboID)
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER,meshData.indices.size * 2,indices,
-            if(staticDraw)GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
+       //bind weights
+        if(locs.size>3) {
+            glBindBuffer(GL_ARRAY_BUFFER,tmp[3])
+            glBufferData(GL_ARRAY_BUFFER,meshData.vertexWeights.size * 4,weights,
+                if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
+            glEnableVertexAttribArray(locs["weights"]!!)
+            glVertexAttribPointer(locs["weights"]!!, 3, GL_FLOAT, false, 0, 0)
+        }
     }
+
+    fun loadIntVertexData(meshData: MeshData,locs:Map<String,Int>,staticDraw: Boolean){
+        val tmp = IntArray(1)
+        glGenBuffers(1,tmp,0)
+        glBindBuffer(GL_ARRAY_BUFFER,tmp[0])
+        glBufferData(GL_ARRAY_BUFFER,meshData.jointIds.size*4,IntBuffer.wrap(meshData.jointIds),if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
+        glEnableVertexAttribArray(locs["jointIndices"]!!)
+        glVertexAttribIPointer(locs["jointIndices"]!!,3, GL_INT, 4, 0)
+    }
+
     fun bind(){
         glBindVertexArray(vaoID)
     }
@@ -181,6 +134,9 @@ class VertexBuffer {
         }
         if(vboID!=-1){
             glDeleteBuffers(1, intArrayOf(vboID),0)
+        }
+        if(eboId!=-1){
+            GLES20.glDeleteBuffers(1, intArrayOf(eboId),0)
         }
     }
 

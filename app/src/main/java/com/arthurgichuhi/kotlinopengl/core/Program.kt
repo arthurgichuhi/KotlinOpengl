@@ -1,12 +1,12 @@
 package com.arthurgichuhi.kotlinopengl.core
 
 import android.content.Context
-import android.opengl.GLES20
 import android.opengl.GLES32.*
 import android.util.Log
-import com.arthurgichuhi.aopengl.models.Vec3
+import com.arthurgichuhi.aopengl.models.Vec3f
 import com.arthurgichuhi.kotlinopengl.utils.Utils
 import com.arthurgichuhi.kotlinopengl.utils.GlUtils
+import java.nio.FloatBuffer
 
 class Program {
     private val TAG="Program"
@@ -91,7 +91,7 @@ class Program {
         return glGetAttribLocation(progID,name)
     }
 
-    private fun getUniformLoc(name:String):Int{
+   fun getUniformLoc(name:String):Int{
         return glGetUniformLocation(progID,name)
     }
 
@@ -112,7 +112,7 @@ class Program {
         glUniform3fv(loc,1,value,0)
     }
 
-    fun setUniform3f(name:String,value: Vec3){
+    fun setUniform3f(name:String,value: Vec3f){
         val loc=getUniformLoc(name)
         glUniform3f(loc,value.x,value.y,value.z)
     }

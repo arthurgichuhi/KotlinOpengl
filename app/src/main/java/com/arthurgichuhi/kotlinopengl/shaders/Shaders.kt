@@ -8,6 +8,7 @@ import android.opengl.GLUtils
 import android.util.Log
 import com.arthurgichuhi.kotlinopengl.io_Operations.MyIO
 import com.arthurgichuhi.kotlinopengl.utils.GlUtils
+import java.nio.FloatBuffer
 
 
 class Shaders(context: Context) {
@@ -66,7 +67,7 @@ class Shaders(context: Context) {
         glBindVertexArray(glArrayId)
 
         glBindBuffer(GL_ARRAY_BUFFER, glBufferId)
-        glBufferData(GL_ARRAY_BUFFER,data.size * 4,myIO.createFloatBuffer(data),GL_STATIC_DRAW)
+        glBufferData(GL_ARRAY_BUFFER,data.size * 4,FloatBuffer.wrap(data),GL_STATIC_DRAW)
 
         glEnableVertexAttribArray(glPosition)
         glVertexAttribPointer(glPosition,3,GL_FLOAT,false, 12,0)

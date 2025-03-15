@@ -1,8 +1,7 @@
 package com.arthurgichuhi.kotlinopengl.camera
 
-import android.opengl.GLES32.*
 import android.opengl.Matrix
-import com.arthurgichuhi.aopengl.models.Vec3
+import com.arthurgichuhi.aopengl.models.Vec3f
 import com.arthurgichuhi.kotlinopengl.core.IReceiveInput
 import com.arthurgichuhi.kotlinopengl.core.InputMode
 import com.arthurgichuhi.kotlinopengl.gl_surface.MyScene
@@ -15,11 +14,11 @@ class MyCamera:IReceiveInput {
     val projectionMat=FloatArray(16)
     var myOrientation:FloatArray
 
-    var defaultPos:Vec3=Vec3(0f,0f,-3f)
-    var rotation:Vec3=Vec3(0f,0f,0f)
-    var mUp = Vec3(0f,1f,0f)
+    var defaultPos:Vec3f=Vec3f(0f,0f,-3f)
+    var rotation:Vec3f=Vec3f(0f,0f,0f)
+    var mUp = Vec3f(0f,1f,0f)
 
-    var defaultOrientation= Vec3(0f,0f,-1f)
+    var defaultOrientation= Vec3f(0f,0f,-1f)
 
     var width=0f
     var height=0f
@@ -85,13 +84,13 @@ class MyCamera:IReceiveInput {
     }
 
     override fun resetCamera(){
-        defaultPos=Vec3(0f,0f,-3f)
-        mUp = Vec3(0f,1f,0f)
+        defaultPos=Vec3f(0f,0f,-3f)
+        mUp = Vec3f(0f,1f,0f)
         myOrientation=matUtils.makeANewCopy(defaultOrientation.toArray())
         //updateViewMatrix(0f,0f)
     }
 
-    fun setDefaultView(pos: Vec3, orientation: Vec3) {
+    fun setDefaultView(pos: Vec3f, orientation: Vec3f) {
         defaultPos = pos
         defaultOrientation = orientation
         updateViewMatrix(0f,0f)

@@ -1,7 +1,7 @@
 package com.arthurgichuhi.kotlinopengl.utils
 
 import android.opengl.Matrix
-import com.arthurgichuhi.aopengl.models.Vec3
+import com.arthurgichuhi.aopengl.models.Vec3f
 import kotlin.math.acos
 import kotlin.math.cos
 import kotlin.math.sin
@@ -10,7 +10,7 @@ import kotlin.math.sqrt
 
 class MathUtils {
 
-    fun setRotateEulerM2(rm:FloatArray,rmOffset:Int,points:Vec3){
+    fun setRotateEulerM2(rm:FloatArray,rmOffset:Int,points:Vec3f){
         require(rmOffset >= 0) { "rmOffset < 0" }
         require(rm.size >= rmOffset + 16) { "rm.length < rmOffset + 16" }
 

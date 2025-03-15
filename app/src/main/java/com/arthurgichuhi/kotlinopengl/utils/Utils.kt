@@ -7,6 +7,9 @@ import android.util.Log
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import java.nio.FloatBuffer
 
 class Utils {
     val TAG: String = "Utils"
@@ -84,4 +87,17 @@ class Utils {
         return false
     }
 
+    fun getCurrentTime(): Long {
+        return System.currentTimeMillis()
+    }
+
+    fun createMatricesArrayBuffer(data:Array<FloatArray>):FloatBuffer{
+        val buffer = ByteBuffer.allocate(data.size * 16 * 4)
+            .order(ByteOrder.nativeOrder())
+            .asFloatBuffer()
+        for(i in data){
+            buffer.put(i)
+        }
+        return buffer.asReadOnlyBuffer()
+    }
 }

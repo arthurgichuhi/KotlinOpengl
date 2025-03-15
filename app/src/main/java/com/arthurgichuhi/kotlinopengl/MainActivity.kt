@@ -4,21 +4,14 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Text
@@ -26,29 +19,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
-import com.arthurgichuhi.aopengl.models.Vec3
+import com.arthurgichuhi.aopengl.models.Vec3f
 import com.arthurgichuhi.kotlinopengl.core.AObject
 import com.arthurgichuhi.kotlinopengl.core.InputMode
 import com.arthurgichuhi.kotlinopengl.core.ObjUpdateCall
-import com.arthurgichuhi.kotlinopengl.core.WaveFrontLoader
+import com.arthurgichuhi.kotlinopengl.core.animation.animatedModel.AnimatedObj
+import com.arthurgichuhi.kotlinopengl.core.animation.loaders.AnimationObjLoader
+import com.arthurgichuhi.kotlinopengl.core.collada.AnimationLoader
 import com.arthurgichuhi.kotlinopengl.core.collada.ColladaLoader
-import com.arthurgichuhi.kotlinopengl.customObjs.ColladaObj
-import com.arthurgichuhi.kotlinopengl.customObjs.Cube
 import com.arthurgichuhi.kotlinopengl.customObjs.IPCTN
 import com.arthurgichuhi.kotlinopengl.customObjs.PCTNObj
-import com.arthurgichuhi.kotlinopengl.customObjs.PObj
 import com.arthurgichuhi.kotlinopengl.customObjs.PathVert
 import com.arthurgichuhi.kotlinopengl.customObjs.SkyBox
-import com.arthurgichuhi.kotlinopengl.customObjs.Sphere
 import com.arthurgichuhi.kotlinopengl.customObjs.Sphere2
 import com.arthurgichuhi.kotlinopengl.customObjs.SphereObj
-import com.arthurgichuhi.kotlinopengl.customObjs.WireObj
 import com.arthurgichuhi.kotlinopengl.gl_surface.MyScene
 import com.arthurgichuhi.kotlinopengl.gl_surface.MySurfaceView
 import com.arthurgichuhi.kotlinopengl.io_Operations.Input
 import com.arthurgichuhi.kotlinopengl.my_ui.HomeButton
-import com.arthurgichuhi.kotlinopengl.utils.Utils
-import com.arthurgichuhi.kotlinopengl.viewModel.MyViewModel
 
 class MainActivity : ComponentActivity(){
     //private val myModel:MyViewModel by viewModels<MyViewModel>()
@@ -114,10 +102,17 @@ class MainActivity : ComponentActivity(){
 //        myScene.addObject(terrain)
 
         val mLoader = ColladaLoader(this,"models/model/model.dae")
-       val collObj = IPCTN(mLoader.loadOneVBO(3),false,true,true,"models/model/diffuse.png")
-         //val collObj = ColladaObj(mLoader.loadColladaModel(3).mesh,"models/model/diffuse.png")
-
-        myScene.addObject(collObj)
+       //val collObj = IPCTN(mLoader.loadColladaModel(3).mesh,false,true,true,"models/model/diffuse.png")
+        //myScene.addObject(collObj)
+        val animatedObj = mLoader.loadColladaModel(3)
+        val animation = AnimationObjLoader().loadAnimation(mLoader)
+        Log.d("TAG","Animation:${animation.keyFrames.size}:${animation.length}")
+        val animObj = AnimatedObj(
+            animatedObj.mesh,
+            animatedObj.joints,
+            animation,
+            "models/model/diffuse.png")
+        myScene.addObject(animObj)
 //        val wireObj=WireObj()
 //        wireObj.setColor(Vec3(0f,1f,0f))
 //        wireObj.setVerticesFromTriangleBuffer(earth,0,Utils().FloatsPerPosition+Utils().FloatsPerTexture)
@@ -144,22 +139,22 @@ class MainActivity : ComponentActivity(){
         theta -= (1f/180f*Math.PI.toFloat())
         val res = PathVert().ellipse(3f,.5f,theta)
         val currentPos = floatArrayOf(res[1],0f,res[2])
-        earth.setTransMat4(Vec3())
-        earth.rotate(5f, Vec3(0f,1f,0f))
-        earth.setTransMat4(Vec3(currentPos[0],currentPos[1],currentPos[2]))
+        earth.setTransMat4(Vec3f())
+        earth.rotate(5f, Vec3f(0f,1f,0f))
+        earth.setTransMat4(Vec3f(currentPos[0],currentPos[1],currentPos[2]))
     }
     var currentView = 0
     private fun changeView(){
         if(currentView==0){
-            myScene.camera.setDefaultView(Vec3(0f,0f,10f), Vec3(0f,0f,-.1f))
+            myScene.camera.setDefaultView(Vec3f(0f,0f,10f), Vec3f(0f,0f,-.1f))
         }
         else if(currentView==1){
-            myScene.camera.setDefaultView(Vec3(0f,25f,1f), Vec3(0f,-1f,-.1f))
+            myScene.camera.setDefaultView(Vec3f(0f,25f,1f), Vec3f(0f,-1f,-.1f))
         }
     }
 
     private fun moveSun(time: Long,sun:AObject){
-        sun.rotate(1.5f, Vec3(0f,1f,0f))
+        sun.rotate(1.5f, Vec3f(0f,1f,0f))
     }
 
     @Composable

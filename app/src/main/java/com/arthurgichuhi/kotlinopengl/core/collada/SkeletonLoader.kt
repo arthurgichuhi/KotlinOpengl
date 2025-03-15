@@ -2,16 +2,22 @@ package com.arthurgichuhi.kotlinopengl.core.collada
 
 import android.opengl.Matrix
 import android.util.Log
-import com.arthurgichuhi.aopengl.models.Vec3
+import com.arthurgichuhi.aopengl.models.Vec3f
+import com.arthurgichuhi.kotlinopengl.core.collada.dataStructures.JointData
 import com.arthurgichuhi.kotlinopengl.core.collada.dataStructures.SkeletonData
 import com.arthurgichuhi.kotlinopengl.core.xmlParser.XmlNode
-import com.arthurgichuhi.kotlinopengl.models.JointData
 import com.arthurgichuhi.kotlinopengl.utils.MathUtils
 
 class SkeletonLoader(vsNode:XmlNode,boneBorder:List<String>) {
     companion object{
         val MathUtils = MathUtils()
+        val CORRECTION = FloatArray(16)
     }
+
+    init {
+        Matrix.rotateM(CORRECTION,0,-90f,1f,0f,0f)
+    }
+
     private var armatureData:XmlNode =
         vsNode.getChild("visual_scene")?.getChildWithAttribute("node","id","Armature")!!
 
@@ -25,10 +31,10 @@ class SkeletonLoader(vsNode:XmlNode,boneBorder:List<String>) {
         return SkeletonData(jointCount,headJoint)
     }
 
-    private fun loadJointData(jointNode:XmlNode,isRoot:Boolean):JointData{
+    private fun loadJointData(jointNode:XmlNode,isRoot:Boolean): JointData {
         val joint = extractMainJointData(jointNode,isRoot)
         for(childNode in jointNode.getChildren("node")){
-            joint.addChild(loadJointData(childNode,false))
+            joint.children.add(loadJointData(childNode,false))
         }
         return joint
     }
@@ -37,10 +43,10 @@ class SkeletonLoader(vsNode:XmlNode,boneBorder:List<String>) {
         val name = jointNode.getAttribute("id")
         val index = boneOrder.indexOf(name!!)
         val matrixData = jointNode.getChild("matrix")?.data?.trim()?.split(" ")
-        var matrix = convertData(matrixData!!)
+        val matrix = convertData(matrixData!!)
         Matrix.transposeM(matrix,0,matrix,0)
         if(isRoot){
-            matrix = MathUtils.rotateVec3(Vec3(x=1f).toArray(),-90f, matrix)
+            Matrix.multiplyMM(matrix,0,CORRECTION,0,matrix,0)
         }
         jointCount++
         return JointData(index,name,matrix)
