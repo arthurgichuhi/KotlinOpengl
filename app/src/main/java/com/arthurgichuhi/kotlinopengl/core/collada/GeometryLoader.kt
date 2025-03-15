@@ -1,7 +1,6 @@
 package com.arthurgichuhi.kotlinopengl.core.collada
 
 import android.opengl.Matrix
-import android.util.Log
 import com.arthurgichuhi.aopengl.models.Vec2f
 import com.arthurgichuhi.aopengl.models.Vec3f
 import com.arthurgichuhi.kotlinopengl.core.collada.dataStructures.MeshData
@@ -55,7 +54,6 @@ class GeometryLoader(geometryNode:XmlNode, private val vertexWeights:List<Vertex
         val positionsData = meshData.getChildWithAttribute("source","id",positionId!!)
             ?.getChild("float_array")
         val count = positionsData?.getAttribute("count")?.toInt()
-        Log.d("TAG","RP:$count")
         val posData = positionsData?.data?.trim()?.split(" ")
         for(i in 0..<(count!!/3)){
             val x = posData!![i*3].toFloat()
@@ -104,7 +102,6 @@ class GeometryLoader(geometryNode:XmlNode, private val vertexWeights:List<Vertex
     private fun assembleVertices() {
         val poly = meshData.getChild("polylist")
         val typeCount = poly?.getChildren("input")?.size
-        Log.d("TAG","Count:$typeCount")
         val indexData = poly?.getChild("p")?.data?.trim()?.split(" ")
         for(i in 0..<(indexData!!.size/typeCount!!)){
             val positionIndex = indexData[i*typeCount].toInt()
@@ -213,7 +210,6 @@ class GeometryLoader(geometryNode:XmlNode, private val vertexWeights:List<Vertex
         for(i in indices.indices){
             indicesArray[i] = indices[i]
         }
-        Log.d("TAG","CITLA:${indicesArray.toList()}")
         return indicesArray
     }
 }

@@ -38,7 +38,6 @@ class AnimatedObj(
         nVertices=mesh.indices.size
         mathUtils.setIdentity4Matrix(rootMat)
         rootJoint.children.forEach {
-            Log.d("TAG","AO:${rootJoint.name}-Children${it.name},${it.children.size}")
         }
 
     }
@@ -54,12 +53,11 @@ class AnimatedObj(
         locs["jointIndices"] =  program.getAttribLoc("jointIndices")
         locs["weights"] = program.getAttribLoc("weights")
 
-        mBuffer.loadIndicesBuffer(mesh.indices,true)
-        mBuffer.loadFloatVertexData(mesh,locs,true, loadTex = {mTex=mScene.loadTexture(mTexPath)})
-        mBuffer.loadIntVertexData(mesh,locs,true)
+        mBuffer.loadIndicesBuffer(mesh.indices,false)
+        mBuffer.loadFloatVertexData(mesh,locs,false, loadTex = {mTex=mScene.loadTexture(mTexPath)})
+        mBuffer.loadIntVertexData(mesh,locs,false)
 
         program.use()
-        Log.d("TAG","Animation:${animation.keyFrames.size}")
         animator.doAnimation(animation)
     }
 
@@ -84,8 +82,6 @@ class AnimatedObj(
         program.setUniformMat("projection",projectionMat)
 
         jointTransforms.forEachIndexed { index,it-> program.setUniformMat("jointTransforms[$index])",it)}
-
-
         drawElements(nVertices)
 
     }

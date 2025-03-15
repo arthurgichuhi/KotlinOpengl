@@ -38,7 +38,6 @@ class AnimationObjLoader{
             count++
             frames.add(createFrameKey(animationData.keyFrames[i]))
         }
-        Log.d("TAG","Count:$count------${animationData.keyFrames.size}")
         return Animation(animationData.lengthSeconds,frames)
     }
 

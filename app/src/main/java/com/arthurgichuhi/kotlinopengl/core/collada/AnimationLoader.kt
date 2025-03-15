@@ -1,7 +1,6 @@
 package com.arthurgichuhi.kotlinopengl.core.collada
 
 import android.opengl.Matrix
-import android.util.Log
 import com.arthurgichuhi.kotlinopengl.core.collada.dataStructures.AnimationData
 import com.arthurgichuhi.kotlinopengl.core.collada.dataStructures.JointTransformData
 import com.arthurgichuhi.kotlinopengl.core.collada.dataStructures.KeyFrameData
@@ -25,7 +24,6 @@ class AnimationLoader(val animNode: XmlNode, val jointsNode:XmlNode) {
         val duration = times.last()
         val keyFrames = initKeyFrames(times)
         val animationNodes = animNode.getChildren("animation")
-        Log.d("TAG","EAD:${keyFrames.size}--$duration")
         for(joint in animationNodes){
             loadJointTransforms(keyFrames,joint,rootNode)
         }
@@ -78,7 +76,6 @@ class AnimationLoader(val animNode: XmlNode, val jointsNode:XmlNode) {
         val timeData = animNode.getChild("animation")
             ?.getChild("source")?.getChild("float_array")
         val rawTimes = timeData?.data?.trim()?.split(" ")
-        Log.d("TAG","GTK:$rawTimes")
         val times = FloatArray(rawTimes?.size?:0)
         for( i in times.indices){
             times[i] = rawTimes?.get(i)?.toFloat()!!

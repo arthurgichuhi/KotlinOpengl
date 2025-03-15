@@ -1,7 +1,6 @@
 package com.arthurgichuhi.kotlinopengl.core.animation.animation
 
 import android.opengl.Matrix
-import android.util.Log
 import com.arthurgichuhi.kotlinopengl.core.animation.animatedModel.AnimatedObj
 import com.arthurgichuhi.kotlinopengl.core.animation.animatedModel.Joint
 import com.arthurgichuhi.kotlinopengl.utils.Utils
@@ -27,7 +26,6 @@ class Animator(
         }
         increaseAnimationTime()
         val currentPose = calculateCurrentAnimationPose()
-        Log.d("TAG","UPDATE:${currentPose.toList()}")
         applyPoseToJoints(currentPose,entity.rootJoint,FloatArray(16))
 
     }
@@ -105,7 +103,6 @@ class Animator(
      */
 
     fun applyPoseToJoints(currentPose:Map<String,FloatArray>,joint: Joint,parentTransform: FloatArray){
-        Log.d("TAG","APTJ:${joint.name}")
         val currentLocalTransform = currentPose["${joint.name}/transform"]!!
         val currentTransform=FloatArray(16)
         Matrix.multiplyMM(currentTransform,0,parentTransform,0,currentLocalTransform,0)

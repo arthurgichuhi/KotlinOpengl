@@ -106,7 +106,7 @@ class MainActivity : ComponentActivity(){
         //myScene.addObject(collObj)
         val animatedObj = mLoader.loadColladaModel(3)
         val animation = AnimationObjLoader().loadAnimation(mLoader)
-        Log.d("TAG","Animation:${animation.keyFrames.size}:${animation.length}")
+
         val animObj = AnimatedObj(
             animatedObj.mesh,
             animatedObj.joints,
