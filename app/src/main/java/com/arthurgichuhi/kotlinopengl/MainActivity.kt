@@ -101,17 +101,18 @@ class MainActivity : ComponentActivity(){
 //        })
 //        myScene.addObject(terrain)
 
-        val mLoader = ColladaLoader(this,"models/model/model.dae")
-       //val collObj = IPCTN(mLoader.loadColladaModel(3).mesh,false,true,true,"models/model/diffuse.png")
-        //myScene.addObject(collObj)
-        val animatedObj = mLoader.loadColladaModel(3)
-        val animation = AnimationObjLoader().loadAnimation(mLoader)
+        val animatedObj = ColladaLoader.loadColladaModel(this,"models/model/model.dae",3)
+        val animation = AnimationObjLoader.loadAnimation(this,"models/model/model.dae")
 
         val animObj = AnimatedObj(
             animatedObj.mesh,
             animatedObj.joints,
             animation,
             "models/model/diffuse.png")
+        animObj.setUpdateCall(object:ObjUpdateCall{
+            override fun update(time: Long, obj: AObject) {
+
+            }})
         myScene.addObject(animObj)
 //        val wireObj=WireObj()
 //        wireObj.setColor(Vec3(0f,1f,0f))

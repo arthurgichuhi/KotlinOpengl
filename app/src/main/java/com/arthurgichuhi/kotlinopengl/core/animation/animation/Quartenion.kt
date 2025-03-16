@@ -3,7 +3,6 @@ package com.arthurgichuhi.kotlinopengl.core.animation.animation
 import kotlin.math.sqrt
 
 class Quartenion(private var x: Float =0f,private var y:Float,private var z:Float,private var w:Float) {
-    constructor():this(x = 0f, y = 0f, z = 0f, w = 0f,)
     init {
         normalize()
     }
@@ -46,58 +45,59 @@ class Quartenion(private var x: Float =0f,private var y:Float,private var z:Floa
         return matrix
     }
 
-    fun fromMatrix(matrix:FloatArray):Quartenion{
-        val w1: Float
-        val x1: Float
-        val y1: Float
-        val z1: Float
+    companion object{
+        fun fromMatrix(matrix:FloatArray):Quartenion{
+            val w1: Float
+            val x1: Float
+            val y1: Float
+            val z1: Float
 
-        val diagonal = matrix[0] + matrix[5] + matrix[10]
-        if (diagonal > 0) {
-            val w4 = (sqrt((diagonal + 1f).toDouble()) * 2f).toFloat()
-            w1 = w4 / 4f
-            x1 = (matrix[6] - matrix[9]) / w4
-            y1 = (matrix[8] - matrix[2]) / w4
-            z1 = (matrix[1] - matrix[4]) / w4
-        } else if ((matrix[0]> matrix[5]) && (matrix[0] > matrix[10])) {
-            val x4 = sqrt(1f + matrix[0] - matrix[5] - matrix[10]) * 2f
-            w1 = (matrix[6] - matrix[9]) / x4
-            x1 = x4 / 4f
-            y1 = (matrix[4] + matrix[1]) / x4
-            z1 = (matrix[8] + matrix[2]) / x4
-        } else if (matrix[5] > matrix[10]) {
-            val y4 = sqrt(1f + matrix[5] - matrix[0] - matrix[10]) * 2f
-            w1 = (matrix[8] - matrix[2]) / y4
-            x1 = (matrix[4] + matrix[1]) / y4
-            y1 = y4 / 4f
-            z1 = (matrix[9] + matrix[6]) / y4
-        } else {
-            val z4 = sqrt(1f + matrix[10] - matrix[0] - matrix[5]) * 2f
-            w1 = (matrix[1] - matrix[4]) / z4
-            x1 = (matrix[8] + matrix[2]) / z4
-            y1 = (matrix[9] + matrix[6]) / z4
-            z1 = z4 / 4f
+            val diagonal = matrix[0] + matrix[5] + matrix[10]
+            if (diagonal > 0) {
+                val w4 = (sqrt((diagonal + 1f).toDouble()) * 2f).toFloat()
+                w1 = w4 / 4f
+                x1 = (matrix[6] - matrix[9]) / w4
+                y1 = (matrix[8] - matrix[2]) / w4
+                z1 = (matrix[1] - matrix[4]) / w4
+            } else if ((matrix[0]> matrix[5]) && (matrix[0] > matrix[10])) {
+                val x4 = sqrt(1f + matrix[0] - matrix[5] - matrix[10]) * 2f
+                w1 = (matrix[6] - matrix[9]) / x4
+                x1 = x4 / 4f
+                y1 = (matrix[4] + matrix[1]) / x4
+                z1 = (matrix[8] + matrix[2]) / x4
+            } else if (matrix[5] > matrix[10]) {
+                val y4 = sqrt(1f + matrix[5] - matrix[0] - matrix[10]) * 2f
+                w1 = (matrix[8] - matrix[2]) / y4
+                x1 = (matrix[4] + matrix[1]) / y4
+                y1 = y4 / 4f
+                z1 = (matrix[9] + matrix[6]) / y4
+            } else {
+                val z4 = sqrt(1f + matrix[10] - matrix[0] - matrix[5]) * 2f
+                w1 = (matrix[1] - matrix[4]) / z4
+                x1 = (matrix[8] + matrix[2]) / z4
+                y1 = (matrix[9] + matrix[6]) / z4
+                z1 = z4 / 4f
+            }
+            return Quartenion(x1,y1,z1,w1)
         }
-        return Quartenion(x1,y1,z1,w1)
-    }
 
-    fun interpolate(a:Quartenion,b:Quartenion,blend:Float):Quartenion{
-        val result = Quartenion(0f,0f,0f,1f)
-        val dot = a.w * b.w + a.x * b.x + a.y * b.y + a.z * b.z
-        val blendI = 1f - blend
-        if (dot < 0) {
-            result.w = blendI * a.w + blend * -b.w
-            result.x = blendI * a.x + blend * -b.x
-            result.y = blendI * a.y + blend * -b.y
-            result.z = blendI * a.z + blend * -b.z
-        } else {
-            result.w = blendI * a.w + blend * b.w
-            result.x = blendI * a.x + blend * b.x
-            result.y = blendI * a.y + blend * b.y
-            result.z = blendI * a.z + blend * b.z
+        fun interpolate(a:Quartenion,b:Quartenion,blend:Float):Quartenion{
+            val result = Quartenion(0f,0f,0f,1f)
+            val dot = a.w * b.w + a.x * b.x + a.y * b.y + a.z * b.z
+            val blendI = 1f - blend
+            if (dot < 0) {
+                result.w = blendI * a.w + blend * -b.w
+                result.x = blendI * a.x + blend * -b.x
+                result.y = blendI * a.y + blend * -b.y
+                result.z = blendI * a.z + blend * -b.z
+            } else {
+                result.w = blendI * a.w + blend * b.w
+                result.x = blendI * a.x + blend * b.x
+                result.y = blendI * a.y + blend * b.y
+                result.z = blendI * a.z + blend * b.z
+            }
+            result.normalize()
+            return result
         }
-        result.normalize()
-        return result
     }
-
 }

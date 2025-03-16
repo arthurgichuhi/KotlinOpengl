@@ -87,8 +87,11 @@ class Utils {
         return false
     }
 
-    fun getCurrentTime(): Long {
-        return System.currentTimeMillis()
+    fun getCurrentTime():Float{
+
+        val currentMillis = System.currentTimeMillis()
+        Log.d("TAG","Current Millis - ${(currentMillis/1_000_000_000_000_0)}")
+        return (currentMillis/1_000_000_000_000_0f)
     }
 
     fun createMatricesArrayBuffer(data:Array<FloatArray>):FloatBuffer{

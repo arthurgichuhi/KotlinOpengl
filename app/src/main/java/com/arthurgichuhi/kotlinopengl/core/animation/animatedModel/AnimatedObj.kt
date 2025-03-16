@@ -15,7 +15,7 @@ import com.arthurgichuhi.kotlinopengl.utils.Utils
 
 class AnimatedObj(
     val mesh: MeshData,
-    skeletonData: SkeletonData,
+    val skeletonData: SkeletonData,
     val animation: Animation,
     texPath:String
     ):AObject() {
@@ -30,16 +30,13 @@ class AnimatedObj(
     private val locs: MutableMap<String,Int> = HashMap()
 
     var rootJoint: Joint = createJoints(skeletonData.headJoint)
-    private val jointTransforms : MutableList<FloatArray> = ArrayList(50)
-    private val animator = Animator(this)
+    val jointTransforms : MutableList<FloatArray> = ArrayList()
+    val animator = Animator(this)
     private val rootMat = FloatArray(16)
 
     init {
         nVertices=mesh.indices.size
         mathUtils.setIdentity4Matrix(rootMat)
-        rootJoint.children.forEach {
-        }
-
     }
 
     override fun onInit() {
@@ -59,6 +56,7 @@ class AnimatedObj(
 
         program.use()
         animator.doAnimation(animation)
+        addJointsToArray(rootJoint,jointTransforms)
     }
 
     override fun destroy() {
@@ -66,12 +64,12 @@ class AnimatedObj(
     }
 
     override fun onUpdate(time: Long) {
-        animator.update().also {
-            addJointsToArray(rootJoint,jointTransforms)
-        }
+
     }
 
     override fun draw(viewMat: FloatArray, projectionMat: FloatArray) {
+        animator.update()
+        addJointsToArray(rootJoint,jointTransforms)
 
         program.use()
         mBuffer.bind()
@@ -80,13 +78,16 @@ class AnimatedObj(
         program.setUniformMat("model",modelMat)
         program.setUniformMat("view",viewMat)
         program.setUniformMat("projection",projectionMat)
-
-        jointTransforms.forEachIndexed { index,it-> program.setUniformMat("jointTransforms[$index])",it)}
+        Log.d("TAG","Joints:${jointTransforms[6].toList()}")
+        jointTransforms.forEachIndexed { index,it->
+            program.setUniformMat("jointTransforms[$index])",it)
+        }
+        jointTransforms.clear()
         drawElements(nVertices)
 
     }
 
-    fun createJoints(data:JointData):Joint{
+    private fun createJoints(data:JointData):Joint{
         val joint = Joint(data.index,data.nameId,data.localTransform)
         for(child in data.children){
             joint.children.add(createJoints(child))
@@ -94,7 +95,13 @@ class AnimatedObj(
         return joint
     }
 
-    private fun addJointsToArray(headJoint: Joint,jointMatrices:MutableList<FloatArray>){
+//    fun getJointTransforms():List<FloatArray>{
+//        val jointMatrices :MutableList<FloatArray> = ArrayList()
+//        addJointsToArray(rootJoint,jointMatrices)
+//        return jointMatrices
+//    }
+
+    fun addJointsToArray(headJoint: Joint,jointMatrices:MutableList<FloatArray>){
         jointMatrices.add(headJoint.index,headJoint.animatedTransform)
         for(child in headJoint.children){
             addJointsToArray(child,jointMatrices)

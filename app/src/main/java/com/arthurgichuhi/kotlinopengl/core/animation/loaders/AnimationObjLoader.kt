@@ -1,5 +1,6 @@
 package com.arthurgichuhi.kotlinopengl.core.animation.loaders
 
+import android.content.Context
 import android.opengl.Matrix
 import android.util.Log
 import com.arthurgichuhi.aopengl.models.Vec3f
@@ -13,10 +14,9 @@ import com.arthurgichuhi.kotlinopengl.core.collada.dataStructures.KeyFrameData
 import com.arthurgichuhi.kotlinopengl.utils.MathUtils
 
 class AnimationObjLoader{
-    companion object{
-        private val MathUtils = MathUtils()
-        private var CORRECTION = FloatArray(16)
-    }
+    private val MathUtils = MathUtils()
+    private var CORRECTION = FloatArray(16)
+
     init {
         MathUtils.setIdentity4Matrix(CORRECTION)
         Matrix.rotateM(CORRECTION,0,-90f,1f,0f,0f)
@@ -30,30 +30,31 @@ class AnimationObjLoader{
      *            animation.
      * @return The animation made from the data in the file.
      */
-    fun loadAnimation(colladaLoader: ColladaLoader):Animation{
-        val animationData = colladaLoader.loadColladaAnimation()
-        val frames : MutableList<KeyFrame> = ArrayList()
-        var count = 0
-        for(i in 0..<animationData.keyFrames.size){
-            count++
-            frames.add(createFrameKey(animationData.keyFrames[i]))
+    companion object{
+        fun loadAnimation(ctx:Context,fileName:String):Animation{
+            val animationData = ColladaLoader.loadColladaAnimation(ctx,fileName)
+            val frames : MutableList<KeyFrame> = ArrayList()
+            for(i in 0..<animationData.keyFrames.size){
+                Log.d("TAG","LA:$i")
+                frames.add(createFrameKey(animationData.keyFrames[i]))
+            }
+            return Animation(animationData.lengthSeconds,frames)
         }
-        return Animation(animationData.lengthSeconds,frames)
-    }
 
-    private fun createFrameKey(frame: KeyFrameData): KeyFrame {
-        val map : MutableMap<String,JointTransform> = HashMap()
-        for(jointData in frame.jointTransforms){
-            val jointTransform = createTransform(jointData)
-            map[jointData.jointName] = jointTransform
+        private fun createFrameKey(frame: KeyFrameData): KeyFrame {
+            val map : MutableMap<String,JointTransform> = HashMap()
+            for(jointData in frame.jointTransforms){
+                val jointTransform = createTransform(jointData)
+                map[jointData.jointName] = jointTransform
+            }
+            return  KeyFrame(frame.time,map)
         }
-        return  KeyFrame(frame.time,map)
-    }
 
-    private fun createTransform(data: JointTransformData): JointTransform {
-        val mat = data.jointLocalTransform
-        val translation = Vec3f(mat[3],mat[7],mat[11])
-        val rotation = Quartenion().fromMatrix(mat)
-        return  JointTransform(translation,rotation)
+        private fun createTransform(data: JointTransformData): JointTransform {
+            val mat = data.jointLocalTransform
+            val translation = Vec3f(mat[3],mat[7],mat[11])
+            val rotation = Quartenion.fromMatrix(mat)
+            return  JointTransform(translation,rotation)
+        }
     }
 }

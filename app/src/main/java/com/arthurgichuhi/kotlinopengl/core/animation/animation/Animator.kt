@@ -1,6 +1,7 @@
 package com.arthurgichuhi.kotlinopengl.core.animation.animation
 
 import android.opengl.Matrix
+import android.util.Log
 import com.arthurgichuhi.kotlinopengl.core.animation.animatedModel.AnimatedObj
 import com.arthurgichuhi.kotlinopengl.core.animation.animatedModel.Joint
 import com.arthurgichuhi.kotlinopengl.utils.Utils
@@ -37,9 +38,14 @@ class Animator(
      */
 
     fun increaseAnimationTime(){
-        animationTime += UTILS.getCurrentTime().toFloat()
+        animationTime += UTILS.getCurrentTime()
+        Log.d("TAG","TIME=${animationTime}-----${UTILS.getCurrentTime()}")
         if(animationTime>currentAnimation!!.length){
+            Log.d("TAG","---------RESET--------${currentAnimation!!.length}")
             animationTime %= currentAnimation!!.length
+        }
+        else{
+            Log.d("TAG","---------NO RESET--------")
         }
     }
 
@@ -62,9 +68,10 @@ class Animator(
      *         for all the joints. The transforms are indexed by the name ID of
      *         the joint that they should be applied to.
      */
-    fun calculateCurrentAnimationPose():Map<String,FloatArray>{
-        val frames = getPreviousandNextFrames()
+    private fun calculateCurrentAnimationPose():Map<String,FloatArray>{
+        val frames = getPreviousAndNextFrames()
         val progression = calculateProgression(frames[0],frames[1])
+        Log.d("TAG","Progression---$progression")
         return interPolatePoses(frames[0],frames[1],progression)
     }
 
@@ -102,7 +109,7 @@ class Animator(
      *            the pose.
      */
 
-    fun applyPoseToJoints(currentPose:Map<String,FloatArray>,joint: Joint,parentTransform: FloatArray){
+    private fun applyPoseToJoints(currentPose:Map<String,FloatArray>,joint: Joint,parentTransform: FloatArray){
         val currentLocalTransform = currentPose["${joint.name}/transform"]!!
         val currentTransform=FloatArray(16)
         Matrix.multiplyMM(currentTransform,0,parentTransform,0,currentLocalTransform,0)
@@ -125,7 +132,7 @@ class Animator(
      *         always have a length of 2.
      */
 
-    fun getPreviousandNextFrames():Array<KeyFrame>{
+    private fun getPreviousAndNextFrames():Array<KeyFrame>{
         val allFrames = currentAnimation!!.keyFrames
         var previousFrame = allFrames[0]
         var nextFrame = allFrames[0]
@@ -154,6 +161,7 @@ class Animator(
     private fun calculateProgression(previousFrame: KeyFrame,nextFrame: KeyFrame):Float{
         val totalTime = nextFrame.timeStamp - previousFrame.timeStamp
         val currentTime = animationTime - previousFrame.timeStamp
+        Log.d("TAG","CP:${previousFrame.timeStamp}==${nextFrame.timeStamp}==$currentTime==$totalTime")
         return currentTime/totalTime
     }
 
@@ -179,7 +187,7 @@ class Animator(
         for(jointName in previousFrame.jointKeyTransform.keys){
             val previousTransform = previousFrame.jointKeyTransform[jointName]!!
             val nextTransform = nextFrame.jointKeyTransform[jointName]!!
-            val currentTransform = JointTransform().interpolate(previousTransform,nextTransform,progression)
+            val currentTransform = JointTransform.interpolate(previousTransform,nextTransform,progression)
             currentPose[jointName] = currentTransform.getLocalTransform()
         }
         return currentPose
