@@ -8,4 +8,4 @@ package com.arthurgichuhi.kotlinopengl.core.animation.animation
  *            appearance in the animation.
 */
 
-data class Animation(val length:Float,val keyFrames:List<KeyFrame>)
+data class Animation(var length:Float,val keyFrames:List<KeyFrame>,val inverseTrans:Map<String,FloatArray>)

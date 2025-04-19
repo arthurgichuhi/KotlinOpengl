@@ -2,7 +2,7 @@ package com.arthurgichuhi.kotlinopengl.core
 
 import android.opengl.GLES32.*
 import android.opengl.Matrix
-import com.arthurgichuhi.aopengl.models.Vec3f
+import com.arthurgichuhi.kotlinopengl.models.Vec3f
 import com.arthurgichuhi.kotlinopengl.utils.GlUtils
 import com.arthurgichuhi.kotlinopengl.utils.MathUtils
 
@@ -10,7 +10,6 @@ abstract class AObject {
     lateinit var mScene:AScene
     protected var modelMat:FloatArray = FloatArray(16)
     private var updateCall:ObjUpdateCall?=null
-    private val mathUtils =MathUtils()
     private var initialized:Boolean=false
 
     init {
@@ -47,14 +46,14 @@ abstract class AObject {
     }
 
     fun translate(move: Vec3f){
-        mathUtils.translateMat4(modelMat,move.toArray())
+        MathUtils.translateMat4(modelMat,move.toArray())
     }
 
     fun setTransMat4(move: Vec3f){
-        mathUtils.setTransMat4(modelMat,move.toArray())
+        MathUtils.setTransMat4(modelMat,move.toArray())
     }
 
-    fun rotate(angle:Float,rot:Vec3f){
+    fun rotate(angle:Float,rot: Vec3f){
          Matrix.rotateM(modelMat,0,angle,rot.x,rot.y,rot.z)
      }
 
@@ -70,6 +69,10 @@ abstract class AObject {
 
     fun drawElements(verticesNo:Int){
        glDrawElements(GL_TRIANGLES,verticesNo, GL_UNSIGNED_SHORT,0)
+    }
+
+    fun drawGltfElements(verticesNo: Int){
+        glDrawElements(GL_TRIANGLES,verticesNo, GL_UNSIGNED_BYTE,0)
     }
 
     fun setDepthFunEqual(){

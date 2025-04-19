@@ -1,6 +1,6 @@
 package com.arthurgichuhi.kotlinopengl.customObjs
 
-import com.arthurgichuhi.aopengl.models.Vec3f
+import com.arthurgichuhi.kotlinopengl.models.Vec3f
 import com.arthurgichuhi.kotlinopengl.core.AObject
 import com.arthurgichuhi.kotlinopengl.core.Program
 import com.arthurgichuhi.kotlinopengl.core.Texture
@@ -12,13 +12,12 @@ class PCTNObj(
     hasNormal:Boolean,
     hasTex:Boolean, texPath:String
 ):AObject() {
-    private var utils= Utils()
     private lateinit var program: Program
     private lateinit var mColor: Vec3f
     private var mVertices:FloatArray = vertices
     private lateinit var mBuffer:VertexBuffer
     private var nVertices:Int=0
-    private var stride:Int=utils.FloatsPerPosition
+    private var stride:Int= Utils.FloatsPerPosition
     private var mHasColor=hasColor
     private var mHasTex=hasTex
     private var mTexPath=texPath
@@ -28,9 +27,9 @@ class PCTNObj(
     init {
         mHasTex=hasTex
         mTexPath=texPath
-        stride+=if(hasColor)utils.FloatsPerColor else 0
-        stride+=if(hasTex)utils.FloatsPerTexture else 0
-        stride+=if(hasNormal)utils.FloatsPerNormal else 0
+        stride+=if(hasColor)Utils.FloatsPerColor else 0
+        stride+=if(hasTex)Utils.FloatsPerTexture else 0
+        stride+=if(hasNormal)Utils.FloatsPerNormal else 0
         mHasColor=hasColor
         nVertices=vertices.size/stride
     }
@@ -41,20 +40,20 @@ class PCTNObj(
         mBuffer.load(mVertices,true)
         program.use()
         var offset=0
-        program.setFloat("position",utils.FloatsPerPosition,stride,offset)
-        offset+=utils.FloatsPerPosition
+        program.setFloat("position",Utils.FloatsPerPosition,stride,offset)
+        offset+=Utils.FloatsPerPosition
         if(mHasColor){
-            program.setFloat("color",utils.FloatsPerColor,stride,offset)
-            offset+=utils.FloatsPerColor
+            program.setFloat("color",Utils.FloatsPerColor,stride,offset)
+            offset+=Utils.FloatsPerColor
         }
         if(mHasTex){
-            program.setFloat("tex",utils.FloatsPerTexture,stride,offset)
+            program.setFloat("tex",Utils.FloatsPerTexture,stride,offset)
             mTex=mScene.loadTexture(mTexPath)
-            offset+=utils.FloatsPerTexture
+            offset+=Utils.FloatsPerTexture
         }
         if(mHasNormal){
-            program.setFloat("normal",utils.FloatsPerNormal,stride,offset)
-            offset+=utils.FloatsPerNormal
+            program.setFloat("normal",Utils.FloatsPerNormal,stride,offset)
+            offset+=Utils.FloatsPerNormal
         }
     }
 
@@ -91,7 +90,7 @@ class PCTNObj(
 
         program.setUniform3fv("material.ambient", Vec3f(.1f,.1f,.1f).toArray())
         program.setUniform3fv("material.diffuse", Vec3f(.7f,.7f,.7f).toArray())
-        program.setUniform3fv("material.specular",Vec3f(1f,1f,1f).toArray())
+        program.setUniform3fv("material.specular", Vec3f(1f,1f,1f).toArray())
         program.setUniformFloat("material.shininess",20f)
 
         drawTriangles(0, nVertices)

@@ -3,15 +3,13 @@ package com.arthurgichuhi.kotlinopengl.core
 import android.content.Context
 import android.opengl.GLES32.*
 import android.util.Log
-import com.arthurgichuhi.aopengl.models.Vec3f
+import com.arthurgichuhi.kotlinopengl.models.Vec3f
 import com.arthurgichuhi.kotlinopengl.utils.Utils
 import com.arthurgichuhi.kotlinopengl.utils.GlUtils
-import java.nio.FloatBuffer
 
 class Program {
     private val TAG="Program"
     var progID=-1
-    private var utils=Utils()
     private var mVertexShaderId = -1
     private var mFragmentShaderId = -1
     private var mVertCode: String = ""
@@ -59,10 +57,10 @@ class Program {
     private fun compileShader(ctx: Context, name: String, type: Int): Int {
         val shaderCode: String
         if (type == GL_VERTEX_SHADER) {
-            shaderCode = Utils().readAssetFile(ctx, "shaders/$name.vert")!!
+            shaderCode = Utils.readAssetFile(ctx, "shaders/$name.vert")!!
             mVertCode = shaderCode
         } else {
-            shaderCode = Utils().readAssetFile(ctx, "shaders/$name.frag")!!
+            shaderCode = Utils.readAssetFile(ctx, "shaders/$name.frag")!!
             mFragCode = shaderCode
         }
         val shaderId = glCreateShader(type)
@@ -87,11 +85,19 @@ class Program {
             progID = -1
         }
     }
+    /**
+     * Retrieves Buffer location for the attribute in the vertex shader.
+     * @param name The name of the attribute being searched for
+     */
     fun getAttribLoc(name:String):Int{
         return glGetAttribLocation(progID,name)
     }
 
-   fun getUniformLoc(name:String):Int{
+    /**
+     * Retrieves Buffer location for the uniform in the vertex shader.
+     * @param name The name of the uniform being searched for
+     */
+   private fun getUniformLoc(name:String):Int{
         return glGetUniformLocation(progID,name)
     }
 
@@ -104,7 +110,7 @@ class Program {
         glEnableVertexAttribArray(loc)
         glVertexAttribPointer(
             loc,size, GL_FLOAT,false,
-            stride*utils.BytesPerFloat,offset*utils.BytesPerFloat)
+            stride*Utils.BytesPerFloat,offset*Utils.BytesPerFloat)
     }
 
     fun setUniform3fv(name:String,value:FloatArray){
@@ -140,7 +146,7 @@ class Program {
         val loc=getAttribLoc(name)
         glEnableVertexAttribArray(loc)
         glVertexAttribPointer(loc,size, GL_INT,false,
-                stride*utils.BytesPerInt,offset*utils.BytesPerInt)
+                stride * Utils.BytesPerInt,offset * Utils.BytesPerInt)
     }
 
 }

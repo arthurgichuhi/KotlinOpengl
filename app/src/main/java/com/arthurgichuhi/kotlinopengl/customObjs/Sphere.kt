@@ -10,9 +10,6 @@ import kotlin.math.atan2
 class Sphere(divide:Int) {
     private val TAG = "SPHERE"
 
-    private val mathUtils=MathUtils()
-    private val utils=Utils()
-
     private val X = 0.525731112f
     private val Z = 0.850650808f
 
@@ -78,8 +75,8 @@ class Sphere(divide:Int) {
         if(inserted){
             val edge= vertices[first]
             val edge2 = vertices[second]
-            val newPoint = mathUtils.addFloatArrays(edge,edge2)
-            mathUtils.normalize(newPoint)
+            val newPoint = MathUtils.addFloatArrays(edge,edge2)
+            MathUtils.normalize(newPoint)
             vertices.add(newPoint)
         }
         return available.getKey(key)
@@ -111,7 +108,7 @@ class Sphere(divide:Int) {
 
     fun getPositions():FloatArray{
         val triangleVerts=3
-        val size = triangleVerts * utils.FloatsPerPosition * triangles.size
+        val size = triangleVerts * Utils.FloatsPerPosition * triangles.size
         val buff = FloatArray(size)
         var buffId = 0
 
@@ -134,9 +131,9 @@ class Sphere(divide:Int) {
         for(i in us.indices){
             val vertIdx=triangleVertIds[i]
             val vert = vertices[vertIdx]
-            val rho = mathUtils.norm(vert)
-            val theta = utils.wrapTo2Pi(atan2(vert[0].toDouble(),vert[2].toDouble()).toFloat())
-            val phi = utils.wrapTo2Pi(acos((vert[1]/rho).toDouble()).toFloat())
+            val rho = MathUtils.norm(vert)
+            val theta = Utils.wrapTo2Pi(atan2(vert[0].toDouble(),vert[2].toDouble()).toFloat())
+            val phi = Utils.wrapTo2Pi(acos((vert[1]/rho).toDouble()).toFloat())
             val u = theta/(2*Math.PI.toFloat())
             if(u>(2*Math.PI)||u<0){
                 Log.e(TAG,"${u/Math.PI.toFloat()}")
@@ -153,7 +150,7 @@ class Sphere(divide:Int) {
 
     fun getPositionsAndTexture():FloatArray{
         val triangleVerts = 3
-        val size =triangleVerts *(utils.FloatsPerPosition+utils.FloatsPerTexture)*triangles.size
+        val size =triangleVerts *(Utils.FloatsPerPosition+Utils.FloatsPerTexture)*triangles.size
         val buff = FloatArray(size)
         var buffId = 0
         for(triVerts in triangles){

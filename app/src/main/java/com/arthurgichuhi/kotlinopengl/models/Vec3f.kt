@@ -1,4 +1,6 @@
-package com.arthurgichuhi.aopengl.models
+package com.arthurgichuhi.kotlinopengl.models
+
+import kotlin.math.sqrt
 
 data class Vec3f(
     var x:Float=0f,
@@ -14,5 +16,25 @@ data class Vec3f(
      */
     fun toArray():FloatArray{
         return floatArrayOf(x,y,z)
+    }
+
+    fun add(a:Vec3f):Vec3f{
+        return Vec3f(a.x + x,a.y + y,a.z + z)
+    }
+
+    fun length():Float{
+        return sqrt((x*x)+(y*y)+(z*z))
+    }
+
+    fun normalise(){
+        x /= length()
+        y /= length()
+        z /= length()
+    }
+
+    companion object{
+        fun add(a:Vec3f,b:Vec3f):Vec3f{
+            return Vec3f(a.x + b.x,a.y + b.y,a.z + a.z)
+        }
     }
 }

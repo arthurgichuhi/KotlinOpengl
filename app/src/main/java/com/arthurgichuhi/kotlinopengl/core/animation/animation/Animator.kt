@@ -9,16 +9,17 @@ import com.arthurgichuhi.kotlinopengl.utils.Utils
 class Animator(
     val entity:AnimatedObj
 ) {
-    companion object{
-        val UTILS = Utils()
-    }
-    var currentAnimation: Animation? = null
-    var animationTime:Float = 0f
+    
+    private var currentAnimation: Animation? = null
+    private var animationTime:Float = 0f
+
+    private var start = 0f
+    private var stop = 0f
 
     fun doAnimation(animation: Animation){
-        animationTime = 0f
         currentAnimation = animation
-
+        start = Utils.getCurrentTime()
+        stop = Utils.getCurrentTime() + animation.length
     }
 
     fun update(){
@@ -26,9 +27,10 @@ class Animator(
             return
         }
         increaseAnimationTime()
+        val root = FloatArray(16)
+        Matrix.setIdentityM(root,0)
         val currentPose = calculateCurrentAnimationPose()
-        applyPoseToJoints(currentPose,entity.rootJoint,FloatArray(16))
-
+        applyPoseToJoints(currentPose,entity.rootJoint,root)
     }
 
     /**
@@ -37,15 +39,12 @@ class Animator(
      * reset, causing the animation to loop.
      */
 
-    fun increaseAnimationTime(){
-        animationTime += UTILS.getCurrentTime()
-        Log.d("TAG","TIME=${animationTime}-----${UTILS.getCurrentTime()}")
-        if(animationTime>currentAnimation!!.length){
-            Log.d("TAG","---------RESET--------${currentAnimation!!.length}")
-            animationTime %= currentAnimation!!.length
-        }
-        else{
-            Log.d("TAG","---------NO RESET--------")
+    private fun increaseAnimationTime(){
+        val currentTime = Utils.getCurrentTime()
+        animationTime = currentTime
+        if(animationTime>stop){
+            start = currentTime
+            stop = currentTime + currentAnimation!!.length
         }
     }
 
@@ -59,7 +58,7 @@ class Animator(
      * time in the animation, so the animated pose for the current time can be
      * calculated by interpolating between the previous and next keyframe.
      *
-     * This method first finds the preious and next keyframe, calculates how far
+     * This method first finds the previous and next keyframe, calculates how far
      * between the two the current animation is, and then calculated the pose
      * for the current animation time by interpolating between the transforms at
      * those keyframes.
@@ -71,8 +70,7 @@ class Animator(
     private fun calculateCurrentAnimationPose():Map<String,FloatArray>{
         val frames = getPreviousAndNextFrames()
         val progression = calculateProgression(frames[0],frames[1])
-        Log.d("TAG","Progression---$progression")
-        return interPolatePoses(frames[0],frames[1],progression)
+        return interpolatePoses(frames[0],frames[1],progression)
     }
 
     /**
@@ -116,9 +114,9 @@ class Animator(
         for(child in joint.children){
             applyPoseToJoints(currentPose,child,currentTransform)
         }
+        Matrix.multiplyMM(currentTransform,0,currentTransform,0,joint.inverseTransform,0)
         joint.setAnimationTransform(currentTransform)
     }
-
 
     /**
      * Finds the previous keyframe in the animation and the next keyframe in the
@@ -137,12 +135,12 @@ class Animator(
         var previousFrame = allFrames[0]
         var nextFrame = allFrames[0]
         for(frame in allFrames){
-            nextFrame = frame
-            if(nextFrame.timeStamp>animationTime){
+             nextFrame = frame
+            if((nextFrame.timeStamp+start)>animationTime){
                 break
             }
             previousFrame = frame
-        }
+           }
         return arrayOf(previousFrame,nextFrame)
     }
 
@@ -160,8 +158,7 @@ class Animator(
 
     private fun calculateProgression(previousFrame: KeyFrame,nextFrame: KeyFrame):Float{
         val totalTime = nextFrame.timeStamp - previousFrame.timeStamp
-        val currentTime = animationTime - previousFrame.timeStamp
-        Log.d("TAG","CP:${previousFrame.timeStamp}==${nextFrame.timeStamp}==$currentTime==$totalTime")
+        val currentTime = animationTime - (previousFrame.timeStamp+start)
         return currentTime/totalTime
     }
 
@@ -182,7 +179,7 @@ class Animator(
      *         the joint to which they should be applied.
      */
 
-    private fun interPolatePoses(previousFrame: KeyFrame,nextFrame: KeyFrame,progression:Float):Map<String,FloatArray>{
+    private fun interpolatePoses(previousFrame: KeyFrame, nextFrame: KeyFrame, progression:Float):Map<String,FloatArray>{
         val currentPose:MutableMap<String,FloatArray> = HashMap()
         for(jointName in previousFrame.jointKeyTransform.keys){
             val previousTransform = previousFrame.jointKeyTransform[jointName]!!

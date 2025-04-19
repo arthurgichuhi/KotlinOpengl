@@ -7,7 +7,6 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 class Sphere2(radius:Float,gradation: Int) {
-    val utils= Utils()
     val pi = Math.PI.toFloat()
 
     val vertices:MutableList<VD> = ArrayList()
@@ -18,7 +17,6 @@ class Sphere2(radius:Float,gradation: Int) {
     }
 
     class VD{
-        val utils= Utils()
         private val pi = Math.PI.toFloat()
 
         var x=0f
@@ -49,8 +47,8 @@ class Sphere2(radius:Float,gradation: Int) {
             ret.z=(radius*sin(ret.theta))* sin(ret.phi)
             ret.y=radius*cos(ret.phi)
 
-            val theta = utils.wrapTo2Pi(ret.theta)
-            val phi = utils.wrapTo2Pi(ret.phi)
+            val theta = Utils.wrapTo2Pi(ret.theta)
+            val phi = Utils.wrapTo2Pi(ret.phi)
             val u = theta/(2f*pi)
 
             if(u>(2*Math.PI)||u<0){
@@ -124,7 +122,7 @@ class Sphere2(radius:Float,gradation: Int) {
 
     fun getPositionsAndTex():FloatArray{
         val vertsTri= 3
-        val size = vertsTri * (utils.FloatsPerPosition+utils.FloatsPerTexture) * triangles.size
+        val size = vertsTri * (Utils.FloatsPerPosition+Utils.FloatsPerTexture) * triangles.size
         val buff = FloatArray(size)
         var buffId = 0
 

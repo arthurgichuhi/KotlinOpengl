@@ -62,6 +62,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.ui.test.junit4.android)
+    implementation(libs.filament.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -71,5 +72,7 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     // https://mvnrepository.com/artifact/org.lwjgl/lwjgl
     implementation(libs.lwjgl)
+    // https://mvnrepository.com/artifact/de.javagl/jgltf-model
+    implementation("de.javagl:jgltf-model:2.0.4")
 
 }

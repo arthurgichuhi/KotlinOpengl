@@ -2,21 +2,19 @@ package com.arthurgichuhi.kotlinopengl.core.collada
 
 import android.opengl.Matrix
 import com.arthurgichuhi.aopengl.models.Vec2f
-import com.arthurgichuhi.aopengl.models.Vec3f
+import com.arthurgichuhi.kotlinopengl.models.Vec3f
 import com.arthurgichuhi.kotlinopengl.core.collada.dataStructures.MeshData
 import com.arthurgichuhi.kotlinopengl.core.collada.dataStructures.Vertex
 import com.arthurgichuhi.kotlinopengl.core.collada.dataStructures.VertexSkinData
 import com.arthurgichuhi.kotlinopengl.core.xmlParser.XmlNode
+import com.arthurgichuhi.kotlinopengl.models.Vec4f
 import com.arthurgichuhi.kotlinopengl.utils.MathUtils
 
 class GeometryLoader(geometryNode:XmlNode, private val vertexWeights:List<VertexSkinData>) {
-    companion object{
-        private val MathUtils = MathUtils()
-        private var CORRECTION = FloatArray(16)
-    }
+    private var correction = FloatArray(16)
     init {
-        MathUtils.setIdentity4Matrix(CORRECTION)
-        Matrix.rotateM(CORRECTION,0,-90f,1f,0f,0f)
+        MathUtils.setIdentity4Matrix(correction)
+        Matrix.rotateM(correction,0,-90f,1f,0f,0f)
     }
 
     private var meshData : XmlNode = geometryNode.getChild("geometry")?.getChild("mesh")!!
@@ -56,11 +54,12 @@ class GeometryLoader(geometryNode:XmlNode, private val vertexWeights:List<Vertex
         val count = positionsData?.getAttribute("count")?.toInt()
         val posData = positionsData?.data?.trim()?.split(" ")
         for(i in 0..<(count!!/3)){
-            val x = posData!![i*3].toFloat()
-            val y = posData[i*3+1].toFloat()
-            val z = posData[i*3+2].toFloat()
-            val pos = Vec3f(x, y, z)
-            val position = MathUtils.matVecMultiply(CORRECTION, pos.toArray(),4)
+            val x = posData!![i * 3].toFloat()
+            val y = posData[i * 3 + 1].toFloat()
+            val z = posData[i * 3 + 2].toFloat()
+            val pos = Vec4f(x, y, z,1f)
+            val position = FloatArray(4)
+            Matrix.multiplyMV(position,0,correction,0,pos.toFloatArray(),0)
             vertices.add(Vertex(Vec3f(position),vertices.size,vertexWeights[vertices.size]))
         }
     }
@@ -78,8 +77,9 @@ class GeometryLoader(geometryNode:XmlNode, private val vertexWeights:List<Vertex
             val x = normData!![i*3].toFloat()
             val y = normData[i*3+1].toFloat()
             val z = normData[i*3+2].toFloat()
-            val norm = Vec3f(x, y, z)
-            val normal = MathUtils.matVecMultiply(CORRECTION, norm.toArray(),4)
+            val norm = Vec4f(x, y, z)
+            val normal = FloatArray(4)
+            Matrix.multiplyMV(normal,0,correction,0,norm.toFloatArray(),0)
             normals.add(Vec3f(normal))
         }
     }
@@ -93,7 +93,7 @@ class GeometryLoader(geometryNode:XmlNode, private val vertexWeights:List<Vertex
         val count = texCoordsData?.getAttribute("count")?.toInt()
         val texData = texCoordsData?.data?.trim()?.split(" ")
         for(i in 0..<(count!!/2)){
-            val s = texData!![i*2].toFloat()
+            val s = texData!![i * 2].toFloat()
             val t = texData[i * 2 + 1].toFloat()
             textures.add(Vec2f(s,t))
         }
@@ -130,8 +130,9 @@ class GeometryLoader(geometryNode:XmlNode, private val vertexWeights:List<Vertex
             return previousVertex
         }
         else{
-            if(previousVertex.dupVertex!=null){
-                return dealWithProcessedVertex(previousVertex,texCoordIndex,normalIndex)
+            val anotherVertex = previousVertex.dupVertex
+            if(anotherVertex!=null){
+                return dealWithProcessedVertex(anotherVertex,texCoordIndex,normalIndex)
             }
             else{
                 val dupVertex = Vertex(
@@ -141,7 +142,7 @@ class GeometryLoader(geometryNode:XmlNode, private val vertexWeights:List<Vertex
                     textureIndex = texCoordIndex,
                     normalIndex = normalIndex,
                     )
-                dupVertex.dupVertex = dupVertex
+                previousVertex.dupVertex = dupVertex
                 vertices.add(dupVertex)
                 indices.add(dupVertex.index.toShort())
                 return dupVertex
@@ -151,6 +152,7 @@ class GeometryLoader(geometryNode:XmlNode, private val vertexWeights:List<Vertex
 
     private fun removeUnusedVertices() {
         for(vertex in vertices){
+            vertex.averageTangents()
             if(!vertex.isSet()){
                 vertex.textureIndex = 0
                 vertex.normalIndex = 0
@@ -167,21 +169,16 @@ class GeometryLoader(geometryNode:XmlNode, private val vertexWeights:List<Vertex
     }
 
     private fun convertDataToArrays() {
+        var furthestPoint = 0f
         for(i in vertices.indices){
             val currentVert = vertices[i]
+            if(currentVert.length>furthestPoint){
+                furthestPoint = currentVert.length
+            }
             val weights = currentVert.weightsData
             val position = currentVert.position
             val texCoord = textures[currentVert.textureIndex]
             val normalVector = normals[currentVert.normalIndex]
-
-//            verticesArray[i * 8] = position.x
-//            verticesArray[i * 8 + 1] = position.y
-//            verticesArray[i * 8 + 2] = position.z
-//            verticesArray[i * 8 + 3] = texCoord.x
-//            verticesArray[i * 8 + 4] = texCoord.y
-//            verticesArray[i * 8 + 5] = normalVector.x
-//            verticesArray[i * 8 + 6] = normalVector.y
-//            verticesArray[i * 8 + 7] = normalVector.z
 
             verticesArray[i * 3] = position.x
             verticesArray[(i * 3) + 1] = position.y
@@ -196,8 +193,8 @@ class GeometryLoader(geometryNode:XmlNode, private val vertexWeights:List<Vertex
             normalsArray[(i * 3) + 2] = normalVector.z
 
             jointIds[i * 3] = weights.jointIds[0]
-            jointIds[i * 3 + 1] = if(weights.jointIds.size>1)weights.jointIds[1] else weights.jointIds[0]
-            jointIds[i * 3 + 2] = if(weights.jointIds.size>2)weights.jointIds[2]  else weights.jointIds[0]
+            jointIds[i * 3 + 1] = weights.jointIds[1]
+            jointIds[i * 3 + 2] = weights.jointIds[2]
 
             weightsArray[i * 3] = weights.weights[0]
             weightsArray[(i * 3) + 1] = weights.weights[1]

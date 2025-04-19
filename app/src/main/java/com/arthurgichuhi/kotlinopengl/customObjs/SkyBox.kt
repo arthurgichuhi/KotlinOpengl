@@ -1,6 +1,6 @@
 package com.arthurgichuhi.kotlinopengl.customObjs
 
-import com.arthurgichuhi.aopengl.models.Vec3f
+import com.arthurgichuhi.kotlinopengl.models.Vec3f
 import com.arthurgichuhi.kotlinopengl.core.AObject
 import com.arthurgichuhi.kotlinopengl.core.Program
 import com.arthurgichuhi.kotlinopengl.core.Texture
@@ -19,12 +19,11 @@ class SkyBox(
     private var stride = 0
     private val textureIds:MutableList<String> = ArrayList()
     private lateinit var texture: Texture
-
-    private val utils= Utils()
+    
 
     init {
         vertices=Cube().create(Vec3f(scale,scale,scale))
-        stride = utils.FloatsPerPosition
+        stride = Utils.FloatsPerPosition
         nVertices = vertices.size/stride
         textureIds.addAll(arrayListOf(right,left,top,bottom,front,back))
     }
@@ -34,8 +33,8 @@ class SkyBox(
         buffer.load(vertices,true)
         program.use()
         var offset = 0
-        program.setFloat("position",utils.FloatsPerPosition,stride,offset)
-        offset += utils.FloatsPerPosition
+        program.setFloat("position",Utils.FloatsPerPosition,stride,offset)
+        offset += Utils.FloatsPerPosition
         texture = mScene.loadCubeTex(textureIds.toList())
     }
 

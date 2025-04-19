@@ -11,17 +11,14 @@ import com.arthurgichuhi.kotlinopengl.core.collada.dataStructures.JointData
 import com.arthurgichuhi.kotlinopengl.core.collada.dataStructures.MeshData
 import com.arthurgichuhi.kotlinopengl.core.collada.dataStructures.SkeletonData
 import com.arthurgichuhi.kotlinopengl.utils.MathUtils
-import com.arthurgichuhi.kotlinopengl.utils.Utils
 
 class AnimatedObj(
-    val mesh: MeshData,
-    val skeletonData: SkeletonData,
+    private val mesh: MeshData,
+    skeletonData: SkeletonData,
     val animation: Animation,
     texPath:String
     ):AObject() {
-
-    private val utils= Utils()
-    private val mathUtils = MathUtils()
+        
     private lateinit var program: Program
     private lateinit var mBuffer: VertexBuffer
     private var nVertices:Int=0
@@ -30,18 +27,19 @@ class AnimatedObj(
     private val locs: MutableMap<String,Int> = HashMap()
 
     var rootJoint: Joint = createJoints(skeletonData.headJoint)
-    val jointTransforms : MutableList<FloatArray> = ArrayList()
-    val animator = Animator(this)
+    private val jointTransforms : MutableList<FloatArray> = ArrayList(skeletonData.jointCount)
+    private val animator = Animator(this)
     private val rootMat = FloatArray(16)
 
     init {
-        nVertices=mesh.indices.size
-        mathUtils.setIdentity4Matrix(rootMat)
+        MathUtils.scale(mesh.vertices, .1f)
+        nVertices = mesh.indices.size
+        MathUtils.setIdentity4Matrix(rootMat)
     }
 
     override fun onInit() {
         mBuffer = VertexBuffer()
-        rootJoint.calcInverseBindTransform(rootMat)
+        rootJoint.calcInverseBindTransform(animation.inverseTrans)
         program = mScene.loadProgram("armateur")
 
         locs["position"] = program.getAttribLoc("position")
@@ -50,13 +48,13 @@ class AnimatedObj(
         locs["jointIndices"] =  program.getAttribLoc("jointIndices")
         locs["weights"] = program.getAttribLoc("weights")
 
-        mBuffer.loadIndicesBuffer(mesh.indices,false)
-        mBuffer.loadFloatVertexData(mesh,locs,false, loadTex = {mTex=mScene.loadTexture(mTexPath)})
-        mBuffer.loadIntVertexData(mesh,locs,false)
+        mBuffer.loadIndicesBuffer(mesh.indices,true)
+        mBuffer.loadFloatVertexData(mesh,locs,true, loadTex = {mTex=mScene.loadTexture(mTexPath)})
+        mBuffer.loadIntVertexData(mesh,locs,true)
+        mBuffer.checkGlError("ANIMATED ONJ ERROR")
 
         program.use()
         animator.doAnimation(animation)
-        addJointsToArray(rootJoint,jointTransforms)
     }
 
     override fun destroy() {
@@ -74,37 +72,34 @@ class AnimatedObj(
         program.use()
         mBuffer.bind()
         mTex.bindTexture()
+        val transforms = jointTransforms.toList()
+        for(i in transforms.indices){
+            program.setUniformMat("jointTransforms[$i]",transforms[i])
+        }
 
         program.setUniformMat("model",modelMat)
         program.setUniformMat("view",viewMat)
         program.setUniformMat("projection",projectionMat)
-        Log.d("TAG","Joints:${jointTransforms[6].toList()}")
-        jointTransforms.forEachIndexed { index,it->
-            program.setUniformMat("jointTransforms[$index])",it)
-        }
-        jointTransforms.clear()
-        drawElements(nVertices)
 
+        drawElements(nVertices)
+        jointTransforms.clear()
     }
 
     private fun createJoints(data:JointData):Joint{
         val joint = Joint(data.index,data.nameId,data.localTransform)
         for(child in data.children){
-            joint.children.add(createJoints(child))
+            joint.addChild(createJoints(child))
         }
         return joint
     }
 
-//    fun getJointTransforms():List<FloatArray>{
-//        val jointMatrices :MutableList<FloatArray> = ArrayList()
-//        addJointsToArray(rootJoint,jointMatrices)
-//        return jointMatrices
-//    }
-
-    fun addJointsToArray(headJoint: Joint,jointMatrices:MutableList<FloatArray>){
+    private fun addJointsToArray(headJoint: Joint,jointMatrices:MutableList<FloatArray>){
+        var count = 0
         jointMatrices.add(headJoint.index,headJoint.animatedTransform)
         for(child in headJoint.children){
+            count++
             addJointsToArray(child,jointMatrices)
         }
+        Log.d("TAG","Count\n${headJoint.name}=${headJoint.index}")
     }
 }

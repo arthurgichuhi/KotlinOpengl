@@ -1,5 +1,6 @@
 package com.arthurgichuhi.kotlinopengl
 
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -19,15 +20,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
-import com.arthurgichuhi.aopengl.models.Vec3f
+import de.javagl.jgltf.model.io.GltfModelReader
+import com.arthurgichuhi.kotlinopengl.models.Vec3f
 import com.arthurgichuhi.kotlinopengl.core.AObject
 import com.arthurgichuhi.kotlinopengl.core.InputMode
 import com.arthurgichuhi.kotlinopengl.core.ObjUpdateCall
 import com.arthurgichuhi.kotlinopengl.core.animation.animatedModel.AnimatedObj
 import com.arthurgichuhi.kotlinopengl.core.animation.loaders.AnimationObjLoader
-import com.arthurgichuhi.kotlinopengl.core.collada.AnimationLoader
 import com.arthurgichuhi.kotlinopengl.core.collada.ColladaLoader
-import com.arthurgichuhi.kotlinopengl.customObjs.IPCTN
+import com.arthurgichuhi.kotlinopengl.customObjs.GltfObj
 import com.arthurgichuhi.kotlinopengl.customObjs.PCTNObj
 import com.arthurgichuhi.kotlinopengl.customObjs.PathVert
 import com.arthurgichuhi.kotlinopengl.customObjs.SkyBox
@@ -37,14 +38,19 @@ import com.arthurgichuhi.kotlinopengl.gl_surface.MyScene
 import com.arthurgichuhi.kotlinopengl.gl_surface.MySurfaceView
 import com.arthurgichuhi.kotlinopengl.io_Operations.Input
 import com.arthurgichuhi.kotlinopengl.my_ui.HomeButton
+import de.javagl.jgltf.model.AccessorModel
+import de.javagl.jgltf.model.GltfModel
+import java.io.ByteArrayInputStream
+import java.io.File
+import java.nio.ByteBuffer
 
 class MainActivity : ComponentActivity(){
-    //private val myModel:MyViewModel by viewModels<MyViewModel>()
     private lateinit var myScene:MyScene
     private lateinit var input:Input
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    private val gltfModelReader = GltfModelReader()
 
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         input=Input(this)
         myScene=MyScene(this,input,this@MainActivity)
@@ -57,7 +63,7 @@ class MainActivity : ComponentActivity(){
             "textures/milkyway2/front.png",
             "textures/milkyway2/back.png")
 
-        myScene.addObject(sb)
+        //myScene.addObject(sb)
 
         val earth=SphereObj(
             1f,3,
@@ -72,7 +78,7 @@ class MainActivity : ComponentActivity(){
                 moveEarth(time,obj)
             }
         })
-        myScene.addObject(earth)
+        //myScene.addObject(earth)
 
         val sun = PCTNObj(
             Sphere2(1f,10).getPositionsAndTex(),
@@ -83,37 +89,30 @@ class MainActivity : ComponentActivity(){
             }
         })
 
-        myScene.addObject(sun)
+        //myScene.addObject(sun)
 
-//        val ellipses = WireObj()
-//        ellipses.setColor(Vec3(.75f,.6f,.45f))
-//        val ellipsesVert = PathVert().generateEllipses(3f,.5f,100,0f)
-//        ellipses.setVerticesFromPath(ellipsesVert,3,0)
-//        myScene.addObject(ellipses)
+        //GLTF Testing
+        val file = this.assets.open("models/model/armature.glb")
+        val gltfModel = gltfModelReader.readWithoutReferences(file)
+        val gltObj = GltfObj(gltfModel,"models/model/diffuse.png")
+
+        myScene.addObject(gltObj)
+        //
+//        val animatedObj = ColladaLoader.loadColladaModel(this,"models/model/model.dae",3)
+//        val animation = AnimationObjLoader.loadAnimation(this,"models/model/model.dae")
 //
-//        val wvLoader = WaveFrontLoader(this,"models/grassTerrain/grassterrain.obj")
-//        val terrain = PCTNObj(wvLoader.getFaces(true,true),false,true,true,"models/grassTerrain/grass.png")
-//        terrain.translate(Vec3(0f,3f,3f))
-//        cubeLike.setUpdateCall(object:ObjUpdateCall{
+//        val animObj = AnimatedObj(
+//            animatedObj.mesh,
+//            animatedObj.joints,
+//            animation,
+//            "models/model/diffuse.png")
+//
+//        animObj.setUpdateCall(object:ObjUpdateCall{
 //            override fun update(time: Long, obj: AObject) {
-//                obj.rotate(2f,Vec3(1f,1f,0f))
-//            }
-//        })
-//        myScene.addObject(terrain)
-
-        val animatedObj = ColladaLoader.loadColladaModel(this,"models/model/model.dae",3)
-        val animation = AnimationObjLoader.loadAnimation(this,"models/model/model.dae")
-
-        val animObj = AnimatedObj(
-            animatedObj.mesh,
-            animatedObj.joints,
-            animation,
-            "models/model/diffuse.png")
-        animObj.setUpdateCall(object:ObjUpdateCall{
-            override fun update(time: Long, obj: AObject) {
-
-            }})
-        myScene.addObject(animObj)
+//                //animObj.animator.update()
+//                //animObj.addJointsToArray(animObj.rootJoint,animObj.jointTransforms)
+//            }})
+//        myScene.addObject(animObj)
 //        val wireObj=WireObj()
 //        wireObj.setColor(Vec3(0f,1f,0f))
 //        wireObj.setVerticesFromTriangleBuffer(earth,0,Utils().FloatsPerPosition+Utils().FloatsPerTexture)

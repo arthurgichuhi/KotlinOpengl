@@ -1,7 +1,5 @@
 package com.arthurgichuhi.kotlinopengl.core.collada.dataStructures
 
-import android.util.Log
-
 class VertexSkinData {
     var jointIds : MutableList<Int> = ArrayList()
     var weights : MutableList<Float> = ArrayList()
@@ -54,8 +52,8 @@ class VertexSkinData {
     }
 
     private fun removeExcessJointIds(max:Int){
-        while(jointIds.size>max){
-            jointIds.removeAll {it1-> it1>max }
+        if (jointIds.size > max) {
+            jointIds.subList(max, jointIds.size).clear()
         }
     }
 }

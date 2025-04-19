@@ -1,6 +1,6 @@
 package com.arthurgichuhi.kotlinopengl.customObjs
 
-import com.arthurgichuhi.aopengl.models.Vec3f
+import com.arthurgichuhi.kotlinopengl.models.Vec3f
 import com.arthurgichuhi.kotlinopengl.core.AObject
 import com.arthurgichuhi.kotlinopengl.core.Program
 import com.arthurgichuhi.kotlinopengl.core.Texture
@@ -22,12 +22,9 @@ class SphereObj(
     private val textureIds:MutableList<String> = ArrayList()
     private lateinit var texture: Texture
 
-    private val utils = Utils()
-    private val mathUtils =  MathUtils()
-
     init {
-        mathUtils.scale(vertices, scale)
-        stride = utils.FloatsPerPosition
+        MathUtils.scale(vertices, scale)
+        stride = Utils.FloatsPerPosition
         nVertices = vertices.size/stride
         textureIds.addAll(arrayListOf(right,left,top,bottom,front,back))
     }
@@ -37,8 +34,8 @@ class SphereObj(
         buffer.load(vertices,true)
         program.use()
         var offset = 0
-        program.setFloat("position",utils.FloatsPerPosition,stride,offset)
-        offset += utils.FloatsPerPosition
+        program.setFloat("position",Utils.FloatsPerPosition,stride,offset)
+        offset += Utils.FloatsPerPosition
         texture = mScene.loadCubeTex(textureIds.toList())
     }
 
@@ -72,7 +69,7 @@ class SphereObj(
 
         program.setUniform3fv("material.ambient", Vec3f(.1f,.1f,.1f).toArray())
         program.setUniform3fv("material.diffuse", Vec3f(.7f,.7f,.7f).toArray())
-        program.setUniform3fv("material.specular",Vec3f(1f,1f,1f).toArray())
+        program.setUniform3fv("material.specular", Vec3f(1f,1f,1f).toArray())
         program.setUniformFloat("material.shininess",20f)
         drawTriangles(0,nVertices)
 

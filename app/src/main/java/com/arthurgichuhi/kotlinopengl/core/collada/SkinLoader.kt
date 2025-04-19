@@ -5,13 +5,11 @@ import com.arthurgichuhi.kotlinopengl.core.collada.dataStructures.SkinningData
 import com.arthurgichuhi.kotlinopengl.core.collada.dataStructures.VertexSkinData
 import com.arthurgichuhi.kotlinopengl.core.xmlParser.XmlNode
 
-class SkinLoader(private val controllerNode:XmlNode,maxWeights:Int) {
+class SkinLoader(private val controllerNode:XmlNode,val maxWeights:Int) {
     var cNode : XmlNode
-    var mWeights : Int =0
 
     init {
         cNode = controllerNode.getChild("controller")!!.getChild("skin")!!
-        mWeights = maxWeights
     }
 
     fun extractSkinData():SkinningData{
@@ -20,7 +18,7 @@ class SkinLoader(private val controllerNode:XmlNode,maxWeights:Int) {
         val weightsDataNode = cNode.getChild("vertex_weights")
         val effectorJointCounts = getEffectiveJointsCount(weightsDataNode!!)
         val vertexWeights = getSkinData(weightsDataNode,effectorJointCounts,weights)
-        return SkinningData(jointsLists.toList(),vertexWeights.toList())
+        return SkinningData(jointsLists.toList(),vertexWeights)
     }
 
     private fun loadJointsList():List<String>{
@@ -43,12 +41,13 @@ class SkinLoader(private val controllerNode:XmlNode,maxWeights:Int) {
         val weightsDataId = inputNode
             .getChildWithAttribute("input","semantic","WEIGHT")!!
             .attributes["source"]!!.substring(1)
-        val weightsNode = controllerNode.getChildWithAttribute("source","id",weightsDataId)!!
+        val weightsNode = controllerNode
+            .getChildWithAttribute("source","id",weightsDataId)!!
             .getChild("float_array")
-        val rawData = weightsNode?.data?.split(" ")
-        val weights = FloatArray(rawData?.size?:0)
+        val rawData = weightsNode?.data?.trim()?.split(" ")
+        val weights = FloatArray(rawData?.size!!)
         for(i in weights.indices){
-            weights[i] = rawData?.get(i)?.toFloat()?:0f
+            weights[i] = rawData[i].toFloat()
         }
         return weights
     }
@@ -67,16 +66,14 @@ class SkinLoader(private val controllerNode:XmlNode,maxWeights:Int) {
         val rawData = weightsNode.getChild("v")?.data?.trim()?.split(" ")
         val ret :MutableList<VertexSkinData> = ArrayList()
         var pointer = 0
-        var counting = 0
         for(count in counts){
-            counting++
             val skinData = VertexSkinData()
             for(i in 0..<count){
                 val jointId = rawData!![pointer++].toInt()
                 val weightId = rawData[pointer++].toInt()
                 skinData.addJointEffect(jointId,weights[weightId])
             }
-            skinData.limitJointNumber(mWeights)
+            skinData.limitJointNumber(maxWeights)
             ret.add(skinData)
         }
         return ret

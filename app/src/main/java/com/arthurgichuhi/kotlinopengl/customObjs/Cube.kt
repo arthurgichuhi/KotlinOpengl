@@ -1,13 +1,12 @@
 package com.arthurgichuhi.kotlinopengl.customObjs
 
-import com.arthurgichuhi.aopengl.models.Vec3f
+import com.arthurgichuhi.kotlinopengl.models.Vec3f
 import com.arthurgichuhi.kotlinopengl.utils.MathUtils
 import com.arthurgichuhi.kotlinopengl.utils.Utils
 import kotlin.math.sign
 
 class Cube {
-    val utils= Utils()
-    val MatUtils=MathUtils()
+
     val vertices= floatArrayOf(
         -0.5f,  0.5f,  0.5f,  // parallel X
         -0.5f,  0.5f, -0.5f,
@@ -58,22 +57,22 @@ class Cube {
         val myScale= floatArrayOf(scale.x,scale.y,scale.z)
         var i=0
         while (i<3){
-            MatUtils.copyMatColumn(vertices,i,3,ret,i,3)
-            MatUtils.scaleMatColumn(ret,i,3,myScale[i])
+            MathUtils.copyMatColumn(vertices,i,3,ret,i,3)
+            MathUtils.scaleMatColumn(ret,i,3,myScale[i])
             i++
         }
         return ret
     }
 
     fun createWithOneFileTex(scale: Vec3f, cols:Int, rows:Int):FloatArray{
-        val nVertices = vertices.size/utils.FloatsPerPosition
-        val stride = utils.FloatsPerPosition + utils.FloatsPerTexture
+        val nVertices = vertices.size/Utils.FloatsPerPosition
+        val stride = Utils.FloatsPerPosition + Utils.FloatsPerTexture
         val ret = FloatArray(nVertices*stride)
         val myScale= floatArrayOf(scale.x,scale.y,scale.z)
 
         for(i in 0..2){
-            MatUtils.copyMatColumn(vertices,i,3,ret,i,stride)
-            MatUtils.scaleMatColumn(ret,i,stride,myScale[i])
+            MathUtils.copyMatColumn(vertices,i,3,ret,i,stride)
+            MathUtils.scaleMatColumn(ret,i,stride,myScale[i])
         }
         //make texture
         var i=0
@@ -120,8 +119,8 @@ class Cube {
             }
 
             for(j in 0..2){
-                ret[(i+j) * stride + utils.FloatsPerPosition] = u[j]
-                ret[(i+j) * stride + utils.FloatsPerPosition+1] = v[j]
+                ret[(i+j) * stride + Utils.FloatsPerPosition] = u[j]
+                ret[(i+j) * stride + Utils.FloatsPerPosition+1] = v[j]
             }
 
             i+=3
@@ -148,14 +147,14 @@ class Cube {
         xScale: Float, yScale: Float, zScale: Float,
         nColsInTexture: Int, nRowsInTexture: Int
     ): FloatArray {
-        val nVertices: Int =vertices.size / utils.FloatsPerPosition
-        val stride: Int = utils.FloatsPerPosition + utils.FloatsPerTexture
+        val nVertices: Int =vertices.size / Utils.FloatsPerPosition
+        val stride: Int = Utils.FloatsPerPosition + Utils.FloatsPerTexture
         val ret = FloatArray(nVertices * stride)
         val scale = floatArrayOf(xScale, yScale, zScale)
         for (i in 0..2) {
-            MatUtils.copyMatColumn(vertices, i, 3, ret, i, stride
+            MathUtils.copyMatColumn(vertices, i, 3, ret, i, stride
             )
-            MatUtils.scaleMatColumn(ret, i, stride, scale[i])
+            MathUtils.scaleMatColumn(ret, i, stride, scale[i])
         }
 
         // make the texture
@@ -199,8 +198,8 @@ class Cube {
                 }
             }
             for (j in 0..2) {
-                ret[(i + j) * stride + utils.FloatsPerPosition] = u[j]
-                ret[(i + j) * stride + utils.FloatsPerPosition + 1] = v[j]
+                ret[(i + j) * stride + Utils.FloatsPerPosition] = u[j]
+                ret[(i + j) * stride + Utils.FloatsPerPosition + 1] = v[j]
             }
             i += 3
         }

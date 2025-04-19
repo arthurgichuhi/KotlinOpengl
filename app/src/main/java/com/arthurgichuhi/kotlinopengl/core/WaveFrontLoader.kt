@@ -4,7 +4,6 @@ import android.content.Context
 import com.arthurgichuhi.kotlinopengl.utils.Utils
 
 class WaveFrontLoader(context: Context,name:String) {
-    private val utils = Utils()
     data class VertData(
         var vertIdx:Int=0,
         var texIdx:Int=0,
@@ -40,8 +39,8 @@ class WaveFrontLoader(context: Context,name:String) {
     }
 
     private fun load() {
-        val text = utils.readAssetFile(ctx,fileName)
-        if(utils.isNullOrEmpty(text)){
+        val text = Utils.readAssetFile(ctx,fileName)
+        if(Utils.isNullOrEmpty(text)){
             throw Exception("Error reading file $fileName")
         }
         val lines = text!!.split("\\r?\\n".toRegex())
@@ -89,9 +88,9 @@ class WaveFrontLoader(context: Context,name:String) {
         var retIdx =0
         for(i in res.indices){
             var curr = res[i]
-            if(utils.isNullOrEmpty(curr))continue
+            if(Utils.isNullOrEmpty(curr))continue
             curr = curr.trim()
-            if(utils.isNullOrEmpty(curr))continue
+            if(Utils.isNullOrEmpty(curr))continue
             ret[retIdx] = curr.toFloat()
             retIdx++
         }
@@ -105,9 +104,9 @@ class WaveFrontLoader(context: Context,name:String) {
 
         for(i in res.indices){
             var curr = res[i]
-            if(utils.isNullOrEmpty(curr))continue
+            if(Utils.isNullOrEmpty(curr))continue
             curr = curr.trim()
-            if(utils.isNullOrEmpty(curr))continue
+            if(Utils.isNullOrEmpty(curr))continue
 
             val vertStrData = curr.trim().split("/")
             if(vertStrData.size!=3)throw Exception("$str has invalid vertex data $vertStrData")
@@ -116,9 +115,9 @@ class WaveFrontLoader(context: Context,name:String) {
                 var intStr = vertStrData[j]
                 val retIdx = i * 3 + j
                 ret[retIdx] = -1
-                if(utils.isNullOrEmpty(intStr))continue
+                if(Utils.isNullOrEmpty(intStr))continue
                 intStr = intStr.trim()
-                if(utils.isNullOrEmpty(intStr))continue
+                if(Utils.isNullOrEmpty(intStr))continue
                 val tmp = intStr.toInt()
                 if(tmp<=0)throw Exception("$str contains invalid index")
                 ret[retIdx] = tmp - 1
@@ -137,9 +136,9 @@ class WaveFrontLoader(context: Context,name:String) {
     }
 
     fun getFaces(texture:Boolean,normal:Boolean):FloatArray{
-        var stride = utils.FloatsPerPosition
-        if(texture)stride+=utils.FloatsPerTexture
-        if(normal)stride+=utils.FloatsPerNormal
+        var stride = Utils.FloatsPerPosition
+        if(texture)stride+=Utils.FloatsPerTexture
+        if(normal)stride+=Utils.FloatsPerNormal
 
         val ret = FloatArray(stride*faces.size*3)
 

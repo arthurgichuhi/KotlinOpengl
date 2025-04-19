@@ -23,7 +23,8 @@ class ColladaLoader {
             val node = XmlParser.readXMLFile(ctx,fileName)
             val animNode = node?.getChild("library_animations")
             val jointsNode = node?.getChild("library_visual_scenes")
-            val loader = AnimationLoader(animNode!!,jointsNode!!)
+            val controller = node?.getChild("library_controllers")
+            val loader = AnimationLoader(animNode!!,jointsNode!!,controller!!)
             val animData = loader.extractAnimationData()
             return animData
         }

@@ -1,7 +1,6 @@
 package com.arthurgichuhi.kotlinopengl.customObjs
 
-import android.util.Log
-import com.arthurgichuhi.aopengl.models.Vec3f
+import com.arthurgichuhi.kotlinopengl.models.Vec3f
 import com.arthurgichuhi.kotlinopengl.core.AObject
 import com.arthurgichuhi.kotlinopengl.core.Program
 import com.arthurgichuhi.kotlinopengl.core.Texture
@@ -23,13 +22,12 @@ class IPCTN(data:MeshData,hasColor:Boolean,
             hasNormal:Boolean,
             hasTex:Boolean, texPath:String
 ): AObject() {
-    private var utils= Utils()
     private lateinit var program: Program
     private lateinit var mColor: Vec3f
     private var mesh:MeshData = data
     private lateinit var mBuffer: VertexBuffer
     private var nVertices:Int=0
-    private var stride:Int=utils.FloatsPerPosition
+    private var stride:Int= Utils.FloatsPerPosition
     private var mHasColor=hasColor
     private var mHasTex=hasTex
     private var mTexPath=texPath
@@ -40,9 +38,9 @@ class IPCTN(data:MeshData,hasColor:Boolean,
     init {
         mHasTex=hasTex
         mTexPath=texPath
-        stride+=if(hasColor)utils.FloatsPerColor else 0
-        stride+=if(hasTex)utils.FloatsPerTexture else 0
-        stride+=if(hasNormal)utils.FloatsPerNormal else 0
+        stride+=if(hasColor)Utils.FloatsPerColor else 0
+        stride+=if(hasTex)Utils.FloatsPerTexture else 0
+        stride+=if(hasNormal)Utils.FloatsPerNormal else 0
         mHasColor=hasColor
         nVertices=data.indices.size
     }
@@ -73,7 +71,6 @@ class IPCTN(data:MeshData,hasColor:Boolean,
         if(mHasTex){
             mTex.bindTexture()
         }
-        Log.d("TAG","JointTransform:${program.getUniformLoc("jointTransforms[1]")}")
         mBuffer.checkGlError("IPCTN-Draw")
         program.setUniformInt("hasColor",if(mHasColor)1 else 0)
         program.setUniformInt("hasTex",if(mHasTex)1 else 0)

@@ -50,7 +50,6 @@ class Shaders(context: Context) {
         glLinkProgram(program)
         val linkState=IntArray(1)
         glGetProgramiv(program, GL_LINK_STATUS,linkState,0)
-        Log.d(TAG,"Link Status ------- ${linkState[0]}")
         if(linkState[0]==0){
             Log.e(TAG,"Error\n${glGetProgramInfoLog(program)}")
         }

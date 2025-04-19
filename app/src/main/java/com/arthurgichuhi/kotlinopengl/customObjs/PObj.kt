@@ -3,19 +3,19 @@ package com.arthurgichuhi.kotlinopengl.customObjs
 import android.opengl.GLES32.GL_NO_ERROR
 import android.opengl.GLES32.glGetError
 import android.util.Log
-import com.arthurgichuhi.aopengl.models.Vec3f
+import com.arthurgichuhi.kotlinopengl.models.Vec3f
 import com.arthurgichuhi.kotlinopengl.core.AObject
 import com.arthurgichuhi.kotlinopengl.core.Program
 import com.arthurgichuhi.kotlinopengl.core.VertexBuffer
 import com.arthurgichuhi.kotlinopengl.utils.Utils
 
 //Position Object
-class PObj(vertices:FloatArray, color:Vec3f,): AObject() {
+class PObj(vertices:FloatArray, color: Vec3f,): AObject() {
     private val TAG="PObj"
     private lateinit var program: Program
     private lateinit var vertexBuffer: VertexBuffer
     private var mVertices:FloatArray = FloatArray(16)
-    private var mColor:Vec3f
+    private var mColor: Vec3f
     private var nVertices=0
 
     init {
@@ -29,7 +29,7 @@ class PObj(vertices:FloatArray, color:Vec3f,): AObject() {
         vertexBuffer = VertexBuffer()
         vertexBuffer.load(mVertices,true)
         program.use()
-        program.setFloat("position", Utils().FloatsPerPosition, Utils().FloatsPerPosition,0)
+        program.setFloat("position", Utils.FloatsPerPosition, Utils.FloatsPerPosition,0)
     }
 
     override fun destroy() {

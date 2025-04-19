@@ -1,25 +1,21 @@
 package com.arthurgichuhi.kotlinopengl.core.collada
 
 import android.opengl.Matrix
-import android.util.Log
-import com.arthurgichuhi.aopengl.models.Vec3f
 import com.arthurgichuhi.kotlinopengl.core.collada.dataStructures.JointData
 import com.arthurgichuhi.kotlinopengl.core.collada.dataStructures.SkeletonData
 import com.arthurgichuhi.kotlinopengl.core.xmlParser.XmlNode
 import com.arthurgichuhi.kotlinopengl.utils.MathUtils
 
 class SkeletonLoader(vsNode:XmlNode,boneBorder:List<String>) {
-    companion object{
-        val MathUtils = MathUtils()
-        val CORRECTION = FloatArray(16)
-    }
+    private val correction = FloatArray(16)
 
     init {
-        Matrix.rotateM(CORRECTION,0,-90f,1f,0f,0f)
+        MathUtils.setIdentity4Matrix(correction)
+        Matrix.rotateM(correction,0,-90f,1f,0f,0f)
     }
 
-    private var armatureData:XmlNode =
-        vsNode.getChild("visual_scene")?.getChildWithAttribute("node","id","Armature")!!
+    private var armatureData:XmlNode = vsNode.getChild("visual_scene")
+        ?.getChildWithAttribute("node","id","Armature")!!
 
     private var boneOrder:List<String> = boneBorder
 
@@ -46,7 +42,7 @@ class SkeletonLoader(vsNode:XmlNode,boneBorder:List<String>) {
         val matrix = convertData(matrixData!!)
         Matrix.transposeM(matrix,0,matrix,0)
         if(isRoot){
-            Matrix.multiplyMM(matrix,0,CORRECTION,0,matrix,0)
+            Matrix.multiplyMM(matrix,0,correction,0,matrix,0)
         }
         jointCount++
         return JointData(index,name,matrix)

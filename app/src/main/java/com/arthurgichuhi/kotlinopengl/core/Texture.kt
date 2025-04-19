@@ -24,8 +24,6 @@ class Texture {
     var id=-1
     var isCube = false
 
-    private val utils = Utils()
-
     fun loadTexture(context: Context,path:String):Texture{
         val t=Texture()
         t.isCube = false
@@ -53,7 +51,7 @@ class Texture {
         genID()
         bindTexture()
 
-        val bitmap=utils.getBitmapFromAssets(context,path)
+        val bitmap= Utils.getBitmapFromAssets(context,path)
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
         GLUtils.texImage2D(GL_TEXTURE_2D, 0, bitmap, 0)
@@ -74,7 +72,7 @@ class Texture {
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE)
 
         for(i in texIds.indices){
-            val bitmap = utils.getBitmapFromAssets(context,texIds[i])
+            val bitmap = Utils.getBitmapFromAssets(context,texIds[i])
             GLUtils.texImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i,0,bitmap,0)
             bitmap.recycle()
         }

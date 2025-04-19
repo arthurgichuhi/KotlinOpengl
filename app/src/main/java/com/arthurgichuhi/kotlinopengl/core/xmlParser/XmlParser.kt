@@ -15,12 +15,11 @@ class XmlParser {
         private val ATTR_VAL = Pattern.compile("\"(.+?)\"")
         private val CLOSED = Pattern.compile("(</|/>)")
 
-        private val utils = Utils()
         private val attributes : MutableMap<String,String> = HashMap()
         private val children: MutableMap<String,MutableList<XmlNode>> = HashMap()
 
         fun readXMLFile(ctx:Context,name:String):XmlNode?{
-            val reader = utils.readXMLFile(ctx,name)
+            val reader = Utils.readXMLFile(ctx,name)
             val node = loadNode(reader)
             node?.childNodes=children
             node?.attributes=attributes
@@ -38,7 +37,6 @@ class XmlParser {
                 val node = XmlNode(startTagParts[0].replace("/",""))
                 addAttributes(startTagParts,node)
                 addData(line,node)
-                //Log.d("TAG","Attributes Size${node.myName}:${attributes.size}:${children.size}")
                 attributes.putAll(node.attributes)
                 if(CLOSED.matcher(line).find()){
                     children.putAll(node.childNodes)
