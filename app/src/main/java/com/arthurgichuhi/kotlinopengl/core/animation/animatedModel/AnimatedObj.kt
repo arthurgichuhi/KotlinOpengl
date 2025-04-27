@@ -38,6 +38,7 @@ class AnimatedObj(
     }
 
     override fun onInit() {
+        Log.d("TAG","ROOT\n${rootJoint.name}\n${rootJoint.localTransform.toList()}")
         mBuffer = VertexBuffer()
         rootJoint.calcInverseBindTransform(animation.inverseTrans)
         program = mScene.loadProgram("armateur")
@@ -74,7 +75,7 @@ class AnimatedObj(
         mTex.bindTexture()
         val transforms = jointTransforms.toList()
         for(i in transforms.indices){
-            program.setUniformMat("jointTransforms[$i]",transforms[i])
+            program.setUniformMat("jointTransforms[${transforms[i]}]",transforms[i])
         }
 
         program.setUniformMat("model",modelMat)
@@ -94,10 +95,9 @@ class AnimatedObj(
     }
 
     private fun addJointsToArray(headJoint: Joint,jointMatrices:MutableList<FloatArray>){
-        var count = 0
+        Log.d("TAG","AJT\n${headJoint.name}:${headJoint.index}:${headJoint.animatedTransform.toList()}")
         jointMatrices.add(headJoint.index,headJoint.animatedTransform)
         for(child in headJoint.children){
-            count++
             addJointsToArray(child,jointMatrices)
         }
         Log.d("TAG","Count\n${headJoint.name}=${headJoint.index}")

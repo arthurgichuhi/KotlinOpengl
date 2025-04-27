@@ -5,6 +5,7 @@ import android.opengl.Matrix
 import com.arthurgichuhi.kotlinopengl.models.Vec3f
 import com.arthurgichuhi.kotlinopengl.utils.GlUtils
 import com.arthurgichuhi.kotlinopengl.utils.MathUtils
+import org.joml.Quaternionf
 
 abstract class AObject {
     lateinit var mScene:AScene

@@ -1,15 +1,13 @@
 package com.arthurgichuhi.kotlinopengl.core.animation.animation
 
 import android.opengl.Matrix
-import android.util.Log
-import com.arthurgichuhi.kotlinopengl.core.animation.animatedModel.AnimatedObj
 import com.arthurgichuhi.kotlinopengl.core.animation.animatedModel.Joint
+import com.arthurgichuhi.kotlinopengl.customObjs.GltfObj
 import com.arthurgichuhi.kotlinopengl.utils.Utils
+import de.javagl.jgltf.impl.v2.Skin
 
-class Animator(
-    val entity:AnimatedObj
-) {
-    
+class GltfAnimator(skin: Skin) {
+
     private var currentAnimation: Animation? = null
     private var animationTime:Float = 0f
 
@@ -30,7 +28,7 @@ class Animator(
         val root = FloatArray(16)
         Matrix.setIdentityM(root,0)
         val currentPose = calculateCurrentAnimationPose()
-        applyPoseToJoints(currentPose,entity.rootJoint,root)
+            //applyPoseToJoints(currentPose,entity.rootJoint,root)
     }
 
     /**
@@ -107,7 +105,7 @@ class Animator(
      *            the pose.
      */
 
-    private fun applyPoseToJoints(currentPose:Map<String,FloatArray>,joint: Joint,parentTransform: FloatArray){
+    private fun applyPoseToJoints(currentPose:Map<String,FloatArray>, joint: Joint, parentTransform: FloatArray){
         val currentLocalTransform = currentPose["${joint.name}/transform"]!!
         val currentTransform=FloatArray(16)
         Matrix.setIdentityM(currentTransform,0)
@@ -136,12 +134,12 @@ class Animator(
         var previousFrame = allFrames[0]
         var nextFrame = allFrames[0]
         for(frame in allFrames){
-             nextFrame = frame
+            nextFrame = frame
             if((nextFrame.timeStamp+start)>animationTime){
                 break
             }
             previousFrame = frame
-           }
+        }
         return arrayOf(previousFrame,nextFrame)
     }
 
@@ -189,25 +187,5 @@ class Animator(
             currentPose[jointName] = currentTransform.getLocalTransform()
         }
         return currentPose
-    }
-
-//    fun interpolateKeyframes(a: KeyFrame, b: KeyFrame, alpha: Float): KeyFrame {
-//        val result = KeyFrame()
-//        result.timeStamp = a.timeStamp + (b.timeStamp - a.timeStamp) * alpha
-//
-//        // Interpolate translation
-//        a.translation.lerp(b.translation, alpha, result.translation)
-//
-//        // Interpolate rotation (SLERP)
-//        a.rotation.slerp(b.rotation, alpha, result.rotation)
-//
-//        // Interpolate scale
-//        a.scale.lerp(b.scale, alpha, result.scale)
-//
-//        return result
-//    }
-
-    fun applyKeyFrames(){
-
     }
 }

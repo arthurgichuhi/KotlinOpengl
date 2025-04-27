@@ -2,6 +2,10 @@ package com.arthurgichuhi.kotlinopengl.models
 
 import kotlin.math.sqrt
 
+/**
+ * A data class to represent a 3 float vector
+ */
+
 data class Vec3f(
     var x:Float=0f,
     var y:Float=0f,

@@ -1,8 +1,5 @@
 package com.arthurgichuhi.kotlinopengl.core.animation.animatedModel
 
-import android.opengl.Matrix
-import android.util.Log
-
 class Joint(val index: Int,val name:String, val localTransform:FloatArray) {
     val children : MutableList<Joint> = ArrayList()
     var animatedTransform = FloatArray(16)

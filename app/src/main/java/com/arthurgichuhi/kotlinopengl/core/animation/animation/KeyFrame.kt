@@ -1,4 +1,9 @@
 package com.arthurgichuhi.kotlinopengl.core.animation.animation
+
+import com.arthurgichuhi.kotlinopengl.models.Vec3f
+import org.joml.Quaternionf
+import org.joml.Vector3f
+
 /**
  *
  * Represents one keyframe of an animation. This contains the timestamp of the
@@ -18,4 +23,7 @@ package com.arthurgichuhi.kotlinopengl.core.animation.animation
  *            keyframe, indexed by the name of the joint that they should be
  *            applied to.
  */
-data class KeyFrame(val timeStamp:Float,val jointKeyTransform:Map<String,JointTransform>)
+data class KeyFrame(
+    var timeStamp:Float = 0f,
+    var jointKeyTransform:Map<String,JointTransform> = HashMap(),
+    )

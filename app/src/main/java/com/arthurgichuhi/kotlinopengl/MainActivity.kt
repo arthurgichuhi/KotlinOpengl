@@ -97,7 +97,7 @@ class MainActivity : ComponentActivity(){
         val gltObj = GltfObj(gltfModel,"models/model/diffuse.png")
 
         myScene.addObject(gltObj)
-        //
+        //Collada
 //        val animatedObj = ColladaLoader.loadColladaModel(this,"models/model/model.dae",3)
 //        val animation = AnimationObjLoader.loadAnimation(this,"models/model/model.dae")
 //
@@ -107,11 +107,6 @@ class MainActivity : ComponentActivity(){
 //            animation,
 //            "models/model/diffuse.png")
 //
-//        animObj.setUpdateCall(object:ObjUpdateCall{
-//            override fun update(time: Long, obj: AObject) {
-//                //animObj.animator.update()
-//                //animObj.addJointsToArray(animObj.rootJoint,animObj.jointTransforms)
-//            }})
 //        myScene.addObject(animObj)
 //        val wireObj=WireObj()
 //        wireObj.setColor(Vec3(0f,1f,0f))

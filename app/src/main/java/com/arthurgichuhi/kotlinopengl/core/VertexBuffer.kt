@@ -34,7 +34,7 @@ class VertexBuffer {
     private var vaoID = -1
     private var vboID = -1
     private var eboId = -1
-    private lateinit var floatBuffer: FloatBuffer
+
     init {
         val tmp=IntArray(1)
         glGenVertexArrays(1,tmp,0)
@@ -127,16 +127,14 @@ class VertexBuffer {
 
     fun loadGltfIndices(primitive: MeshPrimitiveModel,staticDraw: Boolean){
         val indices = primitive.indices
-        val iBuff = readAccessorAsShortBuffer(indices)
 
-        Log.d("TAG","INDICES${indices.bufferViewModel.bufferViewData.capacity()} or ${iBuff.capacity()}")
         val tmp = IntArray(1)
         glBindVertexArray(vaoID)
         glGenBuffers(1,tmp,0)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,eboId)
         glBufferData(
-            GL_ELEMENT_ARRAY_BUFFER,primitive.indices.count * 2,
-            iBuff,
+            GL_ELEMENT_ARRAY_BUFFER,indices.count * 2,
+            indices.bufferViewModel.bufferViewData,
             if(staticDraw)GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
     }
 
@@ -147,59 +145,49 @@ class VertexBuffer {
 
         //bind position
         val positions = primitive.attributes["POSITION"]!!
-        floatBuffer = readAccessorAsFloatBuffer(positions)
-        floatBuffer.flip()
-        Log.d("TAG","Positions${floatBuffer.capacity()} or ${positions.bufferViewModel.bufferViewData.capacity()}\n${floatBuffer.array().toList()}")
         glBindBuffer(GL_ARRAY_BUFFER,tmp[0])
         glBufferData(
-            GL_ARRAY_BUFFER,positions.count * Utils.FloatsPerPosition,
+            GL_ARRAY_BUFFER,positions.count * Utils.FloatsPerPosition * 4,
             positions.bufferViewModel.bufferViewData,
             if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
         glEnableVertexAttribArray(locs["position"]!!)
         glVertexAttribPointer(locs["position"]!!, 3, GL_FLOAT, false, 0, 0)
-        floatBuffer.clear()
+
 
         //bind texCoords
         val tex = primitive.attributes["TEXCOORD_0"]!!
-        floatBuffer = readAccessorAsFloatBuffer(tex)
-        floatBuffer.flip()
-        Log.d("TAG","TextureCoords ${floatBuffer.array().toList()}")
+
         glBindBuffer(GL_ARRAY_BUFFER,tmp[1])
         glBufferData(
-            GL_ARRAY_BUFFER,tex.count * Utils.FloatsPerTexture,
+            GL_ARRAY_BUFFER,tex.count * Utils.FloatsPerTexture * 4,
             tex.bufferViewModel.bufferViewData,
             if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
         glEnableVertexAttribArray(locs["tex"]!!)
         glVertexAttribPointer(locs["tex"]!!, 2, GL_FLOAT, false, 0, 0)
         loadTex()
-        floatBuffer.clear()
+
         //bind normals
         val normals = primitive.attributes["NORMAL"]!!
-        floatBuffer = readAccessorAsFloatBuffer(normals)
-        floatBuffer.flip()
-        Log.d("TAG","Positions\n${floatBuffer.array().toList()}")
+
         glBindBuffer(GL_ARRAY_BUFFER,tmp[2])
         glBufferData(
-            GL_ARRAY_BUFFER,normals.count * Utils.FloatsPerNormal,
+            GL_ARRAY_BUFFER,normals.count * Utils.FloatsPerNormal * 4,
             normals.bufferViewModel.bufferViewData,
             if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
         glEnableVertexAttribArray(locs["normal"]!!)
         glVertexAttribPointer(locs["normal"]!!, 3, GL_FLOAT, false, 0, 0)
-        floatBuffer.clear()
+
         //bind weights
         if(locs.size>3) {
             val weights = primitive.attributes["WEIGHTS_0"]!!
-            floatBuffer = readAccessorAsFloatBuffer(weights)
-            floatBuffer.flip()
-            Log.d("TAG","Positions\n${floatBuffer.array().toList()}")
             glBindBuffer(GL_ARRAY_BUFFER,tmp[3])
             glBufferData(
-                GL_ARRAY_BUFFER,weights.count * Utils.FloatsPerWeight,
+                GL_ARRAY_BUFFER,weights.count * Utils.FloatsPerWeight * 4,
                 weights.bufferViewModel.bufferViewData,
                 if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
             glEnableVertexAttribArray(locs["weights"]!!)
             glVertexAttribPointer(locs["weights"]!!, weights.elementType.numComponents, GL_FLOAT, false, 0, 0)
-            floatBuffer.clear()
+
         }
     }
 
@@ -241,53 +229,4 @@ class VertexBuffer {
         }
     }
 
-    private fun readAccessorAsFloatBuffer(accessor: AccessorModel): FloatBuffer {
-        val bufferView = accessor.bufferViewModel
-        val byteBuffer = bufferView.bufferViewData
-        byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
-
-        val byteLength = accessor.count * accessor.byteStride
-        byteBuffer.position(0)
-        byteBuffer.limit(byteLength)
-
-        val directFloatBuffer = FloatBuffer.allocate(accessor.count * accessor.elementType.numComponents) // Direct allocation
-        val sourceFloatBuffer = byteBuffer.asFloatBuffer()
-        directFloatBuffer.put(sourceFloatBuffer)
-        directFloatBuffer.rewind()
-
-        return directFloatBuffer
-    }
-
-    private fun readAccessorAsIntBuffer(accessor: AccessorModel): IntBuffer{
-
-        val bufferView = accessor.bufferViewModel
-        val byteBuffer = bufferView.bufferViewData
-        byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
-
-        val byteLength = accessor.count * accessor.byteStride
-        byteBuffer.position(0)
-        byteBuffer.limit(byteLength)
-
-        val directIntBuffer = IntBuffer.allocate(accessor.count * accessor.elementType.numComponents) // Direct allocation
-        val sourceIntBuffer = byteBuffer.asIntBuffer()
-        directIntBuffer.put(sourceIntBuffer)
-        directIntBuffer.rewind()
-        return directIntBuffer
-    }
-
-    private fun readAccessorAsShortBuffer(accessor: AccessorModel): ShortBuffer{
-
-        val bufferView = accessor.bufferViewModel
-        val byteBuffer = bufferView.bufferViewData
-        byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
-
-        val byteLength = accessor.count * accessor.byteStride // 2 bytes per UNSIGNED_SHORT
-        byteBuffer.position(0)
-        byteBuffer.limit(byteLength)
-
-        val directBuffer = ShortBuffer.allocate(accessor.count * accessor.elementType.numComponents)
-        directBuffer.put(byteBuffer.asShortBuffer())
-        directBuffer.rewind()
-        return directBuffer
-    }
 }

@@ -1,11 +1,13 @@
 package com.arthurgichuhi.kotlinopengl.core
 
 import android.content.Context
+import android.opengl.GLES20
 import android.opengl.GLES32.*
 import android.util.Log
 import com.arthurgichuhi.kotlinopengl.models.Vec3f
 import com.arthurgichuhi.kotlinopengl.utils.Utils
 import com.arthurgichuhi.kotlinopengl.utils.GlUtils
+import org.joml.Matrix4f
 
 class Program {
     private val TAG="Program"
@@ -135,6 +137,7 @@ class Program {
 
     fun setUniformMat(name:String,data:FloatArray){
         val loc = getUniformLoc(name)
+        val mat = Matrix4f()
         glUniformMatrix4fv(loc,1,false,data,0)
     }
 
