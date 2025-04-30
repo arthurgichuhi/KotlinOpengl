@@ -5,11 +5,13 @@ import com.arthurgichuhi.kotlinopengl.core.AObject
 import com.arthurgichuhi.kotlinopengl.core.Program
 import com.arthurgichuhi.kotlinopengl.core.Texture
 import com.arthurgichuhi.kotlinopengl.core.VertexBuffer
+import com.arthurgichuhi.kotlinopengl.core.animation.animatedModel.Bone
 import com.arthurgichuhi.kotlinopengl.core.animation.animatedModel.Joint
+import com.arthurgichuhi.kotlinopengl.core.animation.animation.Animation
+import com.arthurgichuhi.kotlinopengl.core.animation.animation.Animator
 import com.arthurgichuhi.kotlinopengl.core.animation.animation.BoneTransform
 import com.arthurgichuhi.kotlinopengl.core.animation.animation.KeyFrame
 import com.arthurgichuhi.kotlinopengl.core.animation.animation.KeyFrame2
-import com.arthurgichuhi.kotlinopengl.core.collada.dataStructures.Bone
 import de.javagl.jgltf.model.AccessorFloatData
 import de.javagl.jgltf.model.AccessorModel
 import de.javagl.jgltf.model.AnimationModel
@@ -39,18 +41,19 @@ class GltfObj(val model:GltfModel,path:String):AObject() {
     private val skin = model.skinModels
 
     private val noVertices = primitives.indices.count
+    private val animation = processAnimation(model.animationModels[0])
+    private val animator = Animator(this)
 
-    private val nodeKeyFrames =  mutableMapOf<String,KeyFrame>()
+    private val boneMatrices : MutableList<FloatArray> = ArrayList()
+
+    lateinit var root:Bone
+
+    init {
+        createBones()
+    }
 
     override fun onInit() {
-        extractAnimations()
-        val nodeModel:NodeModel
-        model.skinModels[0].joints.indexOf(skin[0].joints[0])
-        //Log.d("TAG","Animations:${model.animationModels.size}")
-        processAnimation(model.animationModels[0])
-//        Log.d("TAG","SKIN\n${skin[0].joints[1].name}")
-//        Log.d("TAG","SKIN\n${skin[0].joints[0].children[0].matrix.toList()}")
-//        Log.d("TAG","SKIN\n${skin[0]}")
+
         buffer = VertexBuffer()
         program = mScene.loadProgram("armateur")
 
@@ -65,7 +68,7 @@ class GltfObj(val model:GltfModel,path:String):AObject() {
         buffer.loadGltfInt(primitives,locs,false)
 
         program.use()
-
+        animator.doAnimation(animation)
     }
 
     override fun destroy() {
@@ -77,15 +80,24 @@ class GltfObj(val model:GltfModel,path:String):AObject() {
     }
 
     override fun draw(viewMat: FloatArray, projectionMat: FloatArray) {
+        animator.update()
+        addJointsToArray(root)
+
         program.use()
         buffer.bind()
         tex.bindTexture()
+
+        for (i in boneMatrices.indices){
+            program.setUniformMat("jointTransforms[$i]",boneMatrices[i])
+        }
 
         program.setUniformMat("model",modelMat)
         program.setUniformMat("view",viewMat)
         program.setUniformMat("projection",projectionMat)
 
         drawElements(noVertices)
+
+        boneMatrices.clear()
     }
 
     fun createJoints(){
@@ -99,52 +111,24 @@ class GltfObj(val model:GltfModel,path:String):AObject() {
         }
     }
 
-    // Build skeleton tree
-    fun buildSkeleton(rootNode: NodeModel, skin: SkinModel): Bone {
-        val rootBone = Bone(rootNode, rootNode.name)
-        rootBone.inverseBindMatrix= Matrix4f(FloatBuffer.wrap(skin.getInverseBindMatrix(0,FloatArray(16)) ))// Assuming root is first
-
-        fun addChildren(parentBone: Bone, parentNode: NodeModel) {
-            parentNode.children.forEach { childNode ->
-                val childBone = Bone(
-                    node = childNode,
-                    name = childNode.name,
-                    inverseBindMatrix = findInverseBindMatrix(childNode, skin)
+    private fun createBones(){
+        root = Bone(
+            node = skin[0].joints[0],
+            localTransform = skin[0].joints[0].computeLocalTransform(FloatArray(16)),
+            animatedTransform = FloatArray(16)
+        )
+        for(i in 1..< skin[0].joints.size){
+            root.children.add(
+                Bone(
+                    node = skin[0].joints[i],
+                    localTransform = skin[0].joints[i].computeLocalTransform(FloatArray(16)),
+                    animatedTransform = FloatArray(16)
                 )
-                parentBone.children.add(childBone)
-                addChildren(childBone, childNode)
-            }
-        }
-
-        addChildren(rootBone, rootNode)
-        return rootBone
-    }
-
-    // Helper to find inverse bind matrix for a joint
-    fun findInverseBindMatrix(node: NodeModel, skin: SkinModel): Matrix4f {
-        val index = skin.joints.indexOf(node)
-        return if (index >= 0) Matrix4f(FloatBuffer.wrap(skin.getInverseBindMatrix(index,FloatArray(16)))) else Matrix4f()
-    }
-
-    private fun extractAnimations(){
-        Log.d("TAG","Animations:${model.animationModels[0].channels[0]}")
-        var count = 0
-        for(animation in model.animationModels){
-            for(channel in animation.channels){
-                val targetNode = channel.nodeModel
-                val path = channel.path
-
-                val sampler =  channel.sampler
-
-                val input = sampler.input
-                val outPut = sampler.output
-                count++
-                Log.d("TAG","$count Target\n${targetNode.name}\nProperty\n${path}")
-            }
+            )
         }
     }
 
-    private fun processAnimation(animation: AnimationModel):MutableList<KeyFrame2>{
+    private fun processAnimation(animation: AnimationModel):Animation{
         val nodeKeyFrames : MutableList<KeyFrame2> = ArrayList()
         for(channel in animation.channels){
             val node = channel.nodeModel
@@ -160,7 +144,6 @@ class GltfObj(val model:GltfModel,path:String):AObject() {
                 if(!keyFrame.boneTransforms.containsKey(node)){
                     keyFrame.boneTransforms [node] = BoneTransform()
                 }
-                Log.d("TAG","PAT\n${node.name}\n${keyFrame.boneTransforms.size}")
                 when(path){
                     "translation" -> {
                         val translation = Vector3f(
@@ -168,8 +151,9 @@ class GltfObj(val model:GltfModel,path:String):AObject() {
                             values.get(i * 3 + 1),
                             values.get(i * 3 + 2)
                         )
-                        keyFrame.boneTransforms[node]!!.translation = Matrix4f().translate(translation)
+                        keyFrame.boneTransforms[node]!!.translation = translation
                     }
+
                     "rotation" -> {
                         val rotation = Quaternionf(
                             values.get(i * 4),
@@ -177,7 +161,7 @@ class GltfObj(val model:GltfModel,path:String):AObject() {
                             values.get(i * 4 + 2),
                             values.get(i * 4 + 3)
                         )
-                        keyFrame.boneTransforms[node]!!.rotation = Matrix4f().rotate(rotation)
+                        keyFrame.boneTransforms[node]!!.rotation = rotation
                     }
 
                     "scale" -> {
@@ -186,13 +170,12 @@ class GltfObj(val model:GltfModel,path:String):AObject() {
                             values.get(i * 3 + 1),
                             values.get(i * 3 + 2)
                         )
-                        keyFrame.boneTransforms[node]!!.scale = Matrix4f().scale(scale)
+                        keyFrame.boneTransforms[node]!!.scale = scale
                     }
                 }
             }
         }
-        Log.d("TAG","PA\n${nodeKeyFrames[0].boneTransforms.toList()[2].first.name}")
-        return nodeKeyFrames
+        return Animation(nodeKeyFrames.last().time,nodeKeyFrames)
     }
 
     private fun getFloatData(accessor: AccessorModel): AccessorFloatData {
@@ -204,26 +187,11 @@ class GltfObj(val model:GltfModel,path:String):AObject() {
     private fun MutableList<KeyFrame2>.findOrCreate(time: Float,node: NodeModel): KeyFrame2 {
         return find { it.time == time } ?: KeyFrame2(time, boneTransforms = hashMapOf(node to BoneTransform())).also { add(it) }
     }
-//
-//    fun interpolateKeyframes(a: KeyFrame, b: KeyFrame, alpha: Float): KeyFrame {
-//        val result = KeyFrame()
-//        result.timeStamp = a.timeStamp + (b.timeStamp - a.timeStamp) * alpha
-//
-//        // Interpolate translation
-//        a.translation.lerp(b.translation, alpha, result.translation)
-//
-//        // Interpolate rotation (SLERP)
-//        a.rotation.slerp(b.rotation, alpha, result.rotation)
-//
-//        // Interpolate scale
-//        a.scale.lerp(b.scale, alpha, result.scale)
-//
-//        return result
-//    }
 
-
-
-    fun applyKeyFrames(){
-
+    private fun addJointsToArray(bone: Bone){
+        boneMatrices.add(skin[0].joints.indexOf(bone.node),bone.animatedTransform)
+        for(child in bone.children){
+            boneMatrices.add(skin[0].joints.indexOf(child.node),child.animatedTransform)
+        }
     }
 }

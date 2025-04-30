@@ -1,13 +1,13 @@
 #version 300 es
 
 const int MAX_JOINTS = 50;//max joints allowed in a skeleton
-const int MAX_WEIGHTS = 3;//max number of joints that can affect a vertex
+const int MAX_WEIGHTS = 4;//max number of joints that can affect a vertex
 
 in vec3 position;
 in vec2 tex;
 in vec3 normal;
-in ivec3 jointIndices;
-in vec3 weights;
+in ivec4 jointIndices;
+in vec4 weights;
 
 out vec2 oTex;
 out vec3 oNorm;
@@ -20,7 +20,7 @@ uniform mat4 view;
 
 void main(){
 	
-	vec4 totalLocalPos = vec4(0.0f);
+	vec4 totalLocalPos = vec4(0.0);
 	vec4 totalNormal = vec4(0.0);
 	
 	for(int i=0;i<MAX_WEIGHTS;i++){

@@ -6,15 +6,15 @@ import org.joml.Quaternionf
 import org.joml.Vector3f
 
 class BoneTransform(
-    var translation : Matrix4f = Matrix4f(),
-    var rotation : Matrix4f = Matrix4f(),
-    var scale : Matrix4f = Matrix4f()
+    var translation : Vector3f = Vector3f(),
+    var rotation : Quaternionf = Quaternionf(),
+    var scale : Vector3f = Vector3f()
 ) {
     fun getLocalTransform():FloatArray{
         return Matrix4f()
-            .translation(translation.getTranslation(Vector3f()))
-            .rotation(rotation.getUnnormalizedRotation(Quaternionf()))
-            .scale(scale.getScale(Vector3f()))
+            .translation(translation)
+            .rotation(rotation)
+            .scale(scale)
             .get(FloatArray(16))
     }
 }

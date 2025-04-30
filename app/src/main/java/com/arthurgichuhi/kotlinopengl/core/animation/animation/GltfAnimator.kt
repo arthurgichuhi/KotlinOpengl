@@ -27,7 +27,7 @@ class GltfAnimator(skin: Skin) {
         increaseAnimationTime()
         val root = FloatArray(16)
         Matrix.setIdentityM(root,0)
-        val currentPose = calculateCurrentAnimationPose()
+        //val currentPose = calculateCurrentAnimationPose()
             //applyPoseToJoints(currentPose,entity.rootJoint,root)
     }
 
@@ -65,11 +65,11 @@ class GltfAnimator(skin: Skin) {
      *         for all the joints. The transforms are indexed by the name ID of
      *         the joint that they should be applied to.
      */
-    private fun calculateCurrentAnimationPose():Map<String,FloatArray>{
-        val frames = getPreviousAndNextFrames()
-        val progression = calculateProgression(frames[0],frames[1])
-        return interpolatePoses(frames[0],frames[1],progression)
-    }
+//    private fun calculateCurrentAnimationPose():Map<String,FloatArray>{
+//        val frames = getPreviousAndNextFrames()
+//        val progression = calculateProgression(frames[0],frames[1])
+//        return interpolatePoses(frames[0],frames[1],progression)
+//    }
 
     /**
      * This is the method where the animator calculates and sets those all-
@@ -129,19 +129,19 @@ class GltfAnimator(skin: Skin) {
      *         always have a length of 2.
      */
 
-    private fun getPreviousAndNextFrames():Array<KeyFrame>{
-        val allFrames = currentAnimation!!.keyFrames
-        var previousFrame = allFrames[0]
-        var nextFrame = allFrames[0]
-        for(frame in allFrames){
-            nextFrame = frame
-            if((nextFrame.timeStamp+start)>animationTime){
-                break
-            }
-            previousFrame = frame
-        }
-        return arrayOf(previousFrame,nextFrame)
-    }
+//    private fun getPreviousAndNextFrames():Array<KeyFrame>{
+//        val allFrames = currentAnimation!!.keyFrames
+//        var previousFrame = allFrames[0]
+//        var nextFrame = allFrames[0]
+//        for(frame in allFrames){
+//            nextFrame = frame
+//            if((nextFrame.time+start)>animationTime){
+//                break
+//            }
+//            previousFrame = frame
+//        }
+//        return arrayOf(previousFrame,nextFrame)
+//    }
 
     /**
      * Calculates how far between the previous and next keyframe the current

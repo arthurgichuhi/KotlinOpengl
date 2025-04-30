@@ -11,6 +11,7 @@ import com.arthurgichuhi.kotlinopengl.core.collada.dataStructures.JointData
 import com.arthurgichuhi.kotlinopengl.core.collada.dataStructures.MeshData
 import com.arthurgichuhi.kotlinopengl.core.collada.dataStructures.SkeletonData
 import com.arthurgichuhi.kotlinopengl.utils.MathUtils
+import de.javagl.jgltf.model.SkinModel
 
 class AnimatedObj(
     private val mesh: MeshData,
@@ -28,7 +29,7 @@ class AnimatedObj(
 
     var rootJoint: Joint = createJoints(skeletonData.headJoint)
     private val jointTransforms : MutableList<FloatArray> = ArrayList(skeletonData.jointCount)
-    private val animator = Animator(this)
+    //private val animator = Animator(this)
     private val rootMat = FloatArray(16)
 
     init {
@@ -40,7 +41,7 @@ class AnimatedObj(
     override fun onInit() {
         Log.d("TAG","ROOT\n${rootJoint.name}\n${rootJoint.localTransform.toList()}")
         mBuffer = VertexBuffer()
-        rootJoint.calcInverseBindTransform(animation.inverseTrans)
+        //rootJoint.calcInverseBindTransform(animation.inverseTrans)
         program = mScene.loadProgram("armateur")
 
         locs["position"] = program.getAttribLoc("position")
@@ -55,7 +56,7 @@ class AnimatedObj(
         mBuffer.checkGlError("ANIMATED ONJ ERROR")
 
         program.use()
-        animator.doAnimation(animation)
+        //animator.doAnimation(animation)
     }
 
     override fun destroy() {
@@ -67,7 +68,7 @@ class AnimatedObj(
     }
 
     override fun draw(viewMat: FloatArray, projectionMat: FloatArray) {
-        animator.update()
+        //animator.update()
         addJointsToArray(rootJoint,jointTransforms)
 
         program.use()
@@ -93,6 +94,8 @@ class AnimatedObj(
         }
         return joint
     }
+
+
 
     private fun addJointsToArray(headJoint: Joint,jointMatrices:MutableList<FloatArray>){
         Log.d("TAG","AJT\n${headJoint.name}:${headJoint.index}:${headJoint.animatedTransform.toList()}")

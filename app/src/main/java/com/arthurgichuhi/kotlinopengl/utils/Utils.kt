@@ -22,9 +22,9 @@ class Utils {
         val FloatsPerColor: Int = 3
         val FloatsPerTexture: Int = 2
         val FloatsPerNormal:Int =3
-        val FloatsPerJoint : Int = 3
-        val IntsPerJoint: Int = 3
-        val FloatsPerWeight: Int = 3
+        val FloatsPerJoint : Int = 4
+        val IntsPerJoint: Int = 4
+        val FloatsPerWeight: Int = 4
 
         fun getBitmapFromAssets(ctx: Context, name:String): Bitmap {
             val options = BitmapFactory.Options()

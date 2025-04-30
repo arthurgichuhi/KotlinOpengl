@@ -20,14 +20,14 @@ class AnimationObjLoader{
      * @return The animation made from the data in the file.
      */
     companion object{
-        fun loadAnimation(ctx:Context,fileName:String):Animation{
-            val animationData = ColladaLoader.loadColladaAnimation(ctx,fileName)
-            val frames : MutableList<KeyFrame> = ArrayList()
-            for(i in 0..<animationData.keyFrames.size){
-                frames.add(createFrameKey(animationData.keyFrames[i]))
-            }
-            return Animation(animationData.lengthSeconds,frames,animationData.invTransforms)
-        }
+//        fun loadAnimation(ctx:Context,fileName:String):Animation{
+//            val animationData = ColladaLoader.loadColladaAnimation(ctx,fileName)
+//            val frames : MutableList<KeyFrame> = ArrayList()
+//            for(i in 0..<animationData.keyFrames.size){
+//                frames.add(createFrameKey(animationData.keyFrames[i]))
+//            }
+//            return Animation(animationData.lengthSeconds,frames,animationData.invTransforms)
+//        }
 
         private fun createFrameKey(frame: KeyFrameData): KeyFrame {
             val map : MutableMap<String,JointTransform> = HashMap()
