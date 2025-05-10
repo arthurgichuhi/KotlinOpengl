@@ -2,6 +2,7 @@ package com.arthurgichuhi.kotlinopengl.core.animation.animation
 
 import android.opengl.Matrix
 import android.util.Log
+import androidx.compose.ui.unit.lerp
 import com.arthurgichuhi.kotlinopengl.core.animation.animatedModel.Bone
 import com.arthurgichuhi.kotlinopengl.customObjs.GltfObj
 import com.arthurgichuhi.kotlinopengl.utils.Utils
@@ -10,7 +11,6 @@ import de.javagl.jgltf.model.SkinModel
 import org.joml.Matrix4f
 import org.joml.Quaternionf
 import org.joml.Vector3f
-import java.nio.FloatBuffer
 
 class Animator(
     val gltfObj: GltfObj
@@ -31,12 +31,13 @@ class Animator(
     }
 
     fun update(){
+        val rootBone = skinModel.joints[0]
         if(currentAnimation==null){
             return
         }
         increaseAnimationTime()
         val currentPose = calculateCurrentAnimationPose()
-        applyPoseToJoints(currentPose,gltfObj.root)
+        applyPoseToJoints2(currentPose,rootBone,rootBone.parent.computeGlobalTransform(FloatArray(16)))
     }
 
     /**
@@ -75,6 +76,7 @@ class Animator(
      */
     private fun calculateCurrentAnimationPose():Map<NodeModel,Matrix4f>{
         val frames = getPreviousAndNextFrames()
+        Log.d("TAG","CCAP : ${frames[0].time} , ${frames[1].time}")
         val progression = calculateProgression(frames[0],frames[1])
         return interpolateKeyframes(frames[0],frames[1],progression)
     }
@@ -112,40 +114,56 @@ class Animator(
      *            - the desired model-space transform of the parent joint for
      *            the pose.
      */
+    private fun applyPoseToJoints2(
+        currentPose: Map<NodeModel, Matrix4f>,
+        node: NodeModel,
+        parentTransform: FloatArray
+    ) {
+        val currentTransform = currentPose[node]!!.get(FloatArray(16))
+        val currentLocalTransform = Matrix4f().get(FloatArray(16))
+        val animTransform = Matrix4f().get(FloatArray(16))
+        Matrix.multiplyMM(
+            currentLocalTransform, 0,
+            parentTransform,0,
+            currentTransform, 0
+        )
 
-    private fun applyPoseToJoints(currentPose:Map<NodeModel,Matrix4f>,bone: Bone){
-        val boneIndex = model.skinModels[0].joints.indexOf(bone.node)
-        val joint = model.skinModels[0].joints[boneIndex]
+        for (child in node.children) {
+            applyPoseToJoints2(currentPose, child, currentLocalTransform)
+        }
 
-        val parentTransform = joint.parent.computeLocalTransform(FloatArray(16))
-        val currentLocalTransform = currentPose[bone.node]!!.get(FloatArray(16))
-        val inverseTransform = findInverseBindMatrix(bone.node,skinModel).get(FloatArray(16))
+        Matrix.multiplyMM(
+            animTransform, 0,
+            currentLocalTransform, 0,
+            findInverseBindMatrix(node, skinModel), 0
+        )
+
+        gltfObj.bones[node]!!.setAnimationTransform(animTransform)
+    }
+    private fun applyPoseToJoints(currentPose:Map<NodeModel,Matrix4f>,rootBone:Bone){
         val currentTransform = FloatArray(16)
         val animTransform = FloatArray(16)
+        val parentTransform = FloatArray(16)
+        val currentLocalTransform = FloatArray(16)
+        currentPose[rootBone.node]!!.get(currentLocalTransform)
+        rootBone.node.parent.computeGlobalTransform(parentTransform)
+        var inverseTransform = findInverseBindMatrix(rootBone.node,skinModel)
 
         Matrix.multiplyMM(currentTransform,0,parentTransform,0,currentLocalTransform,0)
         Matrix.multiplyMM(animTransform,0,currentTransform,0,inverseTransform,0)
 
-        bone.setAnimationTransform(animTransform)
+        rootBone.setAnimationTransform(animTransform)
 
-        for(child in bone.children){
-
-            Matrix.setIdentityM(parentTransform,0)
-            Matrix.setIdentityM(currentLocalTransform,0)
-            Matrix.setIdentityM(inverseTransform,0)
-            Matrix.setIdentityM(currentTransform,0)
-            Matrix.setIdentityM(animTransform,0)
-
-            child.node.parent.computeLocalTransform(parentTransform)
-            //currentPose[child.node]!!.get(currentLocalTransform)
-            findInverseBindMatrix(child.node,skinModel).get(inverseTransform)
-
+        for(child in rootBone.children){
+            currentPose[child.node]!!.get(currentLocalTransform)
+            child.node.parent.computeGlobalTransform(parentTransform)
+            inverseTransform = findInverseBindMatrix(child.node,skinModel)
+            //Log.d("TAG","Parent:${child.node.parent.name}\n${parentTransform.toList()}\nInverse:${inverseTransform.toList()}")
             Matrix.multiplyMM(currentTransform,0,parentTransform,0,currentLocalTransform,0)
             Matrix.multiplyMM(animTransform,0,currentTransform,0,inverseTransform,0)
 
             child.setAnimationTransform(animTransform)
         }
-        bone.setAnimationTransform(currentTransform)
     }
 
     /*
@@ -229,30 +247,32 @@ class Animator(
         return currentPose
     }
 
-    private fun interpolateKeyframes(a: KeyFrame2, b: KeyFrame2, alpha: Float):Map<NodeModel,Matrix4f> {
+    private fun interpolateKeyframes(previous: KeyFrame2, nextFrame: KeyFrame2, alpha: Float):Map<NodeModel,Matrix4f> {
         val result :MutableMap<NodeModel,Matrix4f> = HashMap()
+        val matrix = Matrix4f()
 
-        for(node in a.boneTransforms.keys){
-            val prev = a.boneTransforms[node]!!
-            val next = b.boneTransforms[node]!!
+        for(node in previous.boneTransforms.keys){
+            val prev = previous.boneTransforms[node]!!
+            val next = nextFrame.boneTransforms[node]!!
 
             // Interpolate translation
             val trans = prev.translation.lerp(next.translation,alpha)
 
             // Interpolate rotation (SLERP)
-            val rot = prev.rotation.slerp(next.rotation, alpha)
+            val rot = prev.rotation.normalize().slerp(next.rotation.normalize(), alpha)
 
             // Interpolate scale
             val scale = prev.scale.lerp(next.scale, alpha)
 
-            result[node] = Matrix4f().translation(trans).rotation(rot).scale(scale)
+            result[node] = matrix.translationRotateScale(trans,rot,scale)
+
         }
         return result
     }
 
     // Helper to find inverse bind matrix for a joint
-    private fun findInverseBindMatrix(node: NodeModel, skin: SkinModel): Matrix4f {
+    private fun findInverseBindMatrix(node: NodeModel, skin: SkinModel): FloatArray {
         val index = skin.joints.indexOf(node)
-        return if (index >= 0) Matrix4f(FloatBuffer.wrap(skin.getInverseBindMatrix(index,FloatArray(16)))) else Matrix4f()
+        return if (index >= 0) skin.getInverseBindMatrix(index,FloatArray(16)) else Matrix4f().get(FloatArray(16))
     }
 }

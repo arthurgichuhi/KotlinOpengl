@@ -3,6 +3,7 @@ package com.arthurgichuhi.kotlinopengl.core
 import android.opengl.GLES20
 import android.opengl.GLES20.GL_FLOAT
 import android.opengl.GLES20.GL_INT
+import android.opengl.GLES20.GL_INT_VEC4
 import android.opengl.GLES20.glEnableVertexAttribArray
 import android.opengl.GLES20.glVertexAttribPointer
 import android.opengl.GLES32.GL_ARRAY_BUFFER
@@ -21,11 +22,7 @@ import android.opengl.GLES32.glGetError
 import android.opengl.GLES32.glVertexAttribIPointer
 import android.util.Log
 import com.arthurgichuhi.kotlinopengl.core.collada.dataStructures.MeshData
-import com.arthurgichuhi.kotlinopengl.utils.Utils
-import de.javagl.jgltf.model.AccessorModel
 import de.javagl.jgltf.model.MeshPrimitiveModel
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
 import java.nio.ShortBuffer
@@ -143,14 +140,15 @@ class VertexBuffer {
         val tmp = IntArray(locs.size)
         glGenBuffers(locs.size,tmp,0)
         var size: Int
+
         //bind position
         val positions = primitive.attributes["POSITION"]!!
+        val positionsBuffer = positions.bufferViewModel.bufferViewData
         size = positions.elementType.numComponents
+
         glBindBuffer(GL_ARRAY_BUFFER,tmp[0])
         glBufferData(
-            GL_ARRAY_BUFFER,
-            positions.bufferViewModel.bufferViewData.capacity(),
-            positions.bufferViewModel.bufferViewData,
+            GL_ARRAY_BUFFER, positionsBuffer.capacity(), positionsBuffer,
             if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
         glEnableVertexAttribArray(locs["position"]!!)
         glVertexAttribPointer(locs["position"]!!, size, GL_FLOAT, false, 0, 0)
@@ -158,25 +156,26 @@ class VertexBuffer {
 
         //bind texCoords
         val tex = primitive.attributes["TEXCOORD_0"]!!
+        val texBuffer = tex.bufferViewModel.bufferViewData
         size = tex.elementType.numComponents
+
         glBindBuffer(GL_ARRAY_BUFFER,tmp[1])
         glBufferData(
-            GL_ARRAY_BUFFER,
-            tex.bufferViewModel.bufferViewData.capacity(),
-            tex.bufferViewModel.bufferViewData,
+            GL_ARRAY_BUFFER, texBuffer.capacity(), texBuffer,
             if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
         glEnableVertexAttribArray(locs["tex"]!!)
         glVertexAttribPointer(locs["tex"]!!, size, GL_FLOAT, false, 0, 0)
+
         loadTex()
 
         //bind normals
         val normals = primitive.attributes["NORMAL"]!!
+        val normalsBuffer = normals.bufferViewModel.bufferViewData
         size = normals.elementType.numComponents
+
         glBindBuffer(GL_ARRAY_BUFFER,tmp[2])
         glBufferData(
-            GL_ARRAY_BUFFER,
-            normals.bufferViewModel.bufferViewData.capacity(),
-            normals.bufferViewModel.bufferViewData,
+            GL_ARRAY_BUFFER, normalsBuffer.capacity(), normalsBuffer,
             if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
         glEnableVertexAttribArray(locs["normal"]!!)
         glVertexAttribPointer(locs["normal"]!!, size, GL_FLOAT, false, 0, 0)
@@ -184,12 +183,12 @@ class VertexBuffer {
         //bind weights
         if(locs.size>3) {
             val weights = primitive.attributes["WEIGHTS_0"]!!
+            val weightsBuffer = weights.bufferViewModel.bufferViewData
             size = weights.elementType.numComponents
+
             glBindBuffer(GL_ARRAY_BUFFER,tmp[3])
             glBufferData(
-                GL_ARRAY_BUFFER,
-                weights.bufferViewModel.bufferViewData.capacity(),
-                weights.bufferViewModel.bufferViewData,
+                GL_ARRAY_BUFFER, weightsBuffer.capacity(), weightsBuffer,
                 if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
             glEnableVertexAttribArray(locs["weights"]!!)
             glVertexAttribPointer(locs["weights"]!!, size, GL_FLOAT, false, 0, 0)
@@ -199,17 +198,17 @@ class VertexBuffer {
 
     fun loadGltfInt(primitive: MeshPrimitiveModel, locs: Map<String, Int>, staticDraw: Boolean){
         val joints = primitive.attributes["JOINTS_0"]!!
+        val jointsBuffer = joints.bufferViewModel.bufferViewData
         val size = joints.elementType.numComponents
         val tmp = IntArray(1)
+
         glGenBuffers(1,tmp,0)
         glBindBuffer(GL_ARRAY_BUFFER,tmp[0])
         glBufferData(
-            GL_ARRAY_BUFFER,
-            joints.bufferViewModel.bufferViewData.capacity(),
-            joints.bufferViewModel.bufferViewData,
+            GL_ARRAY_BUFFER, jointsBuffer.capacity(), jointsBuffer,
             if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
         glEnableVertexAttribArray(locs["jointIndices"]!!)
-        glVertexAttribIPointer(locs["jointIndices"]!!,size, GL_INT, 0, 0)
+        glVertexAttribIPointer(locs["jointIndices"]!!,size, GL_INT_VEC4, 0, 0)
     }
 
     fun bind(){

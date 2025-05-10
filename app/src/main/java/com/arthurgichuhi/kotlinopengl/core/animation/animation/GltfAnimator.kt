@@ -1,10 +1,14 @@
 package com.arthurgichuhi.kotlinopengl.core.animation.animation
 
 import android.opengl.Matrix
+import com.arthurgichuhi.kotlinopengl.core.animation.animatedModel.Bone
 import com.arthurgichuhi.kotlinopengl.core.animation.animatedModel.Joint
 import com.arthurgichuhi.kotlinopengl.customObjs.GltfObj
 import com.arthurgichuhi.kotlinopengl.utils.Utils
 import de.javagl.jgltf.impl.v2.Skin
+import de.javagl.jgltf.model.NodeModel
+import de.javagl.jgltf.model.SkinModel
+import org.joml.Matrix4f
 
 class GltfAnimator(skin: Skin) {
 
@@ -129,19 +133,19 @@ class GltfAnimator(skin: Skin) {
      *         always have a length of 2.
      */
 
-//    private fun getPreviousAndNextFrames():Array<KeyFrame>{
-//        val allFrames = currentAnimation!!.keyFrames
-//        var previousFrame = allFrames[0]
-//        var nextFrame = allFrames[0]
-//        for(frame in allFrames){
-//            nextFrame = frame
-//            if((nextFrame.time+start)>animationTime){
-//                break
-//            }
-//            previousFrame = frame
-//        }
-//        return arrayOf(previousFrame,nextFrame)
-//    }
+    /*private fun getPreviousAndNextFrames():Array<KeyFrame>{
+        val allFrames = currentAnimation!!.keyFrames
+        var previousFrame = allFrames[0]
+        var nextFrame = allFrames[0]
+        for(frame in allFrames){
+            nextFrame = frame
+            if((nextFrame.time+start)>animationTime){
+                break
+            }
+            previousFrame = frame
+        }
+        return arrayOf(previousFrame,nextFrame)
+    }*/
 
     /**
      * Calculates how far between the previous and next keyframe the current
@@ -188,4 +192,30 @@ class GltfAnimator(skin: Skin) {
         }
         return currentPose
     }
+
+//    private fun applyPoseToJoints2(
+//        currentPose: Map<NodeModel, Matrix4f>,
+//        node: NodeModel,
+//        parentTransform: FloatArray
+//    ) {
+//        val currentTransform = currentPose[node]!!.get(FloatArray(16))
+//        val animTransform = FloatArray(16)
+//        Matrix.multiplyMM(
+//            parentTransform, 0,
+//            parentTransform, 0,
+//            currentTransform, 0
+//        )
+//
+//        for (child in node.children) {
+//            applyPoseToJoints2(currentPose, child, currentTransform)
+//        }
+//
+//        Matrix.multiplyMM(
+//            currentTransform, 0,
+//            parentTransform, 0,
+//            findInverseBindMatrix(node, skinModel), 0
+//        )
+//        joint.setAnimationTransform(currentTransform)
+//    }
+
 }

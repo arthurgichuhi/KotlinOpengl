@@ -10,18 +10,18 @@ import com.arthurgichuhi.kotlinopengl.core.animation.animatedModel.Joint
 import com.arthurgichuhi.kotlinopengl.core.animation.animation.Animation
 import com.arthurgichuhi.kotlinopengl.core.animation.animation.Animator
 import com.arthurgichuhi.kotlinopengl.core.animation.animation.BoneTransform
-import com.arthurgichuhi.kotlinopengl.core.animation.animation.KeyFrame
 import com.arthurgichuhi.kotlinopengl.core.animation.animation.KeyFrame2
 import de.javagl.jgltf.model.AccessorFloatData
 import de.javagl.jgltf.model.AccessorModel
 import de.javagl.jgltf.model.AnimationModel
 import de.javagl.jgltf.model.GltfModel
 import de.javagl.jgltf.model.NodeModel
-import de.javagl.jgltf.model.SkinModel
-import org.joml.Matrix4f
 import org.joml.Quaternionf
 import org.joml.Vector3f
+import java.nio.ByteOrder
 import java.nio.FloatBuffer
+import java.nio.IntBuffer
+import java.nio.ShortBuffer
 
 
 /**
@@ -44,9 +44,9 @@ class GltfObj(val model:GltfModel,path:String):AObject() {
     private val animation = processAnimation(model.animationModels[0])
     private val animator = Animator(this)
 
-    private val boneMatrices : MutableList<FloatArray> = ArrayList()
+    private val boneMatrices : Array<FloatArray> = Array(skin[0].joints.size){FloatArray(16)}
 
-    lateinit var root:Bone
+    val bones: MutableMap<NodeModel,Bone> = HashMap()
 
     init {
         createBones()
@@ -63,9 +63,9 @@ class GltfObj(val model:GltfModel,path:String):AObject() {
         locs["jointIndices"] =  program.getAttribLoc("jointIndices")
         locs["weights"] = program.getAttribLoc("weights")
 
-        buffer.loadGltfIndices(primitives,false)
-        buffer.loadGltfFloats(primitives,locs,loadTex = {tex=mScene.loadTexture(texPath)},false)
-        buffer.loadGltfInt(primitives,locs,false)
+        buffer.loadGltfIndices(primitives,true)
+        buffer.loadGltfFloats(primitives,locs,loadTex = {tex=mScene.loadTexture(texPath)},true)
+        buffer.loadGltfInt(primitives,locs,true)
 
         program.use()
         animator.doAnimation(animation)
@@ -81,7 +81,7 @@ class GltfObj(val model:GltfModel,path:String):AObject() {
 
     override fun draw(viewMat: FloatArray, projectionMat: FloatArray) {
         animator.update()
-        addJointsToArray(root)
+        addJointsToArray(bones)
 
         program.use()
         buffer.bind()
@@ -96,8 +96,6 @@ class GltfObj(val model:GltfModel,path:String):AObject() {
         program.setUniformMat("projection",projectionMat)
 
         drawElements(noVertices)
-
-        boneMatrices.clear()
     }
 
     fun createJoints(){
@@ -112,19 +110,13 @@ class GltfObj(val model:GltfModel,path:String):AObject() {
     }
 
     private fun createBones(){
-        root = Bone(
-            node = skin[0].joints[0],
-            localTransform = skin[0].joints[0].computeLocalTransform(FloatArray(16)),
-            animatedTransform = FloatArray(16)
-        )
-        for(i in 1..< skin[0].joints.size){
-            root.children.add(
-                Bone(
-                    node = skin[0].joints[i],
-                    localTransform = skin[0].joints[i].computeLocalTransform(FloatArray(16)),
+        for(joints in skin[0].joints){
+            bones[joints]= Bone(
+                    node = joints,
+                    localTransform = joints.computeLocalTransform(FloatArray(16)),
                     animatedTransform = FloatArray(16)
-                )
             )
+
         }
     }
 
@@ -175,6 +167,7 @@ class GltfObj(val model:GltfModel,path:String):AObject() {
                 }
             }
         }
+
         return Animation(nodeKeyFrames.last().time,nodeKeyFrames)
     }
 
@@ -188,10 +181,60 @@ class GltfObj(val model:GltfModel,path:String):AObject() {
         return find { it.time == time } ?: KeyFrame2(time, boneTransforms = hashMapOf(node to BoneTransform())).also { add(it) }
     }
 
-    private fun addJointsToArray(bone: Bone){
-        boneMatrices.add(skin[0].joints.indexOf(bone.node),bone.animatedTransform)
-        for(child in bone.children){
-            boneMatrices.add(skin[0].joints.indexOf(child.node),child.animatedTransform)
+    private fun addJointsToArray(bones:Map<NodeModel,Bone>){
+        Log.d("TAG","AJT ${boneMatrices.size}")
+        for(child in bones){
+            boneMatrices[skin[0].joints.indexOf(child.key)] = child.value.animatedTransform
         }
     }
+}
+
+private fun readAccessorAsFloatBuffer(accessor: AccessorModel): FloatBuffer {
+    val bufferView = accessor.bufferViewModel
+    val byteBuffer = bufferView.bufferViewData
+    byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
+
+    val byteLength = accessor.count * accessor.byteStride
+    byteBuffer.position(0)
+    byteBuffer.limit(byteLength)
+
+    val directFloatBuffer = FloatBuffer.allocate(accessor.count * accessor.elementType.numComponents) // Direct allocation
+    val sourceFloatBuffer = byteBuffer.asFloatBuffer()
+    directFloatBuffer.put(sourceFloatBuffer)
+    directFloatBuffer.rewind()
+
+    return directFloatBuffer
+}
+
+private fun readAccessorAsIntBuffer(accessor: AccessorModel): IntBuffer {
+
+    val bufferView = accessor.bufferViewModel
+    val byteBuffer = bufferView.bufferViewData
+    byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
+
+    val byteLength = accessor.count * accessor.byteStride
+    byteBuffer.position(0)
+    byteBuffer.limit(byteLength)
+
+    val directIntBuffer = IntBuffer.allocate(accessor.count * accessor.elementType.numComponents) // Direct allocation
+    val sourceIntBuffer = byteBuffer.asIntBuffer()
+    directIntBuffer.put(sourceIntBuffer)
+    directIntBuffer.rewind()
+    return directIntBuffer
+}
+
+private fun readAccessorAsShortBuffer(accessor: AccessorModel): ShortBuffer {
+
+    val bufferView = accessor.bufferViewModel
+    val byteBuffer = bufferView.bufferViewData
+    byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
+
+    val byteLength = accessor.count * accessor.byteStride // 2 bytes per UNSIGNED_SHORT
+    byteBuffer.position(0)
+    byteBuffer.limit(byteLength)
+
+    val directBuffer = ShortBuffer.allocate(accessor.count * accessor.elementType.numComponents)
+    directBuffer.put(byteBuffer.asShortBuffer())
+    directBuffer.rewind()
+    return directBuffer
 }
