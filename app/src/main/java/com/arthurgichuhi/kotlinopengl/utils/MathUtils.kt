@@ -1,7 +1,10 @@
 package com.arthurgichuhi.kotlinopengl.utils
 
 import android.opengl.Matrix
+import androidx.compose.ui.util.lerp
 import com.arthurgichuhi.kotlinopengl.models.Vec3f
+import org.joml.Quaternionf
+import org.joml.Vector3f
 import kotlin.math.acos
 import kotlin.math.cos
 import kotlin.math.sin
@@ -182,6 +185,23 @@ class MathUtils {
                 d=a[i]*b[i]
             }
             return d
+        }
+
+        fun lerpVec3(start:Vector3f,stop:Vector3f,alpha:Float):Vector3f{
+            return Vector3f(
+                lerp(start.x,stop.x,alpha),
+                lerp(start.y,stop.y,alpha),
+                lerp(start.z,stop.z,alpha)
+            )
+        }
+
+        fun lerpVec4(start:Quaternionf,stop:Quaternionf,alpha: Float):Quaternionf{
+            return Quaternionf(
+                lerp(start.x,stop.x,alpha),
+                lerp(start.y,stop.y,alpha),
+                lerp(start.z,stop.z,alpha),
+                lerp(start.w,stop.w,alpha)
+            )
         }
     }
 }

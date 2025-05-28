@@ -89,11 +89,7 @@ class Utils {
         }
 
         fun getCurrentTime():Float{
-            val currentMillis = System.currentTimeMillis()
-            val tmp = currentMillis.toString()
-            val tmp2 = tmp.substring(tmp.length-7,tmp.length).toFloat()/1000f
-
-            return tmp2
+            return System.nanoTime()/1000_000_000f
         }
 
         fun createMatricesArrayBuffer(data:Array<FloatArray>):FloatBuffer{

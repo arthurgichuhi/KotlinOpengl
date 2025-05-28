@@ -1,14 +1,9 @@
 package com.arthurgichuhi.kotlinopengl.core.animation.animation
 
 import android.opengl.Matrix
-import com.arthurgichuhi.kotlinopengl.core.animation.animatedModel.Bone
 import com.arthurgichuhi.kotlinopengl.core.animation.animatedModel.Joint
-import com.arthurgichuhi.kotlinopengl.customObjs.GltfObj
 import com.arthurgichuhi.kotlinopengl.utils.Utils
 import de.javagl.jgltf.impl.v2.Skin
-import de.javagl.jgltf.model.NodeModel
-import de.javagl.jgltf.model.SkinModel
-import org.joml.Matrix4f
 
 class GltfAnimator(skin: Skin) {
 

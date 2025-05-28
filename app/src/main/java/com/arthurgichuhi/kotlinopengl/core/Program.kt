@@ -137,7 +137,6 @@ class Program {
 
     fun setUniformMat(name:String,data:FloatArray){
         val loc = getUniformLoc(name)
-        val mat = Matrix4f()
         glUniformMatrix4fv(loc,1,false,data,0)
     }
 

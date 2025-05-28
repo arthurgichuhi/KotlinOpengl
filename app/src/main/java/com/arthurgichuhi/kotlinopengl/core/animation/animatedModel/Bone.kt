@@ -1,12 +1,12 @@
 package com.arthurgichuhi.kotlinopengl.core.animation.animatedModel
 
 import de.javagl.jgltf.model.NodeModel
-import org.joml.Matrix4f
 
 data class Bone(
     var node:NodeModel,
-    var localTransform:FloatArray,
-    var animatedTransform:FloatArray,
+    var localTransform:FloatArray = FloatArray(16),
+    var worldTransform:FloatArray,
+    var animatedTransform:FloatArray=FloatArray(16),
     var children:MutableList<Bone> = ArrayList()
 ){
     fun setAnimationTransform(array: FloatArray){

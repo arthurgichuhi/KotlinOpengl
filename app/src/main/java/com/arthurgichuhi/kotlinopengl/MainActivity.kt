@@ -1,8 +1,6 @@
 package com.arthurgichuhi.kotlinopengl
 
-import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
@@ -20,14 +18,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
-import de.javagl.jgltf.model.io.GltfModelReader
-import com.arthurgichuhi.kotlinopengl.models.Vec3f
 import com.arthurgichuhi.kotlinopengl.core.AObject
 import com.arthurgichuhi.kotlinopengl.core.InputMode
 import com.arthurgichuhi.kotlinopengl.core.ObjUpdateCall
-import com.arthurgichuhi.kotlinopengl.core.animation.animatedModel.AnimatedObj
-import com.arthurgichuhi.kotlinopengl.core.animation.loaders.AnimationObjLoader
-import com.arthurgichuhi.kotlinopengl.core.collada.ColladaLoader
 import com.arthurgichuhi.kotlinopengl.customObjs.GltfObj
 import com.arthurgichuhi.kotlinopengl.customObjs.PCTNObj
 import com.arthurgichuhi.kotlinopengl.customObjs.PathVert
@@ -37,12 +30,11 @@ import com.arthurgichuhi.kotlinopengl.customObjs.SphereObj
 import com.arthurgichuhi.kotlinopengl.gl_surface.MyScene
 import com.arthurgichuhi.kotlinopengl.gl_surface.MySurfaceView
 import com.arthurgichuhi.kotlinopengl.io_Operations.Input
+import com.arthurgichuhi.kotlinopengl.models.Vec3f
 import com.arthurgichuhi.kotlinopengl.my_ui.HomeButton
-import de.javagl.jgltf.model.AccessorModel
-import de.javagl.jgltf.model.GltfModel
-import java.io.ByteArrayInputStream
-import java.io.File
-import java.nio.ByteBuffer
+import de.javagl.jgltf.model.GltfAnimations
+import de.javagl.jgltf.model.animation.AnimationManager.AnimationPolicy
+import de.javagl.jgltf.model.io.GltfModelReader
 
 class MainActivity : ComponentActivity(){
     private lateinit var myScene:MyScene
@@ -97,27 +89,6 @@ class MainActivity : ComponentActivity(){
         val gltObj = GltfObj(gltfModel,"models/model/diffuse.png")
 
         myScene.addObject(gltObj)
-        //Collada
-//        val animatedObj = ColladaLoader.loadColladaModel(this,"models/model/model.dae",3)
-//        val animation = AnimationObjLoader.loadAnimation(this,"models/model/model.dae")
-//
-//        val animObj = AnimatedObj(
-//            animatedObj.mesh,
-//            animatedObj.joints,
-//            animation,
-//            "models/model/diffuse.png")
-//
-//        myScene.addObject(animObj)
-//        val wireObj=WireObj()
-//        wireObj.setColor(Vec3(0f,1f,0f))
-//        wireObj.setVerticesFromTriangleBuffer(earth,0,Utils().FloatsPerPosition+Utils().FloatsPerTexture)
-//
-//        wireObj.setUpdateCall(object:ObjUpdateCall{
-//            override fun update(time: Long, obj: AObject) {
-//                obj.rotate(1f,Vec3(0f,1f,0f))
-//            }
-//        })
-//        myScene.addObject(wireObj)
 
         setContent{
             HomeScreen()

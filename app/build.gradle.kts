@@ -73,8 +73,8 @@ dependencies {
     // https://mvnrepository.com/artifact/org.lwjgl/lwjgl
     implementation(libs.lwjgl)
     // https://mvnrepository.com/artifact/de.javagl/jgltf-model
-    implementation("de.javagl:jgltf-model:2.0.4")
+    implementation(libs.jgltf.model)
     // https://mvnrepository.com/artifact/org.joml/joml
-    implementation("org.joml:joml:1.10.8")
+    implementation(libs.joml)
 
 }

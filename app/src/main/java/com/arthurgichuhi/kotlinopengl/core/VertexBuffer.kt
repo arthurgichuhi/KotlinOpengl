@@ -4,6 +4,7 @@ import android.opengl.GLES20
 import android.opengl.GLES20.GL_FLOAT
 import android.opengl.GLES20.GL_INT
 import android.opengl.GLES20.GL_INT_VEC4
+import android.opengl.GLES20.GL_UNSIGNED_SHORT
 import android.opengl.GLES20.glEnableVertexAttribArray
 import android.opengl.GLES20.glVertexAttribPointer
 import android.opengl.GLES32.GL_ARRAY_BUFFER
@@ -124,14 +125,14 @@ class VertexBuffer {
 
     fun loadGltfIndices(primitive: MeshPrimitiveModel,staticDraw: Boolean){
         val indices = primitive.indices
+        val indicesBuffer = indices.bufferViewModel.bufferViewData
         val tmp = IntArray(1)
+
         glBindVertexArray(vaoID)
         glGenBuffers(1,tmp,0)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,eboId)
         glBufferData(
-            GL_ELEMENT_ARRAY_BUFFER,
-            indices.bufferViewModel.bufferViewData.capacity(),
-            indices.bufferViewModel.bufferViewData,
+            GL_ELEMENT_ARRAY_BUFFER, indicesBuffer.capacity(), indicesBuffer,
             if(staticDraw)GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
     }
 
@@ -208,7 +209,7 @@ class VertexBuffer {
             GL_ARRAY_BUFFER, jointsBuffer.capacity(), jointsBuffer,
             if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
         glEnableVertexAttribArray(locs["jointIndices"]!!)
-        glVertexAttribIPointer(locs["jointIndices"]!!,size, GL_INT_VEC4, 0, 0)
+        glVertexAttribIPointer(locs["jointIndices"]!!,size, GL_UNSIGNED_SHORT, 0, 0)
     }
 
     fun bind(){
