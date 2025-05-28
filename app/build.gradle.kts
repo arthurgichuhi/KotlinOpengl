@@ -70,8 +70,6 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    // https://mvnrepository.com/artifact/org.lwjgl/lwjgl
-    implementation(libs.lwjgl)
     // https://mvnrepository.com/artifact/de.javagl/jgltf-model
     implementation(libs.jgltf.model)
     // https://mvnrepository.com/artifact/org.joml/joml

@@ -15,7 +15,6 @@ import de.javagl.jgltf.model.AccessorModel
 import de.javagl.jgltf.model.AnimationModel
 import de.javagl.jgltf.model.GltfModel
 import de.javagl.jgltf.model.NodeModel
-import org.joml.Matrix4f
 import org.joml.Quaternionf
 import org.joml.Vector3f
 import java.nio.ByteOrder
@@ -50,9 +49,6 @@ class GltfObj(val model:GltfModel,path:String):AObject() {
 
     init {
         createBones()
-        val oyibo = readAccessorAsShortBuffer(primitives.attributes["JOINTS_0"]!!)
-        Log.d("TAG","Oyibo ${primitives.attributes["JOINTS_0"]!!.componentType}" +
-                "\n ")
     }
 
     override fun onInit() {
@@ -105,8 +101,6 @@ class GltfObj(val model:GltfModel,path:String):AObject() {
         for(joints in skin[0].joints){
             bones[joints]= Bone(
                     node = joints,
-                    worldTransform = FloatArray(16),
-                    localTransform = FloatArray(16),
                     animatedTransform = FloatArray(16)
             )
         }
