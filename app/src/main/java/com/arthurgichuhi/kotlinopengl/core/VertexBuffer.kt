@@ -2,8 +2,6 @@ package com.arthurgichuhi.kotlinopengl.core
 
 import android.opengl.GLES20
 import android.opengl.GLES20.GL_FLOAT
-import android.opengl.GLES20.GL_INT
-import android.opengl.GLES20.GL_INT_VEC4
 import android.opengl.GLES20.GL_UNSIGNED_SHORT
 import android.opengl.GLES20.glEnableVertexAttribArray
 import android.opengl.GLES20.glVertexAttribPointer
@@ -22,10 +20,8 @@ import android.opengl.GLES32.glGenVertexArrays
 import android.opengl.GLES32.glGetError
 import android.opengl.GLES32.glVertexAttribIPointer
 import android.util.Log
-import com.arthurgichuhi.kotlinopengl.core.collada.dataStructures.MeshData
 import de.javagl.jgltf.model.MeshPrimitiveModel
 import java.nio.FloatBuffer
-import java.nio.IntBuffer
 import java.nio.ShortBuffer
 
 class VertexBuffer {
@@ -66,63 +62,6 @@ class VertexBuffer {
         glBufferData(GL_ELEMENT_ARRAY_BUFFER,indices.size * 2,buffer,if(staticDraw)GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
     }
 
-    /**
-     * Buffer vertice, texture Coordinates, Normals, JointIds, Weights and indices buffer
-     * @param meshData contains all the data needed for buffering
-     * @param locs a HashMap that contains buffer locations
-     * @param staticDraw determines whether the buffered data will be static or dynamic
-     * @param loadTex this is function trigger to send the texture data to OpenGL on the ColladaObj
-     */
-
-    fun loadFloatVertexData(meshData: MeshData,locs:Map<String,Int>,staticDraw: Boolean,loadTex: () -> Unit){
-        val vertex = FloatBuffer.wrap(meshData.vertices)
-        val texCord = FloatBuffer.wrap(meshData.textureCords)
-        val normals = FloatBuffer.wrap(meshData.normals)
-        val weights = if(locs.size>3)FloatBuffer.wrap(meshData.vertexWeights) else null
-        glBindVertexArray(vaoID)
-        val tmp = IntArray(locs.size)
-        glGenBuffers(locs.size,tmp,0)
-        //bind position
-        glBindBuffer(GL_ARRAY_BUFFER,tmp[0])
-        glBufferData(GL_ARRAY_BUFFER,meshData.vertices.size * 4,vertex,
-            if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
-        glEnableVertexAttribArray(locs["position"]!!)
-        glVertexAttribPointer(locs["position"]!!, 3, GL_FLOAT, false, 0, 0)
-
-        //bind texCoords
-        glBindBuffer(GL_ARRAY_BUFFER,tmp[1])
-        glBufferData(GL_ARRAY_BUFFER,meshData.textureCords.size * 4,texCord,
-            if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
-        glEnableVertexAttribArray(locs["tex"]!!)
-        glVertexAttribPointer(locs["tex"]!!, 2, GL_FLOAT, false, 0, 0)
-        loadTex()
-
-        //bind normals
-        glBindBuffer(GL_ARRAY_BUFFER,tmp[2])
-        glBufferData(GL_ARRAY_BUFFER,meshData.normals.size * 4,normals,
-            if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
-        glEnableVertexAttribArray(locs["normal"]!!)
-        glVertexAttribPointer(locs["normal"]!!, 3, GL_FLOAT, false, 0, 0)
-
-       //bind weights
-        if(locs.size>3) {
-            glBindBuffer(GL_ARRAY_BUFFER,tmp[3])
-            glBufferData(GL_ARRAY_BUFFER,meshData.vertexWeights.size * 4,weights,
-                if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
-            glEnableVertexAttribArray(locs["weights"]!!)
-            glVertexAttribPointer(locs["weights"]!!, 3, GL_FLOAT, false, 0, 0)
-        }
-    }
-
-    fun loadIntVertexData(meshData: MeshData,locs:Map<String,Int>,staticDraw: Boolean){
-        val tmp = IntArray(1)
-        glGenBuffers(1,tmp,0)
-        glBindBuffer(GL_ARRAY_BUFFER,tmp[0])
-        glBufferData(GL_ARRAY_BUFFER,meshData.jointIds.size*4,IntBuffer.wrap(meshData.jointIds),if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
-        glEnableVertexAttribArray(locs["jointIndices"]!!)
-        glVertexAttribIPointer(locs["jointIndices"]!!,3, GL_INT, 3 * 4, 0)
-    }
-
     fun loadGltfIndices(primitive: MeshPrimitiveModel,staticDraw: Boolean){
         val indices = primitive.indices
         val indicesBuffer = indices.bufferViewModel.bufferViewData
@@ -153,7 +92,6 @@ class VertexBuffer {
             if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
         glEnableVertexAttribArray(locs["position"]!!)
         glVertexAttribPointer(locs["position"]!!, size, GL_FLOAT, false, 0, 0)
-
 
         //bind texCoords
         val tex = primitive.attributes["TEXCOORD_0"]!!

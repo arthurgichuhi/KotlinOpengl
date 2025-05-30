@@ -17,10 +17,6 @@ import de.javagl.jgltf.model.GltfModel
 import de.javagl.jgltf.model.NodeModel
 import org.joml.Quaternionf
 import org.joml.Vector3f
-import java.nio.ByteOrder
-import java.nio.FloatBuffer
-import java.nio.IntBuffer
-import java.nio.ShortBuffer
 
 
 /**
@@ -41,7 +37,7 @@ class GltfObj(val model:GltfModel,path:String):AObject() {
 
     private val noVertices = primitives.indices.count
     private val animation = processAnimation(model.animationModels[0])
-    private val animator = Animator(this)
+    val animator = Animator(this)
 
     private val boneMatrices : Array<FloatArray> = Array(skin[0].joints.size){FloatArray(16)}
 
@@ -79,7 +75,6 @@ class GltfObj(val model:GltfModel,path:String):AObject() {
     }
 
     override fun draw(viewMat: FloatArray, projectionMat: FloatArray) {
-        animator.update()
         addJointsToArray(bones)
 
         program.use()
@@ -155,6 +150,7 @@ class GltfObj(val model:GltfModel,path:String):AObject() {
                 }
             }
         }
+
         return Animation(nodeKeyFrames.last().time,nodeKeyFrames)
     }
 
@@ -170,58 +166,8 @@ class GltfObj(val model:GltfModel,path:String):AObject() {
 
     private fun addJointsToArray(bones:Map<NodeModel,Bone>){
         for(child in bones){
-            Log.d("TAG","AJT ${child.key.name} \n${child.value.animatedTransform.toList()}")
+            if(child.key==model.skinModels[0].joints[3])Log.d("TAG","AJT ${child.key.name} \n${child.value.animatedTransform.toList()}")
             boneMatrices[skin[0].joints.indexOf(child.key)] = child.value.animatedTransform
         }
     }
-}
-
-private fun readAccessorAsFloatBuffer(accessor: AccessorModel): FloatBuffer {
-    val bufferView = accessor.bufferViewModel
-    val byteBuffer = bufferView.bufferViewData
-    byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
-
-    val byteLength = accessor.count * accessor.byteStride
-    byteBuffer.position(0)
-    byteBuffer.limit(byteLength)
-
-    val directFloatBuffer = FloatBuffer.allocate(accessor.count * accessor.elementType.numComponents) // Direct allocation
-    val sourceFloatBuffer = byteBuffer.asFloatBuffer()
-    directFloatBuffer.put(sourceFloatBuffer)
-    directFloatBuffer.rewind()
-
-    return directFloatBuffer
-}
-
-private fun readAccessorAsIntBuffer(accessor: AccessorModel): IntBuffer {
-
-    val bufferView = accessor.bufferViewModel
-    val byteBuffer = bufferView.bufferViewData
-    byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
-
-    val byteLength = accessor.count * accessor.byteStride
-    byteBuffer.position(0)
-    byteBuffer.limit(byteLength)
-
-    val directIntBuffer = IntBuffer.allocate(accessor.count * accessor.elementType.numComponents) // Direct allocation
-    val sourceIntBuffer = byteBuffer.asIntBuffer()
-    directIntBuffer.put(sourceIntBuffer)
-    directIntBuffer.rewind()
-    return directIntBuffer
-}
-
-private fun readAccessorAsShortBuffer(accessor: AccessorModel): ShortBuffer {
-
-    val bufferView = accessor.bufferViewModel
-    val byteBuffer = bufferView.bufferViewData
-    byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
-
-    val byteLength = accessor.count * accessor.byteStride // 2 bytes per UNSIGNED_SHORT
-    byteBuffer.position(0)
-    byteBuffer.limit(byteLength)
-
-    val directBuffer = ShortBuffer.allocate(accessor.count * accessor.elementType.numComponents)
-    directBuffer.put(byteBuffer.asShortBuffer())
-    directBuffer.rewind()
-    return directBuffer
 }

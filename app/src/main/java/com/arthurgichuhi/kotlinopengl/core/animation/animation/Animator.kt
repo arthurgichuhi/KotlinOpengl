@@ -12,10 +12,8 @@ class Animator(
     private val model = gltfObj.model
     private var currentAnimation: Animation? = null
     private var animationTime:Float = 0f
-
-    private var start = 0f
-    private var stop = 0f
-    private var progression = 0f
+    private var start:Float = 0f
+    private var speed:Float = .05f
 
     private val skinModel = model.skinModels[0]
 
@@ -23,8 +21,6 @@ class Animator(
 
     fun doAnimation(animation: Animation){
         currentAnimation = animation
-        start = Utils.getCurrentTime()
-        stop = Utils.getCurrentTime() + animation.length
     }
 
     fun update(){
@@ -38,22 +34,17 @@ class Animator(
 
     private fun increaseAnimationTime(){
         val currentTime = Utils.getCurrentTime()
-        animationTime = currentTime
-        Log.d("TAG","A-time $currentTime")
-        if(animationTime>stop){
-            Log.d("TAG","RESET")
-            start = currentTime
-            stop = currentTime + currentAnimation!!.length
-        }
-        else{
-            Log.d("TAG","NO RESET")
+        animationTime = currentTime - start
+
+        if(animationTime>currentAnimation!!.length){
+            start = currentTime - ((animationTime % currentAnimation!!.length))
+            animationTime %= currentAnimation!!.length
         }
     }
 
     private fun calculateCurrentAnimationPose(){
         val frames = getPreviousAndNextFrames()
-        progression = calculateProgression(frames[0],frames[1])
-        interpolateKeyframes(frames[0],frames[1],progression)
+        interpolateKeyframes(frames[0],frames[1],calculateProgression(frames[0],frames[1]))
     }
 
     private fun applyPoseToJoints() {
@@ -61,7 +52,6 @@ class Animator(
             val index = skinModel.joints.indexOf(joint)
             val inverseTransform = skinModel.getInverseBindMatrix(index,FloatArray(16))
             val globalJointTransform = skinModel.joints[index].computeGlobalTransform(FloatArray(16))
-
             Matrix.multiplyMM(
                 gltfObj.bones[joint]!!.animatedTransform, 0,
                 globalJointTransform, 0,
@@ -73,37 +63,42 @@ class Animator(
 
     private fun getPreviousAndNextFrames():Array<KeyFrame2>{
         val allFrames = currentAnimation!!.keyFrames
+
         var previousFrame = allFrames[0]
         var nextFrame = allFrames[0]
         for(frame in allFrames){
              nextFrame = frame
-            if((nextFrame.time+start)>animationTime){
+            if(nextFrame.time>animationTime){
                 break
             }
             previousFrame = frame
-           }
+        }
         return arrayOf(previousFrame,nextFrame)
     }
 
     private fun calculateProgression(previousFrame: KeyFrame2,nextFrame: KeyFrame2):Float{
         val totalTime = nextFrame.time - previousFrame.time
-        val currentTime = animationTime - (previousFrame.time+start)
-        return currentTime/totalTime
+        val currentTime = animationTime - previousFrame.time
+        return (currentTime/totalTime) * speed
     }
 
     private fun interpolateKeyframes(previous: KeyFrame2, nextFrame: KeyFrame2, alpha: Float) {
 
         for(node in previous.boneTransforms.keys){
+            val index = gltfObj.model.nodeModels.indexOf(node)
             val prev = previous.boneTransforms[node]!!
             val next = nextFrame.boneTransforms[node]!!
+
+            if(node==skinModel.joints[3])Log.d("TAG","$alpha Times ${previous.time} ${nextFrame.time}" +
+                    "\n${prev.rotation.x} , ${prev.rotation.y} , ${prev.rotation.z} , ${prev.rotation.w}" +
+                    "\n${next.rotation.x} , ${next.rotation.y} , ${next.rotation.z} , ${next.rotation.w}")
             // Interpolate translation
             val trans = prev.translation.lerp(next.translation,alpha)
             // Interpolate rotation (SLERP)
-            val rot = prev.rotation.slerp(next.rotation, alpha)
+            val rot = prev.rotation.normalize().slerp(next.rotation.normalize(), alpha)
             // Interpolate scale
             val scale = prev.scale.lerp(next.scale, alpha)
-
-            gltfObj.model.nodeModels.find { it == node }!!.also {
+            gltfObj.model.nodeModels[index]!!.also {
                 it.translation = floatArrayOf(trans.x,trans.y,trans.z)
                 it.rotation = floatArrayOf(rot.x,rot.y,rot.z,rot.w)
                 it.scale = floatArrayOf(scale.x,scale.y,scale.z)

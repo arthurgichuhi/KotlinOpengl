@@ -1,8 +1,10 @@
 package com.arthurgichuhi.kotlinopengl.utils
 
+import android.animation.TimeAnimator
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.os.SystemClock
 import android.util.Log
 import java.io.BufferedReader
 import java.io.IOException

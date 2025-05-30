@@ -5,7 +5,6 @@ import com.arthurgichuhi.kotlinopengl.core.AObject
 import com.arthurgichuhi.kotlinopengl.core.Program
 import com.arthurgichuhi.kotlinopengl.core.Texture
 import com.arthurgichuhi.kotlinopengl.core.VertexBuffer
-import com.arthurgichuhi.kotlinopengl.core.collada.dataStructures.MeshData
 import com.arthurgichuhi.kotlinopengl.utils.Utils
 
 /**
@@ -18,13 +17,13 @@ import com.arthurgichuhi.kotlinopengl.utils.Utils
  * N - normals
  */
 
-class IPCTN(data:MeshData,hasColor:Boolean,
+class IPCTN(hasColor:Boolean,
             hasNormal:Boolean,
             hasTex:Boolean, texPath:String
 ): AObject() {
     private lateinit var program: Program
     private lateinit var mColor: Vec3f
-    private var mesh:MeshData = data
+    //private var mesh:MeshData = data
     private lateinit var mBuffer: VertexBuffer
     private var nVertices:Int=0
     private var stride:Int= Utils.FloatsPerPosition
@@ -42,17 +41,17 @@ class IPCTN(data:MeshData,hasColor:Boolean,
         stride+=if(hasTex)Utils.FloatsPerTexture else 0
         stride+=if(hasNormal)Utils.FloatsPerNormal else 0
         mHasColor=hasColor
-        nVertices=data.indices.size
+        //nVertices=data.indices.size
     }
 
     override fun onInit() {
         program=mScene.loadProgram("allShader2")
         mBuffer= VertexBuffer()
-        mBuffer.loadIndicesBuffer(mesh.indices,true)
+        //mBuffer.loadIndicesBuffer(mesh.indices,true)
         locs["position"] = program.getAttribLoc("position")
         locs["tex"] = program.getAttribLoc("tex")
         locs["normal"] = program.getAttribLoc("normal")
-        mBuffer.loadFloatVertexData(mesh,locs,true, loadTex = {mTex=mScene.loadTexture(mTexPath)})
+        //mBuffer.loadFloatVertexData(mesh,locs,true, loadTex = {mTex=mScene.loadTexture(mTexPath)})
         program.use()
 
     }

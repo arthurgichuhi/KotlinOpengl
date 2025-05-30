@@ -87,6 +87,11 @@ class MainActivity : ComponentActivity(){
         val file = this.assets.open("models/model/armature.glb")
         val gltfModel = gltfModelReader.readWithoutReferences(file)
         val gltObj = GltfObj(gltfModel,"models/model/diffuse.png")
+        gltObj.setUpdateCall(object:ObjUpdateCall{
+            override fun update(time: Long, obj: AObject) {
+                gltObj.animator.update()
+            }
+        })
 
         myScene.addObject(gltObj)
 
