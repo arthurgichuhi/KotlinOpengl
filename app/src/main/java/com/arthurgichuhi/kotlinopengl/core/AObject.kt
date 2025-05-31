@@ -1,11 +1,19 @@
 package com.arthurgichuhi.kotlinopengl.core
 
-import android.opengl.GLES32.*
+import android.opengl.GLES32.GL_EQUAL
+import android.opengl.GLES32.GL_LESS
+import android.opengl.GLES32.GL_LINES
+import android.opengl.GLES32.GL_TRIANGLES
+import android.opengl.GLES32.GL_UNSIGNED_BYTE
+import android.opengl.GLES32.GL_UNSIGNED_SHORT
+import android.opengl.GLES32.glDepthFunc
+import android.opengl.GLES32.glDrawArrays
+import android.opengl.GLES32.glDrawElements
+import android.opengl.GLES32.glLineWidth
 import android.opengl.Matrix
 import com.arthurgichuhi.kotlinopengl.models.Vec3f
 import com.arthurgichuhi.kotlinopengl.utils.GlUtils
 import com.arthurgichuhi.kotlinopengl.utils.MathUtils
-import org.joml.Quaternionf
 
 abstract class AObject {
     lateinit var mScene:AScene

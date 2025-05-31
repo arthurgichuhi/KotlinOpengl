@@ -68,12 +68,12 @@ class MyCamera:IReceiveInput {
         var yAngle = 0f
         when(mode){
             InputMode.MOVE->{
-                defaultPos.x -= 10f*xDist/myScene.width
-                defaultPos.z -= 10f*yDist/myScene.height
+                defaultPos.x -= 30f*xDist/myScene.width
+                defaultPos.z -= 30f*yDist/myScene.height
             }
             InputMode.ROTATE->{
-                xAngle = 30f*yDist/myScene.height
-                yAngle = 30f*xDist/myScene.width
+                xAngle = 50f*yDist/myScene.height
+                yAngle = 50f*xDist/myScene.width
             }
             InputMode.UP_DOWN->{
                 defaultPos.y += 10f*yDist/myScene.height
@@ -87,6 +87,10 @@ class MyCamera:IReceiveInput {
         mUp = Vec3f(0f,1f,0f)
         myOrientation=MathUtils.makeANewCopy(defaultOrientation.toArray())
         //updateViewMatrix(0f,0f)
+    }
+
+    override fun move() {
+
     }
 
     fun setDefaultView(pos: Vec3f, orientation: Vec3f) {

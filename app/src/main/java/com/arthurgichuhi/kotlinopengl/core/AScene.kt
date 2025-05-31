@@ -6,10 +6,8 @@ import android.opengl.GLES32.GL_DEPTH_BUFFER_BIT
 import android.opengl.GLES32.glClear
 import com.arthurgichuhi.kotlinopengl.camera.MyCamera
 import java.util.Date
-import javax.microedition.khronos.opengles.GL10
 
 open class AScene(val context: Context) {
-    private val TAG="AScene"
 
     var width=0f
     var height=0f
@@ -100,7 +98,7 @@ open class AScene(val context: Context) {
         return t
     }
 
-    fun draw(gl10: GL10?){
+    fun draw() {
         val ts = Date().time
         glClear(GL_DEPTH_BUFFER_BIT or GL_COLOR_BUFFER_BIT)
         updateObjects()

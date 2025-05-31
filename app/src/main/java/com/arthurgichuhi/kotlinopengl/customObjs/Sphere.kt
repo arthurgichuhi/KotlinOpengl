@@ -10,8 +10,8 @@ import kotlin.math.atan2
 class Sphere(divide:Int) {
     private val TAG = "SPHERE"
 
-    private val X = 0.525731112f
-    private val Z = 0.850650808f
+    private val X = 0.525f
+    private val Z = 0.850f
 
     private val vertices:MutableList<FloatArray> = ArrayList()
     private var triangles:MutableList<IntArray> = ArrayList()

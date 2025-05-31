@@ -1,4 +1,4 @@
-package com.arthurgichuhi.aopengl.models
+package com.arthurgichuhi.kotlinopengl.models
 
 data class Vec2f(
     var x:Float,

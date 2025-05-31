@@ -1,23 +1,93 @@
 package com.arthurgichuhi.kotlinopengl.core.animation.animation
 
 import android.opengl.Matrix
-import android.util.Log
-import com.arthurgichuhi.kotlinopengl.customObjs.GltfObj
+import com.arthurgichuhi.kotlinopengl.core.animation.animatedModel.Bone
 import com.arthurgichuhi.kotlinopengl.utils.Utils
 import de.javagl.jgltf.impl.v2.Skin
+import de.javagl.jgltf.model.AccessorFloatData
+import de.javagl.jgltf.model.AccessorModel
+import de.javagl.jgltf.model.AnimationModel
+import de.javagl.jgltf.model.GltfModel
+import de.javagl.jgltf.model.NodeModel
+import org.joml.Quaternionf
+import org.joml.Vector3f
 
 class Animator(
-    val gltfObj: GltfObj
+    val gltfObj: GltfModel,
+    val bones:MutableMap<NodeModel,Bone>
 ) {
-    private val model = gltfObj.model
+    private val model = gltfObj
     private var currentAnimation: Animation? = null
     private var animationTime:Float = 0f
     private var start:Float = 0f
-    private var speed:Float = .05f
+    private var speed:Float = .01f
 
     private val skinModel = model.skinModels[0]
 
     val skin = Skin()
+
+    fun processAnimation(animation: AnimationModel):Animation{
+        val nodeKeyFrames : MutableList<KeyFrame2> = ArrayList()
+        for(channel in animation.channels){
+            val node = channel.nodeModel
+            val path = channel.path // "translation", "rotation", or "scale"
+            val sampler = channel.sampler
+
+            val times = getFloatData(sampler.input)
+            val values = getFloatData(sampler.output)
+
+            for(i in 0 ..<sampler.input.count){
+                val time = times.get(i)
+                val keyFrame = nodeKeyFrames.findOrCreate(time,node)
+                if(!keyFrame.boneTransforms.containsKey(node)){
+                    keyFrame.boneTransforms [node] = BoneTransform()
+                }
+
+                when(path){
+                    "translation" -> {
+                        val translation = Vector3f(
+                            values.get(i * 3),
+                            values.get(i * 3 + 1),
+                            values.get(i * 3 + 2)
+                        )
+                        keyFrame.boneTransforms[node]!!.translation = translation
+
+                    }
+                    "rotation" -> {
+                        val rotation = Quaternionf(
+                            values.get(i * 4),
+                            values.get(i * 4 + 1),
+                            values.get(i * 4 + 2),
+                            values.get(i * 4 + 3)
+                        )
+                        keyFrame.boneTransforms[node]!!.rotation = rotation
+
+                    }
+                    "scale" -> {
+                        val scale = Vector3f(
+                            values.get(i * 3),
+                            values.get(i * 3 + 1),
+                            values.get(i * 3 + 2)
+                        )
+                        keyFrame.boneTransforms[node]!!.scale = scale
+
+                    }
+                }
+            }
+        }
+
+        return Animation(nodeKeyFrames.last().time,nodeKeyFrames)
+    }
+
+    private fun getFloatData(accessor: AccessorModel): AccessorFloatData {
+        val data = accessor.accessorData
+        require(data is AccessorFloatData) { "Expected float data in accessor!" }
+        return data
+    }
+
+    private fun MutableList<KeyFrame2>.findOrCreate(time: Float,node: NodeModel): KeyFrame2 {
+        return find { it.time == time } ?: KeyFrame2(time, boneTransforms = hashMapOf(node to BoneTransform())).also { add(it) }
+    }
 
     fun doAnimation(animation: Animation){
         currentAnimation = animation
@@ -53,7 +123,7 @@ class Animator(
             val inverseTransform = skinModel.getInverseBindMatrix(index,FloatArray(16))
             val globalJointTransform = skinModel.joints[index].computeGlobalTransform(FloatArray(16))
             Matrix.multiplyMM(
-                gltfObj.bones[joint]!!.animatedTransform, 0,
+                bones[joint]!!.animatedTransform, 0,
                 globalJointTransform, 0,
                 inverseTransform, 0,
 
@@ -85,25 +155,21 @@ class Animator(
     private fun interpolateKeyframes(previous: KeyFrame2, nextFrame: KeyFrame2, alpha: Float) {
 
         for(node in previous.boneTransforms.keys){
-            val index = gltfObj.model.nodeModels.indexOf(node)
+            val index = gltfObj.nodeModels.indexOf(node)
             val prev = previous.boneTransforms[node]!!
             val next = nextFrame.boneTransforms[node]!!
 
-            if(node==skinModel.joints[3])Log.d("TAG","$alpha Times ${previous.time} ${nextFrame.time}" +
-                    "\n${prev.rotation.x} , ${prev.rotation.y} , ${prev.rotation.z} , ${prev.rotation.w}" +
-                    "\n${next.rotation.x} , ${next.rotation.y} , ${next.rotation.z} , ${next.rotation.w}")
             // Interpolate translation
             val trans = prev.translation.lerp(next.translation,alpha)
             // Interpolate rotation (SLERP)
             val rot = prev.rotation.normalize().slerp(next.rotation.normalize(), alpha)
             // Interpolate scale
             val scale = prev.scale.lerp(next.scale, alpha)
-            gltfObj.model.nodeModels[index]!!.also {
+            gltfObj.nodeModels[index]!!.also {
                 it.translation = floatArrayOf(trans.x,trans.y,trans.z)
                 it.rotation = floatArrayOf(rot.x,rot.y,rot.z,rot.w)
                 it.scale = floatArrayOf(scale.x,scale.y,scale.z)
             }
-
         }
     }
 

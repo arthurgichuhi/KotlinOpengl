@@ -1,29 +1,18 @@
 package com.arthurgichuhi.kotlinopengl.customObjs
 
 import com.arthurgichuhi.kotlinopengl.core.AObject
+import com.arthurgichuhi.kotlinopengl.core.IReceiveInput
+import com.arthurgichuhi.kotlinopengl.core.InputMode
 import com.arthurgichuhi.kotlinopengl.core.Program
 import com.arthurgichuhi.kotlinopengl.core.Texture
 import com.arthurgichuhi.kotlinopengl.core.VertexBuffer
 import com.arthurgichuhi.kotlinopengl.core.animation.animatedModel.Bone
 import com.arthurgichuhi.kotlinopengl.core.animation.animation.Animation
 import com.arthurgichuhi.kotlinopengl.core.animation.animation.Animator
-import com.arthurgichuhi.kotlinopengl.core.animation.animation.BoneTransform
-import com.arthurgichuhi.kotlinopengl.core.animation.animation.KeyFrame2
-import de.javagl.jgltf.model.AccessorFloatData
-import de.javagl.jgltf.model.AccessorModel
-import de.javagl.jgltf.model.AnimationModel
 import de.javagl.jgltf.model.GltfModel
 import de.javagl.jgltf.model.NodeModel
-import org.joml.Quaternionf
-import org.joml.Vector3f
 
-
-/**
- * Creates an object to be rendered by Opengl from GLTF file format data.
- * @param model Data read from a gltf file
- */
-
-class GltfObj(val model:GltfModel,path:String):AObject() {
+class Actor(val model: GltfModel, path:String):AObject(),IReceiveInput {
     private lateinit var program: Program
     private lateinit var buffer : VertexBuffer
     private lateinit var tex : Texture
@@ -36,11 +25,11 @@ class GltfObj(val model:GltfModel,path:String):AObject() {
 
     private val noVertices = primitives.indices.count
     private var animation : Animation
-    var animator : Animator
+    val animator : Animator
 
-    private val boneMatrices : Array<FloatArray> = Array(skin[0].joints.size){FloatArray(16)}
+    val boneMatrices : Array<FloatArray> = Array(skin[0].joints.size){FloatArray(16)}
 
-    val bones: MutableMap<NodeModel,Bone> = HashMap()
+    val bones: MutableMap<NodeModel, Bone> = HashMap()
 
     init {
         createBones()
@@ -49,7 +38,6 @@ class GltfObj(val model:GltfModel,path:String):AObject() {
     }
 
     override fun onInit() {
-
         buffer = VertexBuffer()
         program = mScene.loadProgram("armateur")
 
@@ -93,11 +81,23 @@ class GltfObj(val model:GltfModel,path:String):AObject() {
         drawElements(noVertices)
     }
 
+    override fun scroll(mode: InputMode, xDist: Float, yDist: Float) {
+
+    }
+
+    override fun resetCamera() {
+
+    }
+
+    override fun move() {
+
+    }
+
     private fun createBones(){
         for(joints in skin[0].joints){
             bones[joints]= Bone(
-                    node = joints,
-                    animatedTransform = FloatArray(16)
+                node = joints,
+                animatedTransform = FloatArray(16)
             )
         }
     }

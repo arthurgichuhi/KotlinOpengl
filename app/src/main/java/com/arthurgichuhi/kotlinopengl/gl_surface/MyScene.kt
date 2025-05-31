@@ -43,6 +43,6 @@ class MyScene(context: Context, input: Input, activity: MainActivity):AScene(con
     }
 
     override fun onDrawFrame(p0: GL10?) {
-        super.draw(p0)
+        super.draw()
     }
 }

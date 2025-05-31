@@ -90,6 +90,7 @@ class MainActivity : ComponentActivity(){
         gltObj.setUpdateCall(object:ObjUpdateCall{
             override fun update(time: Long, obj: AObject) {
                 gltObj.animator.update()
+                moveEarth(time,obj)
             }
         })
 

@@ -1,6 +1,7 @@
 package com.arthurgichuhi.kotlinopengl.io_Operations
 
 import android.content.Context
+import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
@@ -30,7 +31,7 @@ class Input(ctx: Context): OnTouchListener, GestureDetector.OnGestureListener {
         mode=iMode
     }
 
-    fun onScroll(distanceX: Float,distanceY: Float){
+    private fun onScroll(distanceX: Float, distanceY: Float){
         for(i in receivers){
             i.scroll(mode,distanceX,distanceY)
         }
@@ -38,10 +39,12 @@ class Input(ctx: Context): OnTouchListener, GestureDetector.OnGestureListener {
 
     override fun onTouch(v: View?, event: MotionEvent?): Boolean {
         gestureDetector?.onTouchEvent(event!!)
+        Log.d("TAG","On Touch ${gestureDetector?.isLongpressEnabled}")
         return true
     }
 
     override fun onDown(e: MotionEvent): Boolean {
+        Log.d("TAG","Down ${e.x}    ${e.y}    ${e.downTime}")
         return false
     }
 
@@ -64,7 +67,7 @@ class Input(ctx: Context): OnTouchListener, GestureDetector.OnGestureListener {
     }
 
     override fun onLongPress(e: MotionEvent) {
-
+        Log.d("TAG","Long Press ${e.x}   ${e.y}   ${e.buttonState}")
     }
 
     override fun onFling(
