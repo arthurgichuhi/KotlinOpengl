@@ -6,17 +6,21 @@ import android.opengl.GLES32.glClearColor
 import android.opengl.GLES32.glEnable
 import android.opengl.GLES32.glViewport
 import android.opengl.GLSurfaceView
-import com.arthurgichuhi.kotlinopengl.MainActivity
+import android.util.Log
 import com.arthurgichuhi.kotlinopengl.core.AScene
+import com.arthurgichuhi.kotlinopengl.core.IReceiveInput
 import com.arthurgichuhi.kotlinopengl.io_Operations.Input
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
-class MyScene(context: Context, input: Input, activity: MainActivity):AScene(context),GLSurfaceView.Renderer {
-    private var myInput:Input?=null
+class MyScene(context: Context, val input: Input):AScene(context),GLSurfaceView.Renderer {
+
     init {
         input.addReceiver(this.camera)
         myInput = input
+    }
+    override fun updateReceivers(receiver:IReceiveInput){
+        input.addReceiver(receiver)
     }
 
     override fun destroy(){
@@ -32,6 +36,7 @@ class MyScene(context: Context, input: Input, activity: MainActivity):AScene(con
     }
 
     override fun onSurfaceChanged(p0: GL10?, width: Int, height: Int) {
+        Log.d("TAG","Width $width  Height $height")
         glViewport(0,0,width,height)
         this.width = width.toFloat()
         this.height = height.toFloat()

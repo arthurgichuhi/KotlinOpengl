@@ -20,77 +20,21 @@ class Animator(
     private var currentAnimation: Animation? = null
     private var animationTime:Float = 0f
     private var start:Float = 0f
+
+    private var loop :Boolean = true
+    private var triggerLoop = true
     private var speed:Float = .01f
 
     private val skinModel = model.skinModels[0]
 
     val skin = Skin()
 
-    fun processAnimation(animation: AnimationModel):Animation{
-        val nodeKeyFrames : MutableList<KeyFrame2> = ArrayList()
-        for(channel in animation.channels){
-            val node = channel.nodeModel
-            val path = channel.path // "translation", "rotation", or "scale"
-            val sampler = channel.sampler
-
-            val times = getFloatData(sampler.input)
-            val values = getFloatData(sampler.output)
-
-            for(i in 0 ..<sampler.input.count){
-                val time = times.get(i)
-                val keyFrame = nodeKeyFrames.findOrCreate(time,node)
-                if(!keyFrame.boneTransforms.containsKey(node)){
-                    keyFrame.boneTransforms [node] = BoneTransform()
-                }
-
-                when(path){
-                    "translation" -> {
-                        val translation = Vector3f(
-                            values.get(i * 3),
-                            values.get(i * 3 + 1),
-                            values.get(i * 3 + 2)
-                        )
-                        keyFrame.boneTransforms[node]!!.translation = translation
-
-                    }
-                    "rotation" -> {
-                        val rotation = Quaternionf(
-                            values.get(i * 4),
-                            values.get(i * 4 + 1),
-                            values.get(i * 4 + 2),
-                            values.get(i * 4 + 3)
-                        )
-                        keyFrame.boneTransforms[node]!!.rotation = rotation
-
-                    }
-                    "scale" -> {
-                        val scale = Vector3f(
-                            values.get(i * 3),
-                            values.get(i * 3 + 1),
-                            values.get(i * 3 + 2)
-                        )
-                        keyFrame.boneTransforms[node]!!.scale = scale
-
-                    }
-                }
-            }
-        }
-
-        return Animation(nodeKeyFrames.last().time,nodeKeyFrames)
-    }
-
-    private fun getFloatData(accessor: AccessorModel): AccessorFloatData {
-        val data = accessor.accessorData
-        require(data is AccessorFloatData) { "Expected float data in accessor!" }
-        return data
-    }
-
-    private fun MutableList<KeyFrame2>.findOrCreate(time: Float,node: NodeModel): KeyFrame2 {
-        return find { it.time == time } ?: KeyFrame2(time, boneTransforms = hashMapOf(node to BoneTransform())).also { add(it) }
-    }
-
     fun doAnimation(animation: Animation){
         currentAnimation = animation
+    }
+
+    fun triggerLoop(value:Boolean){
+        triggerLoop = value
     }
 
     fun update(){
@@ -105,10 +49,10 @@ class Animator(
     private fun increaseAnimationTime(){
         val currentTime = Utils.getCurrentTime()
         animationTime = currentTime - start
-
         if(animationTime>currentAnimation!!.length){
-            start = currentTime - ((animationTime % currentAnimation!!.length))
+            if(loop)start = currentTime - (animationTime % currentAnimation!!.length)
             animationTime %= currentAnimation!!.length
+
         }
     }
 
@@ -171,6 +115,69 @@ class Animator(
                 it.scale = floatArrayOf(scale.x,scale.y,scale.z)
             }
         }
+    }
+
+    fun processAnimation(animation: AnimationModel):Animation{
+        val nodeKeyFrames : MutableList<KeyFrame2> = ArrayList()
+        for(channel in animation.channels){
+            val node = channel.nodeModel
+            val path = channel.path // "translation", "rotation", or "scale"
+            val sampler = channel.sampler
+
+            val times = getFloatData(sampler.input)
+            val values = getFloatData(sampler.output)
+
+            for(i in 0 ..<sampler.input.count){
+                val time = times.get(i)
+                val keyFrame = nodeKeyFrames.findOrCreate(time,node)
+                if(!keyFrame.boneTransforms.containsKey(node)){
+                    keyFrame.boneTransforms [node] = BoneTransform()
+                }
+
+                when(path){
+                    "translation" -> {
+                        val translation = Vector3f(
+                            values.get(i * 3),
+                            values.get(i * 3 + 1),
+                            values.get(i * 3 + 2)
+                        )
+                        keyFrame.boneTransforms[node]!!.translation = translation
+
+                    }
+                    "rotation" -> {
+                        val rotation = Quaternionf(
+                            values.get(i * 4),
+                            values.get(i * 4 + 1),
+                            values.get(i * 4 + 2),
+                            values.get(i * 4 + 3)
+                        )
+                        keyFrame.boneTransforms[node]!!.rotation = rotation
+
+                    }
+                    "scale" -> {
+                        val scale = Vector3f(
+                            values.get(i * 3),
+                            values.get(i * 3 + 1),
+                            values.get(i * 3 + 2)
+                        )
+                        keyFrame.boneTransforms[node]!!.scale = scale
+
+                    }
+                }
+            }
+        }
+
+        return Animation(nodeKeyFrames.last().time,nodeKeyFrames)
+    }
+
+    private fun getFloatData(accessor: AccessorModel): AccessorFloatData {
+        val data = accessor.accessorData
+        require(data is AccessorFloatData) { "Expected float data in accessor!" }
+        return data
+    }
+
+    private fun MutableList<KeyFrame2>.findOrCreate(time: Float,node: NodeModel): KeyFrame2 {
+        return find { it.time == time } ?: KeyFrame2(time, boneTransforms = hashMapOf(node to BoneTransform())).also { add(it) }
     }
 
 }

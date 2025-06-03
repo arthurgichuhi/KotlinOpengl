@@ -5,6 +5,7 @@ import com.arthurgichuhi.kotlinopengl.models.Vec3f
 import com.arthurgichuhi.kotlinopengl.core.IReceiveInput
 import com.arthurgichuhi.kotlinopengl.core.InputMode
 import com.arthurgichuhi.kotlinopengl.gl_surface.MyScene
+import com.arthurgichuhi.kotlinopengl.io_Operations.TouchTracker
 import com.arthurgichuhi.kotlinopengl.utils.MathUtils
 import kotlin.math.abs
 
@@ -40,12 +41,6 @@ class MyCamera:IReceiveInput {
 
     fun update(){
         val aspect = width/height
-//        Matrix.rotateM(viewMat, 0, rotation.x, 1f, 0f, 0f) // Rotate around X-axis
-//        Matrix.rotateM(viewMat, 0, rotation.y, 0f, 1f, 0f)
-//        Matrix.rotateM(viewMat,0,rotation.z,0f,0f,1f)
-
-//        Matrix.translateM(viewMat, 0, defaultPos.x, defaultPos.y, defaultPos.z)
-
         Matrix.perspectiveM(projectionMat,0,45f,aspect,.1f,100f)
     }
 
@@ -68,15 +63,15 @@ class MyCamera:IReceiveInput {
         var yAngle = 0f
         when(mode){
             InputMode.MOVE->{
-                defaultPos.x -= 30f*xDist/myScene.width
-                defaultPos.z -= 30f*yDist/myScene.height
+//                defaultPos.x -= 30f*xDist/myScene.width
+//                defaultPos.z -= 30f*yDist/myScene.height
             }
             InputMode.ROTATE->{
-                xAngle = 50f*yDist/myScene.height
-                yAngle = 50f*xDist/myScene.width
+//                xAngle = 50f*yDist/myScene.height
+//                yAngle = 50f*xDist/myScene.width
             }
             InputMode.UP_DOWN->{
-                defaultPos.y += 10f*yDist/myScene.height
+//                defaultPos.y += 10f*yDist/myScene.height
             }
         }
         updateViewMatrix(xAngle,yAngle)
@@ -89,7 +84,7 @@ class MyCamera:IReceiveInput {
         //updateViewMatrix(0f,0f)
     }
 
-    override fun move() {
+    override fun touchTracker(value: TouchTracker) {
 
     }
 

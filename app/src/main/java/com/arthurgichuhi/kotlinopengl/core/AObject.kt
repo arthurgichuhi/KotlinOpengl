@@ -4,7 +4,6 @@ import android.opengl.GLES32.GL_EQUAL
 import android.opengl.GLES32.GL_LESS
 import android.opengl.GLES32.GL_LINES
 import android.opengl.GLES32.GL_TRIANGLES
-import android.opengl.GLES32.GL_UNSIGNED_BYTE
 import android.opengl.GLES32.GL_UNSIGNED_SHORT
 import android.opengl.GLES32.glDepthFunc
 import android.opengl.GLES32.glDrawArrays
@@ -78,10 +77,6 @@ abstract class AObject {
 
     fun drawElements(verticesNo:Int){
        glDrawElements(GL_TRIANGLES,verticesNo, GL_UNSIGNED_SHORT,0)
-    }
-
-    fun drawGltfElements(verticesNo: Int){
-        glDrawElements(GL_TRIANGLES,verticesNo, GL_UNSIGNED_BYTE,0)
     }
 
     fun setDepthFunEqual(){

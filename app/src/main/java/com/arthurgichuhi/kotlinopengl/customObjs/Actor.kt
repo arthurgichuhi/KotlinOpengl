@@ -9,10 +9,13 @@ import com.arthurgichuhi.kotlinopengl.core.VertexBuffer
 import com.arthurgichuhi.kotlinopengl.core.animation.animatedModel.Bone
 import com.arthurgichuhi.kotlinopengl.core.animation.animation.Animation
 import com.arthurgichuhi.kotlinopengl.core.animation.animation.Animator
+import com.arthurgichuhi.kotlinopengl.io_Operations.TouchTracker
 import de.javagl.jgltf.model.GltfModel
 import de.javagl.jgltf.model.NodeModel
+import org.joml.Matrix4f
+import org.joml.Vector3f
 
-class Actor(val model: GltfModel, path:String):AObject(),IReceiveInput {
+class Actor(val model: GltfModel, path:String):AObject() {
     private lateinit var program: Program
     private lateinit var buffer : VertexBuffer
     private lateinit var tex : Texture
@@ -22,13 +25,15 @@ class Actor(val model: GltfModel, path:String):AObject(),IReceiveInput {
 
     private val primitives = model.meshModels[0].meshPrimitiveModels[0]
     private val skin = model.skinModels
-
     private val noVertices = primitives.indices.count
+
     private var animation : Animation
-    val animator : Animator
+    private val animator : Animator
+
+    private val receiver : IReceiveInput =createReceiver()
+    private val touches:MutableMap<Long,TouchTracker> = HashMap()
 
     val boneMatrices : Array<FloatArray> = Array(skin[0].joints.size){FloatArray(16)}
-
     val bones: MutableMap<NodeModel, Bone> = HashMap()
 
     init {
@@ -38,6 +43,7 @@ class Actor(val model: GltfModel, path:String):AObject(),IReceiveInput {
     }
 
     override fun onInit() {
+        mScene.updateReceivers(receiver)
         buffer = VertexBuffer()
         program = mScene.loadProgram("armateur")
 
@@ -64,6 +70,7 @@ class Actor(val model: GltfModel, path:String):AObject(),IReceiveInput {
     }
 
     override fun draw(viewMat: FloatArray, projectionMat: FloatArray) {
+        animator.update()
         addJointsToArray(bones)
 
         program.use()
@@ -81,18 +88,6 @@ class Actor(val model: GltfModel, path:String):AObject(),IReceiveInput {
         drawElements(noVertices)
     }
 
-    override fun scroll(mode: InputMode, xDist: Float, yDist: Float) {
-
-    }
-
-    override fun resetCamera() {
-
-    }
-
-    override fun move() {
-
-    }
-
     private fun createBones(){
         for(joints in skin[0].joints){
             bones[joints]= Bone(
@@ -105,6 +100,55 @@ class Actor(val model: GltfModel, path:String):AObject(),IReceiveInput {
     private fun addJointsToArray(bones:Map<NodeModel,Bone>){
         for(child in bones){
             boneMatrices[skin[0].joints.indexOf(child.key)] = child.value.animatedTransform
+        }
+    }
+
+    private fun createReceiver():IReceiveInput{
+        return object : IReceiveInput {
+            override fun scroll(mode: InputMode, xDist: Float, yDist: Float) {}
+
+            override fun resetCamera() {}
+
+            override fun touchTracker(value:TouchTracker) {
+                if(touches.containsKey(value.id)){
+                    if(value.released){
+                        touches.remove(value.id)
+                    }
+                    else{
+                        touches[value.id]!!.currentPosition = value.currentPosition
+                        touches[value.id]!!.updated = true
+                        receiverConsumer(touches[value.id]!!)
+                    }
+                }
+                else{
+                    touches[value.id] = value
+                }
+            }
+
+        }
+    }
+    /*
+    This function is triggered every time the receivers are updates
+     */
+    fun receiverConsumer(value: TouchTracker){
+        val middle = Pair(mScene.width,mScene.height)
+        val tracker = touches[value.id]!!
+        if(tracker.startPosition.x<middle.first){
+            //Movement code
+            if(tracker.currentPosition!= tracker.startPosition){
+                //calculate rotation
+                val angle = tracker.startPosition.angle(tracker.currentPosition)
+                val modelMatrix = Matrix4f().set(modelMat)
+                val trans = modelMatrix.getTranslation(Vector3f())
+                trans.z = 0f
+                modelMatrix.rotate(angle,Vector3f(floatArrayOf(0f,1f,0f)))
+                    .get(modelMat)
+
+            }
+
+        }
+        else{
+
         }
     }
 }

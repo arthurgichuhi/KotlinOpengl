@@ -5,9 +5,10 @@ import android.opengl.GLES32.GL_COLOR_BUFFER_BIT
 import android.opengl.GLES32.GL_DEPTH_BUFFER_BIT
 import android.opengl.GLES32.glClear
 import com.arthurgichuhi.kotlinopengl.camera.MyCamera
+import com.arthurgichuhi.kotlinopengl.io_Operations.Input
 import java.util.Date
 
-open class AScene(val context: Context) {
+abstract class AScene(val context: Context) {
 
     var width=0f
     var height=0f
@@ -17,11 +18,14 @@ open class AScene(val context: Context) {
     private var textures:MutableMap<String,Texture> = HashMap()
 
     var camera=MyCamera()
+    var myInput: Input?=null
 
     protected var sceneUpdate:SceneUpdateCall?=null
     fun setUpdateCall(sceneUpdateCall: SceneUpdateCall){
         sceneUpdate = sceneUpdateCall
     }
+
+    abstract fun updateReceivers(receiver:IReceiveInput)
 
     fun initObjects(){
         for(obj in objects){

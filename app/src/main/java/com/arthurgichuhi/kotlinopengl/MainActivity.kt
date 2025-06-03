@@ -21,6 +21,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.arthurgichuhi.kotlinopengl.core.AObject
 import com.arthurgichuhi.kotlinopengl.core.InputMode
 import com.arthurgichuhi.kotlinopengl.core.ObjUpdateCall
+import com.arthurgichuhi.kotlinopengl.customObjs.Actor
 import com.arthurgichuhi.kotlinopengl.customObjs.GltfObj
 import com.arthurgichuhi.kotlinopengl.customObjs.PCTNObj
 import com.arthurgichuhi.kotlinopengl.customObjs.PathVert
@@ -44,8 +45,8 @@ class MainActivity : ComponentActivity(){
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        input=Input(this)
-        myScene=MyScene(this,input,this@MainActivity)
+        input = Input(this)
+        myScene = MyScene(this,input)
 
         val sb = SkyBox(300f,
             "textures/milkyway2/left.png",
@@ -89,12 +90,13 @@ class MainActivity : ComponentActivity(){
         val gltObj = GltfObj(gltfModel,"models/model/diffuse.png")
         gltObj.setUpdateCall(object:ObjUpdateCall{
             override fun update(time: Long, obj: AObject) {
-                gltObj.animator.update()
-                moveEarth(time,obj)
+
             }
         })
 
-        myScene.addObject(gltObj)
+        val actor = Actor(gltfModel,"models/model/diffuse.png")
+        myScene.addObject(actor)
+        //myScene.addObject(gltObj)
 
         setContent{
             HomeScreen()
@@ -102,7 +104,7 @@ class MainActivity : ComponentActivity(){
     }
 
     override fun onDestroy() {
-        myScene.destroy()
+        //myScene.destroy()
         super.onDestroy()
     }
 
