@@ -7,5 +7,6 @@ data class TouchTracker(
     var released:Boolean = false,
     var startPosition:Vector2f,
     var currentPosition:Vector2f,
-    var updated:Boolean = false
+    var updated:Boolean = false,
+    val side:Int = 0
 )

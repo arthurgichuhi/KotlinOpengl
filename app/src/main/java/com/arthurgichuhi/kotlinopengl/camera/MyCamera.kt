@@ -26,7 +26,7 @@ class MyCamera:IReceiveInput {
     init {
         Matrix.setIdentityM(viewMat,0)
         Matrix.setIdentityM(projectionMat,0)
-        Matrix.translateM(viewMat,0,0f,0f,-10f)
+        Matrix.translateM(viewMat,0,0f,-5f,-20f)
         myOrientation=MathUtils.makeANewCopy(defaultOrientation.toArray())
         //resetCamera()
     }
@@ -74,7 +74,7 @@ class MyCamera:IReceiveInput {
 //                defaultPos.y += 10f*yDist/myScene.height
             }
         }
-        updateViewMatrix(xAngle,yAngle)
+        //updateViewMatrix(xAngle,yAngle)
     }
 
     override fun resetCamera(){

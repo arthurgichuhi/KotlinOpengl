@@ -44,12 +44,14 @@ class Input(ctx: Context): OnTouchListener, GestureDetector.OnGestureListener {
     override fun onTouch(v: View?, event: MotionEvent?): Boolean {
         gestureDetector?.onTouchEvent(event!!)
         for(i in receivers){
+            Log.d("TAG","View ${v!!.width}")
             if(event!=null){
                 i.touchTracker(TouchTracker(
                     id = event.downTime,
                     startPosition = Vector2f(event.x,event.y),
                     currentPosition = Vector2f(event.x,event.y),
-                    released = event.action==1
+                    released = event.action==1,
+                    side = if((v!!.width/2f)>event.x) 0 else 1
                 ))
             }
         }

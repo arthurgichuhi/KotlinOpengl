@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
+import com.arthurgichuhi.kotlinopengl.controllers.JoystickController
 import com.arthurgichuhi.kotlinopengl.core.AObject
 import com.arthurgichuhi.kotlinopengl.core.InputMode
 import com.arthurgichuhi.kotlinopengl.core.ObjUpdateCall
@@ -42,11 +43,14 @@ class MainActivity : ComponentActivity(){
     private lateinit var input:Input
 
     private val gltfModelReader = GltfModelReader()
+    private lateinit var actor: Actor
+    private lateinit var controllers:Array<JoystickController>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         input = Input(this)
         myScene = MyScene(this,input)
+
 
         val sb = SkyBox(300f,
             "textures/milkyway2/left.png",
@@ -94,7 +98,8 @@ class MainActivity : ComponentActivity(){
             }
         })
 
-        val actor = Actor(gltfModel,"models/model/diffuse.png")
+        actor = Actor(gltfModel,"models/model/diffuse.png")
+        actor.rotate(180f,Vec3f(0f,1f,0f))
         myScene.addObject(actor)
         //myScene.addObject(gltObj)
 
@@ -138,6 +143,16 @@ class MainActivity : ComponentActivity(){
                 modifier = Modifier.fillMaxSize(),
                 factory = {context-> MySurfaceView(context,myScene,input) }
             )
+
+            AndroidView(
+                factory = { context ->
+                    actor.initializeJoystickControllers(Array(2) {
+                        JoystickController(context) })
+                    actor.controllers[0]
+
+                }
+            )
+
             Text("Frame Rate:00FPS", modifier = Modifier.align(alignment = Alignment.TopEnd))
             Row(modifier=Modifier.align(Alignment.TopStart)) {
                 HomeButton(
@@ -156,7 +171,9 @@ class MainActivity : ComponentActivity(){
                     icon = Icons.Filled.Star
                 )
             }
-            Row(modifier = Modifier.fillMaxWidth(.6f).align(Alignment.BottomStart,),) {
+            Row(modifier = Modifier
+                .fillMaxWidth(.6f)
+                .align(Alignment.BottomStart,),) {
                 //move
                 HomeButton(
                     callback = {input.setCurrentMode(InputMode.MOVE)},
