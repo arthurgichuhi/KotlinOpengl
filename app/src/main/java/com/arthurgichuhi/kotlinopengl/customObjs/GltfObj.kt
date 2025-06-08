@@ -52,7 +52,7 @@ class GltfObj(val model:GltfModel,path:String):AObject() {
         receiver = createReceiver()
         createBones()
         animator = Animator(model,bones)
-        animation = animator.processAnimation(model.animationModels[0])
+        animation = Animator.processAnimation(model.animationModels[0])
     }
 
     override fun onInit() {

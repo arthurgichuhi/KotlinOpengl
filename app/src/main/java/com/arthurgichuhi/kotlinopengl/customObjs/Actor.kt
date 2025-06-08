@@ -36,7 +36,7 @@ class Actor(
     private val skin = model.skinModels
     private val noVertices = primitives.indices.count
 
-    private lateinit var animation: Array<Animation>
+    private var animation: Array<Animation>
     private val animator: Animator
 
     private val receiver: IReceiveInput = createReceiver()
@@ -61,8 +61,9 @@ class Actor(
     init {
         createBones()
         animator = Animator(model, bones)
+        Log.d("TAG","No of animations ${model.animationModels.size }")
         animation = Array(model.animationModels.size){
-            animator.processAnimation(model.animationModels[it])
+            Animator.processAnimation(model.animationModels[it])
         }
 
     }
@@ -88,7 +89,7 @@ class Actor(
         buffer.loadGltfInt(primitives, locs, false)
 
         program.use()
-        animator.doAnimation(animation.first())
+        animator.doAnimation(animation.last())
         middle = Pair(mScene.width, mScene.height)
     }
 
@@ -107,6 +108,8 @@ class Actor(
         lastFrameTime = currentFrameTime
 
         if (!touches[1].released) {
+
+            animator.doAnimation(animation.first())
             val direction = Vector2f(
                 touches[1].currentPosition.x - touches[1].startPosition.x,
                 touches[1].currentPosition.y - touches[1].startPosition.y
@@ -127,6 +130,10 @@ class Actor(
 
             // Translate model matrix directly
             Matrix.translateM(modelMat,0,movement.x,movement.y,movement.z)
+        }
+        else{
+
+            animator.doAnimation(animation.last())
         }
 
         animator.update()

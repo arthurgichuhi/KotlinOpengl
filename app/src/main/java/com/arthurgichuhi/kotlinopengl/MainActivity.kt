@@ -89,7 +89,7 @@ class MainActivity : ComponentActivity(){
         //myScene.addObject(sun)
 
         //GLTF Testing
-        val file = this.assets.open("models/model/armature.glb")
+        val file = this.assets.open("models/model/armature-2-animations.glb")
         val gltfModel = gltfModelReader.readWithoutReferences(file)
         val gltObj = GltfObj(gltfModel,"models/model/diffuse.png")
         gltObj.setUpdateCall(object:ObjUpdateCall{
@@ -109,7 +109,7 @@ class MainActivity : ComponentActivity(){
     }
 
     override fun onDestroy() {
-        //myScene.destroy()
+        myScene.destroy()
         super.onDestroy()
     }
 

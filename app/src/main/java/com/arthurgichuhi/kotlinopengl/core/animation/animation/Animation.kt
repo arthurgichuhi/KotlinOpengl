@@ -10,4 +10,4 @@ import de.javagl.jgltf.model.NodeModel
  *            appearance in the animation.
 */
 
-data class Animation(var length:Float,val keyFrames:List<KeyFrame2>)
+data class Animation(var name:String,var length:Float,val keyFrames:List<KeyFrame2>)
