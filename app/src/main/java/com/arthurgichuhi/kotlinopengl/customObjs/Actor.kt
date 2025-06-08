@@ -36,7 +36,7 @@ class Actor(
     private val skin = model.skinModels
     private val noVertices = primitives.indices.count
 
-    private var animation: Animation
+    private lateinit var animation: Array<Animation>
     private val animator: Animator
 
     private val receiver: IReceiveInput = createReceiver()
@@ -61,7 +61,10 @@ class Actor(
     init {
         createBones()
         animator = Animator(model, bones)
-        animation = animator.processAnimation(model.animationModels[0])
+        animation = Array(model.animationModels.size){
+            animator.processAnimation(model.animationModels[it])
+        }
+
     }
 
     override fun onInit() {
@@ -85,7 +88,7 @@ class Actor(
         buffer.loadGltfInt(primitives, locs, false)
 
         program.use()
-        animator.doAnimation(animation)
+        animator.doAnimation(animation.first())
         middle = Pair(mScene.width, mScene.height)
     }
 

@@ -1,6 +1,7 @@
 package com.arthurgichuhi.kotlinopengl.core.animation.animation
 
 import android.opengl.Matrix
+import android.util.Log
 import com.arthurgichuhi.kotlinopengl.core.animation.animatedModel.Bone
 import com.arthurgichuhi.kotlinopengl.utils.Utils
 import de.javagl.jgltf.impl.v2.Skin
@@ -18,6 +19,7 @@ class Animator(
 ) {
     private val model = gltfObj
     private var currentAnimation: Animation? = null
+    private var nextAnimation:Animation? = null
     private var animationTime:Float = 0f
     private var start:Float = 0f
 
@@ -50,7 +52,11 @@ class Animator(
         val currentTime = Utils.getCurrentTime()
         animationTime = currentTime - start
         if(animationTime>currentAnimation!!.length){
-            if(loop)start = currentTime - (animationTime % currentAnimation!!.length)
+            if(nextAnimation!=null){
+                currentAnimation = nextAnimation
+                nextAnimation = null
+            }
+            start = currentTime - (animationTime % currentAnimation!!.length)
             animationTime %= currentAnimation!!.length
 
         }
