@@ -1,7 +1,6 @@
 package com.arthurgichuhi.kotlinopengl.core.animation.animation
 
 import android.opengl.Matrix
-import android.util.Log
 import com.arthurgichuhi.kotlinopengl.core.animation.animatedModel.Bone
 import com.arthurgichuhi.kotlinopengl.utils.Utils
 import de.javagl.jgltf.impl.v2.Skin
@@ -22,12 +21,7 @@ class Animator(
     private var nextAnimation:Animation? = null
     private var animationTime:Float = 0f
     private var start:Float = 0f
-    private var delta:Float = 0f
-    private var transitionTime = 0f
-    private var transitionDuration = 0.3f // Adjust as needed
-    private var isTransitioning = false
 
-    private var loop :Boolean = true
     private var triggerLoop = true
     private var speed:Float = .001f
 
@@ -57,24 +51,12 @@ class Animator(
         applyPoseToJoints()
     }
 
-    fun updateDelta(value:Float){
-        delta = value
-    }
-
     private fun increaseAnimationTime(){
         val currentTime = Utils.getCurrentTime()
         animationTime = currentTime - start
-        if(animationTime>currentAnimation!!.length){
-            if(nextAnimation!=null){
-                animationTime = currentTime
-                start = currentTime - (animationTime % nextAnimation!!.length)
-                animationTime %= nextAnimation!!.length
-            }
-            else{
-                start = currentTime - (animationTime % currentAnimation!!.length)
-                animationTime %= currentAnimation!!.length
-            }
-
+        if (animationTime > currentAnimation!!.length) {
+            start = currentTime - (animationTime % currentAnimation!!.length)
+            animationTime %= currentAnimation!!.length
         }
     }
 
@@ -135,7 +117,7 @@ class Animator(
             val rot = prev.rotation.normalize().slerp(next.rotation.normalize(), alpha)
             // Interpolate scale
             val scale = prev.scale.lerp(next.scale, alpha)
-            gltfObj.nodeModels[index]!!.also {
+            gltfObj.nodeModels[index]?.also {
                 it.translation = floatArrayOf(trans.x,trans.y,trans.z)
                 it.rotation = floatArrayOf(rot.x,rot.y,rot.z,rot.w)
                 it.scale = floatArrayOf(scale.x,scale.y,scale.z)
@@ -146,77 +128,6 @@ class Animator(
                 nextAnimation = null
             }
         }
-    }
-
-    private fun interpolateBetweenAnimations(
-        prevFrameA: KeyFrame2, nextFrameA: KeyFrame2, progressionA: Float,
-        prevFrameB: KeyFrame2, nextFrameB: KeyFrame2, blendFactor: Float
-    ) {
-        // First interpolate within each animation
-        val poseA = HashMap<NodeModel, BoneTransform>()
-        val poseB = HashMap<NodeModel, BoneTransform>()
-
-        // Calculate pose for current animation
-        for (node in prevFrameA.boneTransforms.keys) {
-            val prev = prevFrameA.boneTransforms[node]!!
-            val next = nextFrameA.boneTransforms[node]!!
-            poseA[node] = BoneTransform().apply {
-                translation = prev.translation.lerp(next.translation, progressionA)
-                rotation = prev.rotation.slerp(next.rotation, progressionA)
-                scale = prev.scale.lerp(next.scale, progressionA)
-            }
-        }
-
-        // Calculate pose for next animation
-        val progressionB = if (nextFrameB.time == prevFrameB.time) 0f else
-            (animationTime - prevFrameB.time) / (nextFrameB.time - prevFrameB.time)
-
-        for (node in prevFrameB.boneTransforms.keys) {
-            val prev = prevFrameB.boneTransforms[node]!!
-            val next = nextFrameB.boneTransforms[node]!!
-            poseB[node] = BoneTransform().apply {
-                translation = prev.translation.lerp(next.translation, progressionB)
-                rotation = prev.rotation.slerp(next.rotation, progressionB)
-                scale = prev.scale.lerp(next.scale, progressionB)
-            }
-        }
-
-        // Blend between the two poses
-        for ((node, transformA) in poseA) {
-            val transformB = poseB[node] ?: continue
-            val index = gltfObj.nodeModels.indexOf(node)
-            gltfObj.nodeModels[index]?.also {
-                it.translation = floatArrayOf(
-                    transformA.translation.x * (1 - blendFactor) + transformB.translation.x * blendFactor,
-                    transformA.translation.y * (1 - blendFactor) + transformB.translation.y * blendFactor,
-                    transformA.translation.z * (1 - blendFactor) + transformB.translation.z * blendFactor
-                )
-
-                val blendedRot = transformA.rotation.slerp(transformB.rotation, blendFactor)
-                it.rotation = floatArrayOf(
-                    blendedRot.x, blendedRot.y, blendedRot.z, blendedRot.w
-                )
-
-                it.scale = floatArrayOf(
-                    transformA.scale.x * (1 - blendFactor) + transformB.scale.x * blendFactor,
-                    transformA.scale.y * (1 - blendFactor) + transformB.scale.y * blendFactor,
-                    transformA.scale.z * (1 - blendFactor) + transformB.scale.z * blendFactor
-                )
-            }
-        }
-    }
-
-    private fun getPreviousAndNextFramesForAnimation(animation: Animation): Array<KeyFrame2> {
-        // Similar to getPreviousAndNextFrames but for a specific animation
-        val allFrames = animation.keyFrames
-        var previousFrame = allFrames[0]
-        var nextFrame = allFrames[0]
-        for (frame in allFrames) {
-            nextFrame = frame
-            if (nextFrame.time > animationTime) break
-            previousFrame = frame
-        }
-        return arrayOf(previousFrame, nextFrame)
     }
 
     companion object{

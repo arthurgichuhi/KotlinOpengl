@@ -16,11 +16,8 @@ import com.arthurgichuhi.kotlinopengl.io_Operations.TouchTracker
 import com.arthurgichuhi.kotlinopengl.utils.Utils
 import de.javagl.jgltf.model.GltfModel
 import de.javagl.jgltf.model.NodeModel
-import org.joml.Matrix4f
 import org.joml.Vector2f
 import org.joml.Vector3f
-import kotlin.math.cos
-import kotlin.math.sin
 
 class Actor(
     val model: GltfModel, path: String,
@@ -49,7 +46,7 @@ class Actor(
     }
     lateinit var controllers: Array<JoystickController>
 
-    var middle = Pair(0f, 0f)
+    private var middle = Pair(0f, 0f)
     private val speed = 20f
     private var lastFrameTime = 0f
     private var currentFrameTime = 0f
@@ -61,10 +58,10 @@ class Actor(
     init {
         createBones()
         animator = Animator(model, bones)
-        Log.d("TAG","No of animations ${model.animationModels.size }")
         animation = Array(model.animationModels.size){
             Animator.processAnimation(model.animationModels[it])
         }
+        Log.d("TAG","Length ${animation.last().length}")
 
     }
 
@@ -114,7 +111,6 @@ class Actor(
                 touches[1].currentPosition.x - touches[1].startPosition.x,
                 touches[1].currentPosition.y - touches[1].startPosition.y
             )
-
             // Normalize to get consistent speed in all directions
             if (direction.length() > 0) {
                 direction.normalize()
@@ -123,15 +119,14 @@ class Actor(
             // Apply movement (scale by speed and delta)
             val distance = speed * delta
             val movement = Vector3f(
-                distance * direction.x,  // X-axis movement
+                -distance * direction.x,  // X-axis movement
                 0f,                       // Y-axis (unused in this case)
                 -distance * direction.y   // Z-axis movement (negate if needed)
             )
 
             // Translate model matrix directly
-            Matrix.translateM(modelMat,0,movement.x,movement.y,movement.z)
-        }
-        else{
+            Matrix.translateM(modelMat, 0, movement.x, movement.y, movement.z)
+        } else {
 
             animator.doAnimation(animation.last())
         }
@@ -195,16 +190,14 @@ class Actor(
      */
     fun rotateActor() {
         val tracker = touches[0]
-        Log.d("TAG", "Pos ${middle.first}  ${tracker.startPosition.x}")
         if (tracker.side == 0) {
-            Log.d("TAG", "Rotating")
             //Movement code
             if (tracker.currentPosition != tracker.startPosition) {
                 //calculate rotation
                 val angle =
                     Math.toDegrees(tracker.startPosition.angle(tracker.currentPosition).toDouble())
                         .toFloat()
-                Matrix.rotateM(modelMat, 0, angle, 0f, 1f, 0f)
+                Matrix.rotateM(modelMat, 0, angle * .8f, 0f, 1f, 0f)
             }
 
         }
