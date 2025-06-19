@@ -29,6 +29,7 @@ class Animator(
 
     val skin = Skin()
 
+
     fun doAnimation(animation: Animation){
         if(currentAnimation==null){
             currentAnimation = animation
@@ -36,10 +37,6 @@ class Animator(
         else{
             nextAnimation = animation
         }
-    }
-
-    fun triggerLoop(value:Boolean){
-        triggerLoop = value
     }
 
     fun update(){
@@ -185,7 +182,7 @@ class Animator(
             return Animation(animation.name,nodeKeyFrames.last().time,nodeKeyFrames)
         }
 
-        private fun getFloatData(accessor: AccessorModel): AccessorFloatData {
+        fun getFloatData(accessor: AccessorModel): AccessorFloatData {
             val data = accessor.accessorData
             require(data is AccessorFloatData) { "Expected float data in accessor!" }
             return data

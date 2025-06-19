@@ -13,6 +13,7 @@ import com.arthurgichuhi.kotlinopengl.core.animation.animatedModel.Bone
 import com.arthurgichuhi.kotlinopengl.core.animation.animation.Animation
 import com.arthurgichuhi.kotlinopengl.core.animation.animation.Animator
 import com.arthurgichuhi.kotlinopengl.io_Operations.TouchTracker
+import com.arthurgichuhi.kotlinopengl.models.ModelInputs
 import com.arthurgichuhi.kotlinopengl.utils.Utils
 import de.javagl.jgltf.model.GltfModel
 import de.javagl.jgltf.model.NodeModel
@@ -26,7 +27,7 @@ class Actor(
     private lateinit var buffer: VertexBuffer
     private lateinit var tex: Texture
 
-    private val locs: MutableMap<String, Int> = HashMap()
+    private val modelInputs = ModelInputs(true,true,false,true)
     private val texPath = path
 
     private val primitives = model.meshModels[0].meshPrimitiveModels[0]
@@ -61,7 +62,6 @@ class Actor(
         animation = Array(model.animationModels.size){
             Animator.processAnimation(model.animationModels[it])
         }
-        Log.d("TAG","Length ${animation.last().length}")
 
     }
 
@@ -70,20 +70,14 @@ class Actor(
         buffer = VertexBuffer()
         program = mScene.loadProgram("armateur")
 
-        locs["position"] = program.getAttribLoc("position")
-        locs["tex"] = program.getAttribLoc("tex")
-        locs["normal"] = program.getAttribLoc("normal")
-        locs["jointIndices"] = program.getAttribLoc("jointIndices")
-        locs["weights"] = program.getAttribLoc("weights")
-
         buffer.loadGltfIndices(primitives, false)
         buffer.loadGltfFloats(
             primitives,
-            locs,
+            modelInputs,
             loadTex = { tex = mScene.loadTexture(texPath) },
             false
         )
-        buffer.loadGltfInt(primitives, locs, false)
+        buffer.loadGltfInt(primitives, false)
 
         program.use()
         animator.doAnimation(animation.last())

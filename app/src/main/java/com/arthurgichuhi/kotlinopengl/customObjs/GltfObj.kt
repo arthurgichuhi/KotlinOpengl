@@ -1,5 +1,6 @@
 package com.arthurgichuhi.kotlinopengl.customObjs
 
+import android.util.Log
 import com.arthurgichuhi.kotlinopengl.core.AObject
 import com.arthurgichuhi.kotlinopengl.core.IReceiveInput
 import com.arthurgichuhi.kotlinopengl.core.InputMode
@@ -12,6 +13,7 @@ import com.arthurgichuhi.kotlinopengl.core.animation.animation.Animator
 import com.arthurgichuhi.kotlinopengl.core.animation.animation.BoneTransform
 import com.arthurgichuhi.kotlinopengl.core.animation.animation.KeyFrame2
 import com.arthurgichuhi.kotlinopengl.io_Operations.TouchTracker
+import com.arthurgichuhi.kotlinopengl.models.ModelInputs
 import de.javagl.jgltf.model.AccessorFloatData
 import de.javagl.jgltf.model.AccessorModel
 import de.javagl.jgltf.model.AnimationModel
@@ -27,51 +29,59 @@ import org.joml.Vector3f
  * @param model Data read from a gltf file
  */
 
-class GltfObj(val model:GltfModel,path:String):AObject() {
+class GltfObj(val model:GltfModel,val modelInputs: ModelInputs,path:String):AObject() {
     private lateinit var program: Program
     private lateinit var buffer : VertexBuffer
     private lateinit var tex : Texture
+    private var buffers : Array<VertexBuffer>? = null
+    private var bound:Boolean = false
 
-    private val locs: MutableMap<String,Int> = HashMap()
     private val texPath = path
 
     private val primitives = model.meshModels[0].meshPrimitiveModels[0]
     private val skin = model.skinModels
 
     private val noVertices = primitives.indices.count
-    private var animation : Animation
-    var animator : Animator
+    private var animation : Animation? = null
+    lateinit var animator : Animator
 
     var receiver:IReceiveInput
 
-    private val boneMatrices : Array<FloatArray> = Array(skin[0].joints.size){FloatArray(16)}
+    private lateinit var boneMatrices : Array<FloatArray>
 
     val bones: MutableMap<NodeModel,Bone> = HashMap()
 
     init {
         receiver = createReceiver()
-        createBones()
-        animator = Animator(model,bones)
-        animation = Animator.processAnimation(model.animationModels[0])
+        if(modelInputs.hasJointIndices){
+            boneMatrices = Array(skin[0].joints.size){FloatArray(16)}
+            createBones()
+            animator = Animator(model,bones)
+            animation = Animator.processAnimation(model.animationModels[0])
+        }
     }
 
     override fun onInit() {
         mScene.updateReceivers(receiver)
-        buffer = VertexBuffer()
-        program = mScene.loadProgram("armateur")
-
-        locs["position"] = program.getAttribLoc("position")
-        locs["tex"] = program.getAttribLoc("tex")
-        locs["normal"] = program.getAttribLoc("normal")
-        locs["jointIndices"] =  program.getAttribLoc("jointIndices")
-        locs["weights"] = program.getAttribLoc("weights")
-
-        buffer.loadGltfIndices(primitives,false)
-        buffer.loadGltfFloats(primitives,locs,loadTex = {tex=mScene.loadTexture(texPath)},false)
-        buffer.loadGltfInt(primitives,locs,false)
+        program = mScene.loadProgram(if(modelInputs.hasTextures)"armateur" else "noTexture")
+        if(model.meshModels.size>1){
+            buffers = Array(model.meshModels.size){VertexBuffer()}
+        }
+        if(buffers==null){
+            buffer = VertexBuffer()
+            buffer.loadGltfIndices(primitives,true)
+            buffer.loadGltfFloats(primitives,modelInputs,loadTex = {tex=mScene.loadTexture(texPath)},false)
+            if(modelInputs.hasJointIndices)buffer.loadGltfInt(primitives,true)
+        }
+        else{
+            model.meshModels.forEachIndexed{index,it->
+                buffers!![index].loadGltfIndices(it.meshPrimitiveModels[0],true)
+                buffers!![index].loadGltfFloats(it.meshPrimitiveModels[0],modelInputs, loadTex = {},true)
+            }
+        }
 
         program.use()
-        animator.doAnimation(animation)
+        if(animation!=null)animator.doAnimation(animation!!)
     }
 
     override fun destroy() {
@@ -83,22 +93,36 @@ class GltfObj(val model:GltfModel,path:String):AObject() {
     }
 
     override fun draw(viewMat: FloatArray, projectionMat: FloatArray) {
-        animator.update()
-        addJointsToArray(bones)
+        if(animation!=null){
+            animator.update()
+            addJointsToArray(bones)
+        }
 
         program.use()
-        buffer.bind()
-        tex.bindTexture()
+        if(buffers==null){
+            buffer.bind()
+        }
+        if(modelInputs.hasTextures)tex.bindTexture()
 
-        for (i in boneMatrices.indices){
-            program.setUniformMat("jointTransforms[$i]",boneMatrices[i])
+        if(animation!=null){
+            for (i in boneMatrices.indices){
+                program.setUniformMat("jointTransforms[$i]",boneMatrices[i])
+            }
         }
 
         program.setUniformMat("model",modelMat)
         program.setUniformMat("view",viewMat)
         program.setUniformMat("projection",projectionMat)
 
-        drawElements(noVertices)
+        if(buffers==null){
+            drawElements(noVertices)
+        }
+        else{
+            model.meshModels.forEachIndexed{index,it->
+                buffers!![index].bind()
+                drawElements(it.meshPrimitiveModels[0].indices.count)
+            }
+        }
     }
 
     private fun createBones(){

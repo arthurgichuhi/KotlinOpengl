@@ -3,11 +3,11 @@
 const int MAX_JOINTS = 50;//max joints allowed in a skeleton
 const int MAX_WEIGHTS = 4;//max number of joints that can affect a vertex
 
-in vec3 position;
-in vec2 tex;
-in vec3 normal;
-in ivec4 jointIndices;
-in vec4 weights;
+layout(location = 0) in vec3 position;
+layout(location = 1) in vec2 tex;
+layout(location = 2) in vec3 normal;
+layout(location = 3) in ivec4 jointIndices;
+layout(location = 4) in vec4 weights;
 
 out vec2 oTex;
 out vec3 oNorm;

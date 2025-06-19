@@ -32,6 +32,7 @@ import com.arthurgichuhi.kotlinopengl.customObjs.SphereObj
 import com.arthurgichuhi.kotlinopengl.gl_surface.MyScene
 import com.arthurgichuhi.kotlinopengl.gl_surface.MySurfaceView
 import com.arthurgichuhi.kotlinopengl.io_Operations.Input
+import com.arthurgichuhi.kotlinopengl.models.ModelInputs
 import com.arthurgichuhi.kotlinopengl.models.Vec3f
 import com.arthurgichuhi.kotlinopengl.my_ui.HomeButton
 import de.javagl.jgltf.model.GltfAnimations
@@ -43,8 +44,6 @@ class MainActivity : ComponentActivity(){
     private lateinit var input:Input
 
     private val gltfModelReader = GltfModelReader()
-    private lateinit var actor: Actor
-    private lateinit var controllers:Array<JoystickController>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -88,21 +87,36 @@ class MainActivity : ComponentActivity(){
 
         //myScene.addObject(sun)
 
-        //GLTF Testing
+        //GLTF
         val file = this.assets.open("models/model/armature-2-animations.glb")
         val gltfModel = gltfModelReader.readWithoutReferences(file)
-        val gltObj = GltfObj(gltfModel,"models/model/diffuse.png")
-        gltObj.setUpdateCall(object:ObjUpdateCall{
+        file.close()
+        val gltObj = GltfObj(
+            gltfModel,
+            ModelInputs(true, true, false, true),
+            "models/model/diffuse.png"
+        )
+        gltObj.setUpdateCall(object : ObjUpdateCall {
             override fun update(time: Long, obj: AObject) {
 
             }
         })
+        myScene.addObject(gltObj)
 
-        actor = Actor(gltfModel,"models/model/diffuse.png")
-        actor.rotate(180f,Vec3f(0f,1f,0f))
-        myScene.addObject(actor)
-        //myScene.addObject(gltObj)
+        val actor = Actor(gltfModel, "models/model/diffuse.png")
+        actor.rotate(180f, Vec3f(0f, 1f, 0f))
+       // myScene.addObject(actor)
 
+
+        val interiorFile = this.assets.open("models/model/house.glb")
+        val interiorGltf = gltfModelReader.readWithoutReferences(interiorFile)
+        interiorFile.close()
+        val interiorObj = GltfObj(
+            interiorGltf,
+            ModelInputs(false, false, false, false),
+            ""
+        )
+        //myScene.addObject(interiorObj)
         setContent{
             HomeScreen()
         }
@@ -142,15 +156,6 @@ class MainActivity : ComponentActivity(){
             AndroidView(
                 modifier = Modifier.fillMaxSize(),
                 factory = {context-> MySurfaceView(context,myScene,input) }
-            )
-
-            AndroidView(
-                factory = { context ->
-                    actor.initializeJoystickControllers(Array(2) {
-                        JoystickController(context) })
-                    actor.controllers[0]
-
-                }
             )
 
             Text("Frame Rate:00FPS", modifier = Modifier.align(alignment = Alignment.TopEnd))
