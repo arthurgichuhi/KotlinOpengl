@@ -1,6 +1,6 @@
 package com.arthurgichuhi.kotlinopengl.core
 
-import android.opengl.GLES20
+
 import android.opengl.GLES20.GL_FLOAT
 import android.opengl.GLES20.GL_UNSIGNED_SHORT
 import android.opengl.GLES20.glEnableVertexAttribArray
@@ -20,15 +20,13 @@ import android.opengl.GLES32.glGenVertexArrays
 import android.opengl.GLES32.glGetError
 import android.opengl.GLES32.glVertexAttribIPointer
 import android.util.Log
-import com.arthurgichuhi.kotlinopengl.core.animation.animation.Animator
 import com.arthurgichuhi.kotlinopengl.models.ModelInputs
 import de.javagl.jgltf.model.MeshPrimitiveModel
 import java.nio.FloatBuffer
-import java.nio.ShortBuffer
 
 class VertexBuffer {
     private var vaoID = -1
-    private var vboID = -1
+    private var vboID = IntArray(1){-1}
     private var eboId = -1
 
     init {
@@ -36,15 +34,15 @@ class VertexBuffer {
         glGenVertexArrays(1,tmp,0)
         vaoID=tmp[0]
         glGenBuffers(1,tmp,0)
-        vboID = tmp[0]
+        vboID[0] = tmp[0]
     }
 
     fun load(data:FloatArray,staticDraw:Boolean){
         val vertexData=FloatBuffer.wrap(data)
         glBindVertexArray(vaoID)
-        glBindBuffer(GL_ARRAY_BUFFER,vboID)
+        glBindBuffer(GL_ARRAY_BUFFER,vboID[0])
         glBufferData(
-            GL_ARRAY_BUFFER,data.size*4, vertexData,
+            GL_ARRAY_BUFFER,data.size * 4, vertexData,
             if(staticDraw)GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
     }
 
@@ -57,6 +55,7 @@ class VertexBuffer {
         glGenBuffers(1,tmp,0)
         eboId = tmp[0]
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,eboId)
+        Log.d("TAG","Capacity ${indicesBuffer.capacity()}")
         glBufferData(
             GL_ELEMENT_ARRAY_BUFFER, indicesBuffer.capacity(), indicesBuffer,
             if(staticDraw)GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
@@ -74,9 +73,9 @@ class VertexBuffer {
         if(modelInputs.hasJointIndices){
             elements += 1
         }
-
-        val tmp = IntArray(elements)
-        glGenBuffers(elements,tmp,0)
+        Log.d("TAG","Attributes ${primitive.attributes.toList()}")
+        vboID = IntArray(elements)
+        glGenBuffers(elements,vboID,0)
         var size: Int
 
         //bind position
@@ -84,12 +83,11 @@ class VertexBuffer {
         val positionsBuffer = positions.bufferViewModel.bufferViewData
         size = positions.elementType.numComponents
 
-        glBindBuffer(GL_ARRAY_BUFFER,tmp[0])
+        glBindBuffer(GL_ARRAY_BUFFER,vboID[0])
         glBufferData(
             GL_ARRAY_BUFFER, positionsBuffer.capacity(), positionsBuffer,
             if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
         glEnableVertexAttribArray(0)
-        checkGlError("Position Vertrib Array")
         glVertexAttribPointer(0, size, GL_FLOAT, false, 0, 0)
 
         //bind texCoords
@@ -98,7 +96,7 @@ class VertexBuffer {
             val texBuffer = tex.bufferViewModel.bufferViewData
             size = tex.elementType.numComponents
 
-            glBindBuffer(GL_ARRAY_BUFFER,tmp[1])
+            glBindBuffer(GL_ARRAY_BUFFER,vboID[1])
             glBufferData(
                 GL_ARRAY_BUFFER, texBuffer.capacity(), texBuffer,
                 if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
@@ -113,7 +111,7 @@ class VertexBuffer {
             val normalsBuffer = normals.bufferViewModel.bufferViewData
             size = normals.elementType.numComponents
 
-            glBindBuffer(GL_ARRAY_BUFFER,tmp[if(modelInputs.hasTextures)2 else 1])
+            glBindBuffer(GL_ARRAY_BUFFER,vboID[if(modelInputs.hasTextures)2 else 1])
             glBufferData(
                 GL_ARRAY_BUFFER, normalsBuffer.capacity(), normalsBuffer,
                 if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
@@ -126,13 +124,12 @@ class VertexBuffer {
             val weightsBuffer = weights.bufferViewModel.bufferViewData
             size = weights.elementType.numComponents
 
-            glBindBuffer(GL_ARRAY_BUFFER,tmp[3])
+            glBindBuffer(GL_ARRAY_BUFFER,vboID[3])
             glBufferData(
                 GL_ARRAY_BUFFER, weightsBuffer.capacity(), weightsBuffer,
                 if(staticDraw) GL_STATIC_DRAW else GL_DYNAMIC_DRAW)
             glEnableVertexAttribArray(4)
             glVertexAttribPointer(4, size, GL_FLOAT, false, 0, 0)
-
         }
     }
 
@@ -159,9 +156,9 @@ class VertexBuffer {
         if(vaoID!=-1){
             glDeleteVertexArrays(1, intArrayOf(vaoID),0)
         }
-        if(vboID!=-1){
-            glDeleteBuffers(1, intArrayOf(vboID),0)
-        }
+
+        vboID.forEach { glDeleteBuffers(1, intArrayOf(it),0) }
+
         if(eboId!=-1){
             glDeleteBuffers(1, intArrayOf(eboId),0)
         }

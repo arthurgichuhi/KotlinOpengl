@@ -69,7 +69,7 @@ abstract class AScene(val context: Context) {
         }
     }
 
-    fun drawObjects(){
+    private fun drawObjects(){
         for(obj in objects){
             obj.draw(camera.viewMat,camera.projectionMat)
         }

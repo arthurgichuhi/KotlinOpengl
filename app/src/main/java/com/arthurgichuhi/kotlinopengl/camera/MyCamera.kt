@@ -63,18 +63,18 @@ class MyCamera:IReceiveInput {
         var yAngle = 0f
         when(mode){
             InputMode.MOVE->{
-//                defaultPos.x -= 30f*xDist/myScene.width
-//                defaultPos.z -= 30f*yDist/myScene.height
+                defaultPos.x -= 30f*xDist/myScene.width
+                defaultPos.z -= 30f*yDist/myScene.height
             }
             InputMode.ROTATE->{
-//                xAngle = 50f*yDist/myScene.height
-//                yAngle = 50f*xDist/myScene.width
+                xAngle = 50f*yDist/myScene.height
+                yAngle = 50f*xDist/myScene.width
             }
             InputMode.UP_DOWN->{
-//                defaultPos.y += 10f*yDist/myScene.height
+                defaultPos.y += 10f*yDist/myScene.height
             }
         }
-        //updateViewMatrix(xAngle,yAngle)
+        updateViewMatrix(xAngle,yAngle)
     }
 
     override fun resetCamera(){

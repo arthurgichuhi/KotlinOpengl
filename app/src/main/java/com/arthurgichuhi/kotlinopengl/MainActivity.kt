@@ -1,6 +1,7 @@
 package com.arthurgichuhi.kotlinopengl
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
@@ -23,6 +24,7 @@ import com.arthurgichuhi.kotlinopengl.core.AObject
 import com.arthurgichuhi.kotlinopengl.core.InputMode
 import com.arthurgichuhi.kotlinopengl.core.ObjUpdateCall
 import com.arthurgichuhi.kotlinopengl.customObjs.Actor
+import com.arthurgichuhi.kotlinopengl.customObjs.CollisionObj
 import com.arthurgichuhi.kotlinopengl.customObjs.GltfObj
 import com.arthurgichuhi.kotlinopengl.customObjs.PCTNObj
 import com.arthurgichuhi.kotlinopengl.customObjs.PathVert
@@ -101,22 +103,24 @@ class MainActivity : ComponentActivity(){
 
             }
         })
-        myScene.addObject(gltObj)
+        //myScene.addObject(gltObj)
 
-        val actor = Actor(gltfModel, "models/model/diffuse.png")
-        actor.rotate(180f, Vec3f(0f, 1f, 0f))
-       // myScene.addObject(actor)
+//        val actor = Actor(gltfModel, "models/model/diffuse.png")
+//        actor.rotate(180f, Vec3f(0f, 1f, 0f))
+//        myScene.addObject(actor)
 
 
-        val interiorFile = this.assets.open("models/model/house.glb")
+        val interiorFile = this.assets.open("models/model/house-4.glb")
         val interiorGltf = gltfModelReader.readWithoutReferences(interiorFile)
         interiorFile.close()
-        val interiorObj = GltfObj(
-            interiorGltf,
-            ModelInputs(false, false, false, false),
-            ""
-        )
-        //myScene.addObject(interiorObj)
+        Array(interiorGltf.meshModels.size) {
+            CollisionObj(interiorGltf.meshModels[it],interiorGltf.nodeModels[it], "", ModelInputs(false, false, false, false))
+        }.run {
+            for(obj in this){
+                myScene.addObject(obj)
+            }
+        }
+
         setContent{
             HomeScreen()
         }
