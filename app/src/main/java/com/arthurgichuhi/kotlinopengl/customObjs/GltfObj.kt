@@ -27,10 +27,11 @@ class GltfObj(val model:GltfModel,val modelInputs: ModelInputs,path:String):AObj
 
     private val texPath = path
 
-    private val primitives = model.meshModels[0].meshPrimitiveModels[0]
+    private val primitives = Array(model.meshModels.size){
+        model.meshModels[it].meshPrimitiveModels[0]
+    }
     private val skin = model.skinModels
 
-    private val noVertices = primitives.indices.count
     private var animation : Animation? = null
     lateinit var animator : Animator
 
@@ -55,15 +56,16 @@ class GltfObj(val model:GltfModel,val modelInputs: ModelInputs,path:String):AObj
         program = mScene.loadProgram(if(modelInputs.hasTextures)"armateur" else "noTexture")
 
         buffer = VertexBuffer()
-        buffer.loadGltfIndices(primitives, true)
-        buffer.loadGltfFloats(
-            primitives,
-            modelInputs,
-            loadTex = { tex = mScene.loadTexture(texPath) },
-            false
-        )
-        if (modelInputs.hasJointIndices) buffer.loadGltfInt(primitives, true)
-
+        for(primitive in primitives){
+            buffer.loadGltfIndices(primitive, true)
+            buffer.loadGltfFloats(
+                primitive,
+                modelInputs,
+                loadTex = { tex = mScene.loadTexture(texPath) },
+                false
+            )
+            if (modelInputs.hasJointIndices) buffer.loadGltfInt(primitive, true)
+        }
         program.use()
         if(animation!=null)animator.doAnimation(animation!!)
     }
@@ -97,7 +99,9 @@ class GltfObj(val model:GltfModel,val modelInputs: ModelInputs,path:String):AObj
         program.setUniformMat("view",viewMat)
         program.setUniformMat("projection",projectionMat)
 
-        drawElements(noVertices)
+        for(primitive in primitives){
+            drawElements(primitive.indices.count)
+        }
     }
 
     private fun createBones(){

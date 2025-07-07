@@ -10,14 +10,15 @@ import android.opengl.GLES32.glDrawArrays
 import android.opengl.GLES32.glDrawElements
 import android.opengl.GLES32.glLineWidth
 import android.opengl.Matrix
+import com.arthurgichuhi.kotlinopengl.enums.AObjectType
 import com.arthurgichuhi.kotlinopengl.models.Vec3f
-import com.arthurgichuhi.kotlinopengl.utils.GlUtils
 import com.arthurgichuhi.kotlinopengl.utils.MathUtils
 import org.joml.Matrix4f
 import org.joml.Quaternionf
 
 abstract class AObject {
     lateinit var mScene:AScene
+    var objectType:AObjectType = AObjectType.ACTOR_TYPE
     protected var modelMat:FloatArray = FloatArray(16)
     private var updateCall:ObjUpdateCall?=null
     private var initialized:Boolean=false

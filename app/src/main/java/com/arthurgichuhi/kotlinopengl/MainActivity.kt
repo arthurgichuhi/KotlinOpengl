@@ -31,6 +31,7 @@ import com.arthurgichuhi.kotlinopengl.customObjs.PathVert
 import com.arthurgichuhi.kotlinopengl.customObjs.SkyBox
 import com.arthurgichuhi.kotlinopengl.customObjs.Sphere2
 import com.arthurgichuhi.kotlinopengl.customObjs.SphereObj
+import com.arthurgichuhi.kotlinopengl.enums.AObjectType
 import com.arthurgichuhi.kotlinopengl.gl_surface.MyScene
 import com.arthurgichuhi.kotlinopengl.gl_surface.MySurfaceView
 import com.arthurgichuhi.kotlinopengl.io_Operations.Input
@@ -90,12 +91,12 @@ class MainActivity : ComponentActivity(){
         //myScene.addObject(sun)
 
         //GLTF
-        val file = this.assets.open("models/model/armature-2-animations.glb")
+        val file = this.assets.open("models/model/Model.glb")
         val gltfModel = gltfModelReader.readWithoutReferences(file)
         file.close()
         val gltObj = GltfObj(
             gltfModel,
-            ModelInputs(true, true, false, true),
+            ModelInputs(false, false, false, false),
             "models/model/diffuse.png"
         )
         gltObj.setUpdateCall(object : ObjUpdateCall {
@@ -103,23 +104,24 @@ class MainActivity : ComponentActivity(){
 
             }
         })
-        //myScene.addObject(gltObj)
+        myScene.addObject(gltObj)
 
 //        val actor = Actor(gltfModel, "models/model/diffuse.png")
-//        actor.rotate(180f, Vec3f(0f, 1f, 0f))
+//        actor.scale(Vec3f(5f,5f,5f))
 //        myScene.addObject(actor)
 
 
-        val interiorFile = this.assets.open("models/model/house-4.glb")
-        val interiorGltf = gltfModelReader.readWithoutReferences(interiorFile)
-        interiorFile.close()
-        Array(interiorGltf.meshModels.size) {
-            CollisionObj(interiorGltf.meshModels[it],interiorGltf.nodeModels[it], "", ModelInputs(false, false, false, false))
-        }.run {
-            for(obj in this){
-                myScene.addObject(obj)
-            }
-        }
+//        val interiorFile = this.assets.open("models/model/house-4.glb")
+//        val interiorGltf = gltfModelReader.readWithoutReferences(interiorFile)
+//        interiorFile.close()
+//        Array(interiorGltf.meshModels.size) {
+//            CollisionObj(interiorGltf.meshModels[it],interiorGltf.nodeModels[it], "", ModelInputs(false, false, false, false))
+//        }.run {
+//            for(obj in this){
+//                obj.objectType = AObjectType.COLLISION_TYPE
+//                myScene.addObject(obj)
+//            }
+//        }
 
         setContent{
             HomeScreen()

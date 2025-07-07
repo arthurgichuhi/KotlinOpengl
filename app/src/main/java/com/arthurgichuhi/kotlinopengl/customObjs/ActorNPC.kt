@@ -1,8 +1,5 @@
 package com.arthurgichuhi.kotlinopengl.customObjs
 
-import android.opengl.Matrix
-import android.util.Log
-import com.arthurgichuhi.kotlinopengl.controllers.JoystickController
 import com.arthurgichuhi.kotlinopengl.core.AObject
 import com.arthurgichuhi.kotlinopengl.core.IReceiveInput
 import com.arthurgichuhi.kotlinopengl.core.InputMode
@@ -14,16 +11,14 @@ import com.arthurgichuhi.kotlinopengl.core.animation.animation.Animation
 import com.arthurgichuhi.kotlinopengl.core.animation.animation.Animator
 import com.arthurgichuhi.kotlinopengl.io_Operations.TouchTracker
 import com.arthurgichuhi.kotlinopengl.models.ModelInputs
-import com.arthurgichuhi.kotlinopengl.models.Vec3f
 import com.arthurgichuhi.kotlinopengl.utils.Utils
 import de.javagl.jgltf.model.GltfModel
 import de.javagl.jgltf.model.NodeModel
 import org.joml.Vector2f
 import org.joml.Vector3f
 
-class Actor(
-    val model: GltfModel, path: String,
-) : AObject() {
+class ActorNPC(val model: GltfModel, path: String,):AObject() {
+
     private lateinit var program: Program
     private lateinit var buffer: VertexBuffer
     private lateinit var tex: Texture
@@ -46,13 +41,14 @@ class Actor(
             side = it
         )
     }
-    lateinit var controllers: Array<JoystickController>
 
-    private var middle = Pair(0f, 0f)
     private val speed = 20f
     private var lastFrameTime = 0f
     private var currentFrameTime = 0f
     private var delta = 0f
+
+    private val destination = Vector3f()
+    private val current = Vector3f()
 
     val boneMatrices: Array<FloatArray> = Array(skin[0].joints.size) { FloatArray(16) }
     val bones: MutableMap<NodeModel, Bone> = HashMap()
@@ -67,7 +63,7 @@ class Actor(
     }
 
     override fun onInit() {
-        mScene.updateReceivers(receiver)
+
         buffer = VertexBuffer()
         program = mScene.loadProgram("armateur")
 
@@ -82,11 +78,10 @@ class Actor(
 
         program.use()
         animator.doAnimation(animation.last())
-        middle = Pair(mScene.width, mScene.height)
     }
 
     override fun destroy() {
-        this.destroy()
+
     }
 
     override fun onUpdate(time: Long) {
@@ -98,33 +93,6 @@ class Actor(
         currentFrameTime = Utils.getCurrentTime()
         delta = currentFrameTime - lastFrameTime
         lastFrameTime = currentFrameTime
-
-        if (!touches[1].released) {
-
-            animator.doAnimation(animation.first())
-            val direction = Vector2f(
-                touches[1].currentPosition.x - touches[1].startPosition.x,
-                touches[1].currentPosition.y - touches[1].startPosition.y
-            )
-            // Normalize to get consistent speed in all directions
-            if (direction.length() > 0) {
-                direction.normalize()
-            }
-
-            // Apply movement (scale by speed and delta)
-            val distance = speed * delta
-            val movement = Vector3f(
-                -distance * direction.x,  // X-axis movement
-                0f,                       // Y-axis (unused in this case)
-                -distance * direction.y   // Z-axis movement (negate if needed)
-            )
-
-            // Translate model matrix directly
-            Matrix.translateM(modelMat, 0, movement.x, movement.y, movement.z)
-        } else {
-
-            animator.doAnimation(animation.last())
-        }
 
         animator.update()
         addJointsToArray(bones)
@@ -142,6 +110,7 @@ class Actor(
         program.setUniformMat("projection", projectionMat)
 
         drawElements(noVertices)
+
     }
 
     private fun createBones() {
@@ -169,38 +138,9 @@ class Actor(
                 if (value.released) {
                     touches[value.side].released = true
                 } else {
-                    if (touches[value.side].id == value.id) {
-                        touches[value.side].currentPosition = value.currentPosition
-                    } else {
-                        touches[value.side] = value
-                    }
-                    if (value.side == 0) rotateActor()
+
                 }
             }
         }
     }
-
-    /*
-    This function is triggered every time the receivers are updates
-     */
-    fun rotateActor() {
-        val tracker = touches[0]
-        if (tracker.side == 0) {
-            //Movement code
-            if (tracker.currentPosition != tracker.startPosition) {
-                //calculate rotation
-                val angle =
-                    Math.toDegrees(tracker.startPosition.angle(tracker.currentPosition).toDouble())
-                        .toFloat()
-                Matrix.rotateM(modelMat, 0, angle * .8f, 0f, 1f, 0f)
-            }
-
-        }
-    }
-
-    //init Joysticks
-    fun initializeJoystickControllers(joysticks: Array<JoystickController>) {
-        controllers = joysticks
-    }
-
 }

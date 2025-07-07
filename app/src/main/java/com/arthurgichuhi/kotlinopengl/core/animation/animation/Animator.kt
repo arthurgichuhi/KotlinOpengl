@@ -98,7 +98,7 @@ class Animator(
     private fun calculateProgression(previousFrame: KeyFrame2,nextFrame: KeyFrame2):Float{
         val totalTime = nextFrame.time - previousFrame.time
         val currentTime = animationTime - previousFrame.time
-        return if(nextAnimation!=null)(currentTime/totalTime) * speed else .5f
+        return if(nextAnimation==null)(currentTime/totalTime) * speed else .5f
     }
 
     private fun interpolateKeyframes(previous: KeyFrame2, nextFrame: KeyFrame2, alpha: Float) {
