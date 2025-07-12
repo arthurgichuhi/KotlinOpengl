@@ -47,7 +47,7 @@ class GltfObj(val model:GltfModel,val modelInputs: ModelInputs,path:String):AObj
             boneMatrices = Array(skin[0].joints.size){FloatArray(16)}
             createBones()
             animator = Animator(model,bones)
-            animation = Animator.processAnimation(model.animationModels[0])
+            animation = Animator.processAnimation(model.animationModels[2])
         }
     }
 

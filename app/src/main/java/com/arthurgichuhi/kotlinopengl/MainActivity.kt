@@ -96,7 +96,7 @@ class MainActivity : ComponentActivity(){
         file.close()
         val gltObj = GltfObj(
             gltfModel,
-            ModelInputs(false, false, false, false),
+            ModelInputs(true, true, false, true),
             "models/model/diffuse.png"
         )
         gltObj.setUpdateCall(object : ObjUpdateCall {

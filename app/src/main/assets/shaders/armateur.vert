@@ -1,6 +1,6 @@
 #version 300 es
 
-const int MAX_JOINTS = 50;//max joints allowed in a skeleton
+const int MAX_JOINTS = 100;//max joints allowed in a skeleton
 const int MAX_WEIGHTS = 4;//max number of joints that can affect a vertex
 
 layout(location = 0) in vec3 position;

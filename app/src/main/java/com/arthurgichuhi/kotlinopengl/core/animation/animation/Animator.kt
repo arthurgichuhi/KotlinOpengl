@@ -1,6 +1,7 @@
 package com.arthurgichuhi.kotlinopengl.core.animation.animation
 
 import android.opengl.Matrix
+import android.util.Log
 import com.arthurgichuhi.kotlinopengl.core.animation.animatedModel.Bone
 import com.arthurgichuhi.kotlinopengl.utils.Utils
 import de.javagl.jgltf.impl.v2.Skin
@@ -19,11 +20,12 @@ class Animator(
     private val model = gltfObj
     private var currentAnimation: Animation? = null
     private var nextAnimation:Animation? = null
+    private var transitionCount:Int = 0
     private var animationTime:Float = 0f
     private var start:Float = 0f
 
     private var triggerLoop = true
-    private var speed:Float = .001f
+    private var speed:Float = .7f
 
     private val skinModel = model.skinModels[0]
 
@@ -36,6 +38,7 @@ class Animator(
         }
         else{
             nextAnimation = animation
+            transitionCount += 1
         }
     }
 
@@ -51,15 +54,17 @@ class Animator(
     private fun increaseAnimationTime(){
         val currentTime = Utils.getCurrentTime()
         animationTime = currentTime - start
-        if (animationTime > currentAnimation!!.length) {
-            start = currentTime - (animationTime % currentAnimation!!.length)
+        if (start == 0f || animationTime >= currentAnimation!!.length && nextAnimation == null) {
+            start = currentTime
             animationTime %= currentAnimation!!.length
         }
     }
 
     private fun calculateCurrentAnimationPose(){
         val frames = getPreviousAndNextFrames()
-        interpolateKeyframes(frames[0],frames[1],calculateProgression(frames[0],frames[1]))
+        val progression = calculateProgression(frames[0],frames[1])
+        interpolateKeyframes(frames[0],frames[1],progression)
+        Log.d("TAG","Progression $progression")
     }
 
     private fun applyPoseToJoints() {
@@ -71,8 +76,8 @@ class Animator(
                 bones[joint]!!.animatedTransform, 0,
                 globalJointTransform, 0,
                 inverseTransform, 0,
-
             )
+            Log.d("TAG","Freeze ${bones[joint]!!.animatedTransform.toList()}")
         }
     }
 
@@ -98,7 +103,22 @@ class Animator(
     private fun calculateProgression(previousFrame: KeyFrame2,nextFrame: KeyFrame2):Float{
         val totalTime = nextFrame.time - previousFrame.time
         val currentTime = animationTime - previousFrame.time
-        return if(nextAnimation==null)(currentTime/totalTime) * speed else .5f
+        var result = 0f
+        if(nextAnimation==null){
+            result = if(totalTime<=0f){
+                .5f
+            } else{
+                (currentTime/totalTime)
+            }
+
+        }
+        if(transitionCount==1){
+            result = .3f
+        }
+        if(transitionCount==2){
+            result = .6f
+        }
+        return  result
     }
 
     private fun interpolateKeyframes(previous: KeyFrame2, nextFrame: KeyFrame2, alpha: Float) {
@@ -121,8 +141,14 @@ class Animator(
             }
 
             if(nextAnimation!=null){
-                currentAnimation = nextAnimation
-                nextAnimation = null
+                if(transitionCount>2){
+                    currentAnimation = nextAnimation
+                    nextAnimation = null
+                    transitionCount = 0
+                }
+                else{
+                    transitionCount += 1
+                }
             }
         }
     }
