@@ -32,7 +32,7 @@ class GltfObj(val model:GltfModel,val modelInputs: ModelInputs,path:String):AObj
     }
     private val skin = model.skinModels
 
-    private var animation : Animation? = null
+    private val animations: MutableMap<String,Animation> = HashMap()
     lateinit var animator : Animator
 
     var receiver:IReceiveInput
@@ -47,7 +47,10 @@ class GltfObj(val model:GltfModel,val modelInputs: ModelInputs,path:String):AObj
             boneMatrices = Array(skin[0].joints.size){FloatArray(16)}
             createBones()
             animator = Animator(model,bones)
-            animation = Animator.processAnimation(model.animationModels[2])
+            for (animation in model.animationModels){
+                Log.d("TAG","Animation ${animation.name}")
+                animations[animation.name] = Animator.processAnimation(animation)
+            }
         }
     }
 
@@ -67,7 +70,7 @@ class GltfObj(val model:GltfModel,val modelInputs: ModelInputs,path:String):AObj
             if (modelInputs.hasJointIndices) buffer.loadGltfInt(primitive, true)
         }
         program.use()
-        if(animation!=null)animator.doAnimation(animation!!)
+        if(animations.isNotEmpty())animator.doAnimation(animations["idle"]!!)
     }
 
     override fun destroy() {
@@ -79,7 +82,7 @@ class GltfObj(val model:GltfModel,val modelInputs: ModelInputs,path:String):AObj
     }
 
     override fun draw(viewMat: FloatArray, projectionMat: FloatArray) {
-        if(animation!=null){
+        if(animations.isNotEmpty()){
             animator.update()
             addJointsToArray(bones)
         }
@@ -89,7 +92,7 @@ class GltfObj(val model:GltfModel,val modelInputs: ModelInputs,path:String):AObj
 
         if(modelInputs.hasTextures)tex.bindTexture()
 
-        if(animation!=null){
+        if(animations.isNotEmpty()){
             for (i in boneMatrices.indices){
                 program.setUniformMat("jointTransforms[$i]",boneMatrices[i])
             }

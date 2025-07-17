@@ -1,5 +1,6 @@
 package com.arthurgichuhi.kotlinopengl.customObjs
 
+import android.util.Log
 import com.arthurgichuhi.kotlinopengl.core.AObject
 import com.arthurgichuhi.kotlinopengl.core.IReceiveInput
 import com.arthurgichuhi.kotlinopengl.core.InputMode
@@ -26,11 +27,12 @@ class ActorNPC(val model: GltfModel, path: String,):AObject() {
     private val modelInputs = ModelInputs(true,true,false,true)
     private val texPath = path
 
-    private val primitives = model.meshModels[0].meshPrimitiveModels[0]
+    private val primitives = Array(model.meshModels.size){
+        model.meshModels[it].meshPrimitiveModels[0]
+    }
     private val skin = model.skinModels
-    private val noVertices = primitives.indices.count
 
-    private var animation: Array<Animation>
+    private val animations: MutableMap<String,Animation> = HashMap()
     private var animator: Animator
 
     private val receiver: IReceiveInput = createReceiver()
@@ -42,13 +44,9 @@ class ActorNPC(val model: GltfModel, path: String,):AObject() {
         )
     }
 
-    private val speed = 20f
     private var lastFrameTime = 0f
     private var currentFrameTime = 0f
     private var delta = 0f
-
-    private val destination = Vector3f()
-    private val current = Vector3f()
 
     val boneMatrices: Array<FloatArray> = Array(skin[0].joints.size) { FloatArray(16) }
     val bones: MutableMap<NodeModel, Bone> = HashMap()
@@ -56,8 +54,8 @@ class ActorNPC(val model: GltfModel, path: String,):AObject() {
     init {
         createBones()
         animator = Animator(model, bones)
-        animation = Array(model.animationModels.size){
-            Animator.processAnimation(model.animationModels[it])
+        for (animation in model.animationModels){
+            animations[animation.name] = Animator.processAnimation(animation)
         }
 
     }
@@ -67,17 +65,19 @@ class ActorNPC(val model: GltfModel, path: String,):AObject() {
         buffer = VertexBuffer()
         program = mScene.loadProgram("armateur")
 
-        buffer.loadGltfIndices(primitives, false)
-        buffer.loadGltfFloats(
-            primitives,
-            modelInputs,
-            loadTex = { tex = mScene.loadTexture(texPath) },
-            false
-        )
-        buffer.loadGltfInt(primitives, false)
+        for(primitive in primitives){
+            buffer.loadGltfIndices(primitive, false)
+            buffer.loadGltfFloats(
+                primitive,
+                modelInputs,
+                loadTex = { tex = mScene.loadTexture(texPath) },
+                false
+            )
+            buffer.loadGltfInt(primitive, false)
+        }
 
         program.use()
-        animator.doAnimation(animation.last())
+        animator.doAnimation(animations["idle"]!!)
     }
 
     override fun destroy() {
@@ -109,7 +109,9 @@ class ActorNPC(val model: GltfModel, path: String,):AObject() {
         program.setUniformMat("view", viewMat)
         program.setUniformMat("projection", projectionMat)
 
-        drawElements(noVertices)
+        for(primitive in primitives){
+            drawElements(primitive.indices.count)
+        }
 
     }
 

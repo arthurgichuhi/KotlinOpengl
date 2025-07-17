@@ -24,6 +24,7 @@ import com.arthurgichuhi.kotlinopengl.core.AObject
 import com.arthurgichuhi.kotlinopengl.core.InputMode
 import com.arthurgichuhi.kotlinopengl.core.ObjUpdateCall
 import com.arthurgichuhi.kotlinopengl.customObjs.Actor
+import com.arthurgichuhi.kotlinopengl.customObjs.ActorNPC
 import com.arthurgichuhi.kotlinopengl.customObjs.CollisionObj
 import com.arthurgichuhi.kotlinopengl.customObjs.GltfObj
 import com.arthurgichuhi.kotlinopengl.customObjs.PCTNObj
@@ -104,13 +105,17 @@ class MainActivity : ComponentActivity(){
 
             }
         })
-        myScene.addObject(gltObj)
+        //myScene.addObject(gltObj)
 
-//        val actor = Actor(gltfModel, "models/model/diffuse.png")
-//        actor.scale(Vec3f(5f,5f,5f))
-//        myScene.addObject(actor)
+        val actor = Actor(gltfModel, "models/model/diffuse.png")
+        actor.rotate(-90f,Vec3f(0f,1f,0f))
+        actor.translate(Vec3f(-1f,0f,0f))
+        myScene.addObject(actor)
 
-
+        val npcActor = ActorNPC(gltfModel,"models/model/diffuse.png")
+        npcActor.rotate(90f,Vec3f(0f,1f,0f))
+        npcActor.translate(Vec3f(1f,0f,0f))
+        //myScene.addObject(npcActor)
 //        val interiorFile = this.assets.open("models/model/house-4.glb")
 //        val interiorGltf = gltfModelReader.readWithoutReferences(interiorFile)
 //        interiorFile.close()

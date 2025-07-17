@@ -18,27 +18,22 @@ class Animator(
     val bones:MutableMap<NodeModel,Bone>
 ) {
     private val model = gltfObj
-    private var currentAnimation: Animation? = null
+    var currentAnimation: Animation? = null
     private var nextAnimation:Animation? = null
-    private var transitionCount:Int = 0
     private var animationTime:Float = 0f
     private var start:Float = 0f
-
-    private var triggerLoop = true
-    private var speed:Float = .7f
 
     private val skinModel = model.skinModels[0]
 
     val skin = Skin()
 
-
     fun doAnimation(animation: Animation){
         if(currentAnimation==null){
             currentAnimation = animation
-        }
-        else{
-            nextAnimation = animation
-            transitionCount += 1
+        } else {
+            if (currentAnimation!!.name != animation.name && nextAnimation==null) {
+                nextAnimation = animation
+            }
         }
     }
 
@@ -54,8 +49,8 @@ class Animator(
     private fun increaseAnimationTime(){
         val currentTime = Utils.getCurrentTime()
         animationTime = currentTime - start
-        if (start == 0f || animationTime >= currentAnimation!!.length && nextAnimation == null) {
-            start = currentTime
+        if (animationTime >= currentAnimation!!.length) {
+            start = currentTime - (animationTime % currentAnimation!!.length)
             animationTime %= currentAnimation!!.length
         }
     }
@@ -64,7 +59,6 @@ class Animator(
         val frames = getPreviousAndNextFrames()
         val progression = calculateProgression(frames[0],frames[1])
         interpolateKeyframes(frames[0],frames[1],progression)
-        Log.d("TAG","Progression $progression")
     }
 
     private fun applyPoseToJoints() {
@@ -77,13 +71,12 @@ class Animator(
                 globalJointTransform, 0,
                 inverseTransform, 0,
             )
-            Log.d("TAG","Freeze ${bones[joint]!!.animatedTransform.toList()}")
         }
     }
 
     private fun getPreviousAndNextFrames():Array<KeyFrame2>{
         val allFrames = currentAnimation!!.keyFrames
-
+        Log.d("TAG","GPN ${currentAnimation?.name}")
         var previousFrame = allFrames[0]
         var nextFrame = allFrames[0]
         for(frame in allFrames){
@@ -93,31 +86,30 @@ class Animator(
             }
             previousFrame = frame
         }
-        if(nextAnimation!=null){
-            previousFrame = nextFrame
-            nextFrame = nextAnimation!!.keyFrames.first()
+        if (nextAnimation != null && currentAnimation!!.name != "transition") {
+            val pf = nextFrame
+            val nf = nextAnimation!!.keyFrames.first()
+            pf.time = .02f
+            nf.time = .25f
+            currentAnimation = Animation(
+                name = "transition",
+                length = .26f,
+                keyFrames = listOf(pf, nf)
+            )
         }
         return arrayOf(previousFrame,nextFrame)
     }
 
     private fun calculateProgression(previousFrame: KeyFrame2,nextFrame: KeyFrame2):Float{
+
         val totalTime = nextFrame.time - previousFrame.time
         val currentTime = animationTime - previousFrame.time
-        var result = 0f
-        if(nextAnimation==null){
-            result = if(totalTime<=0f){
-                .5f
-            } else{
-                (currentTime/totalTime)
-            }
+        val result = if (totalTime <= 0f || currentTime <= 0f) {
+            .5f
+        } else {
+            (currentTime / totalTime)
+        }
 
-        }
-        if(transitionCount==1){
-            result = .3f
-        }
-        if(transitionCount==2){
-            result = .6f
-        }
         return  result
     }
 
@@ -139,17 +131,10 @@ class Animator(
                 it.rotation = floatArrayOf(rot.x,rot.y,rot.z,rot.w)
                 it.scale = floatArrayOf(scale.x,scale.y,scale.z)
             }
-
-            if(nextAnimation!=null){
-                if(transitionCount>2){
-                    currentAnimation = nextAnimation
-                    nextAnimation = null
-                    transitionCount = 0
-                }
-                else{
-                    transitionCount += 1
-                }
-            }
+        }
+        if (currentAnimation!!.name == "transition" && alpha > .7f) {
+            currentAnimation = nextAnimation
+            nextAnimation = null
         }
     }
 

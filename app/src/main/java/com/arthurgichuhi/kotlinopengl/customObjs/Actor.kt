@@ -14,7 +14,6 @@ import com.arthurgichuhi.kotlinopengl.core.animation.animation.Animation
 import com.arthurgichuhi.kotlinopengl.core.animation.animation.Animator
 import com.arthurgichuhi.kotlinopengl.io_Operations.TouchTracker
 import com.arthurgichuhi.kotlinopengl.models.ModelInputs
-import com.arthurgichuhi.kotlinopengl.models.Vec3f
 import com.arthurgichuhi.kotlinopengl.utils.Utils
 import de.javagl.jgltf.model.GltfModel
 import de.javagl.jgltf.model.NodeModel
@@ -31,11 +30,12 @@ class Actor(
     private val modelInputs = ModelInputs(true,true,false,true)
     private val texPath = path
 
-    private val primitives = model.meshModels[0].meshPrimitiveModels[0]
+    private val primitives = Array(model.meshModels.size){
+        model.meshModels[it].meshPrimitiveModels[0]
+    }
     private val skin = model.skinModels
-    private val noVertices = primitives.indices.count
 
-    private var animation: Array<Animation>
+    private val animations: MutableMap<String,Animation> = HashMap()
     private var animator: Animator
 
     private val receiver: IReceiveInput = createReceiver()
@@ -60,10 +60,9 @@ class Actor(
     init {
         createBones()
         animator = Animator(model, bones)
-        animation = Array(model.animationModels.size){
-            Animator.processAnimation(model.animationModels[it])
+        for (animation in model.animationModels){
+            animations[animation.name] = Animator.processAnimation(animation)
         }
-
     }
 
     override fun onInit() {
@@ -71,17 +70,19 @@ class Actor(
         buffer = VertexBuffer()
         program = mScene.loadProgram("armateur")
 
-        buffer.loadGltfIndices(primitives, false)
-        buffer.loadGltfFloats(
-            primitives,
-            modelInputs,
-            loadTex = { tex = mScene.loadTexture(texPath) },
-            false
-        )
-        buffer.loadGltfInt(primitives, false)
+        for(primitive in primitives){
+            buffer.loadGltfIndices(primitive, false)
+            buffer.loadGltfFloats(
+                primitive,
+                modelInputs,
+                loadTex = { tex = mScene.loadTexture(texPath) },
+                false
+            )
+            buffer.loadGltfInt(primitive, false)
+        }
 
         program.use()
-        animator.doAnimation(animation.last())
+        animator.doAnimation(animations["warmUp"]!!)
         middle = Pair(mScene.width, mScene.height)
     }
 
@@ -101,29 +102,28 @@ class Actor(
 
         if (!touches[1].released) {
 
-            animator.doAnimation(animation.first())
-            val direction = Vector2f(
-                touches[1].currentPosition.x - touches[1].startPosition.x,
-                touches[1].currentPosition.y - touches[1].startPosition.y
-            )
-            // Normalize to get consistent speed in all directions
-            if (direction.length() > 0) {
-                direction.normalize()
-            }
-
-            // Apply movement (scale by speed and delta)
-            val distance = speed * delta
-            val movement = Vector3f(
-                -distance * direction.x,  // X-axis movement
-                0f,                       // Y-axis (unused in this case)
-                -distance * direction.y   // Z-axis movement (negate if needed)
-            )
-
-            // Translate model matrix directly
-            Matrix.translateM(modelMat, 0, movement.x, movement.y, movement.z)
+            animator.doAnimation(animations["quadPunch"]!!)
+//            val direction = Vector2f(
+//                touches[1].currentPosition.x - touches[1].startPosition.x,
+//                touches[1].currentPosition.y - touches[1].startPosition.y
+//            )
+//            // Normalize to get consistent speed in all directions
+//            if (direction.length() > 0) {
+//                direction.normalize()
+//            }
+//
+//            // Apply movement (scale by speed and delta)
+//            val distance = speed * delta
+//            val movement = Vector3f(
+//                -distance * direction.x,  // X-axis movement
+//                0f,                       // Y-axis (unused in this case)
+//                -distance * direction.y   // Z-axis movement (negate if needed)
+//            )
+//
+//            // Translate model matrix directly
+//            Matrix.translateM(modelMat, 0, movement.x, movement.y, movement.z)
         } else {
-
-            animator.doAnimation(animation.last())
+            animator.doAnimation(animations["warmUp"]!!)
         }
 
         animator.update()
@@ -141,7 +141,9 @@ class Actor(
         program.setUniformMat("view", viewMat)
         program.setUniformMat("projection", projectionMat)
 
-        drawElements(noVertices)
+        for(primitive in primitives){
+            drawElements(primitive.indices.count)
+        }
     }
 
     private fun createBones() {
