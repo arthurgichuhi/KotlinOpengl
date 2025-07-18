@@ -12,6 +12,8 @@ import com.arthurgichuhi.kotlinopengl.core.VertexBuffer
 import com.arthurgichuhi.kotlinopengl.core.animation.animatedModel.Bone
 import com.arthurgichuhi.kotlinopengl.core.animation.animation.Animation
 import com.arthurgichuhi.kotlinopengl.core.animation.animation.Animator
+import com.arthurgichuhi.kotlinopengl.core.physics.PhysicsEngine
+import com.arthurgichuhi.kotlinopengl.enums.AObjectType
 import com.arthurgichuhi.kotlinopengl.io_Operations.TouchTracker
 import com.arthurgichuhi.kotlinopengl.models.ModelInputs
 import com.arthurgichuhi.kotlinopengl.utils.Utils
@@ -38,6 +40,8 @@ class Actor(
     private val animations: MutableMap<String,Animation> = HashMap()
     private var animator: Animator
 
+    private var physicsEngine:PhysicsEngine? = null
+
     private val receiver: IReceiveInput = createReceiver()
     private val touches: Array<TouchTracker> = Array(2) {
         TouchTracker(
@@ -49,12 +53,11 @@ class Actor(
     lateinit var controllers: Array<JoystickController>
 
     private var middle = Pair(0f, 0f)
-    private val speed = 20f
     private var lastFrameTime = 0f
     private var currentFrameTime = 0f
     private var delta = 0f
 
-    val boneMatrices: Array<FloatArray> = Array(skin[0].joints.size) { FloatArray(16) }
+    private val boneMatrices: Array<FloatArray> = Array(skin[0].joints.size) { FloatArray(16) }
     val bones: MutableMap<NodeModel, Bone> = HashMap()
 
     init {
@@ -84,6 +87,10 @@ class Actor(
         program.use()
         animator.doAnimation(animations["warmUp"]!!)
         middle = Pair(mScene.width, mScene.height)
+
+        physicsEngine = this.mScene.objects.first { it.objectType==AObjectType.COLLISION_TYPE  }.let {
+            PhysicsEngine(this,it).also { Log.d("TAG","Found Collision Type") }
+        }
     }
 
     override fun destroy() {
@@ -95,7 +102,6 @@ class Actor(
     }
 
     override fun draw(viewMat: FloatArray, projectionMat: FloatArray) {
-
         currentFrameTime = Utils.getCurrentTime()
         delta = currentFrameTime - lastFrameTime
         lastFrameTime = currentFrameTime
@@ -128,6 +134,7 @@ class Actor(
 
         animator.update()
         addJointsToArray(bones)
+        physicsEngine?.trackBones()
 
         program.use()
         buffer.bind()
@@ -176,7 +183,7 @@ class Actor(
                     } else {
                         touches[value.side] = value
                     }
-                    if (value.side == 0) rotateActor()
+                    //if (value.side == 0) rotateActor()
                 }
             }
         }

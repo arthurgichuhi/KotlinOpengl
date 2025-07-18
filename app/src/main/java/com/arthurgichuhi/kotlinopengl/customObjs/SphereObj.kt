@@ -5,6 +5,7 @@ import com.arthurgichuhi.kotlinopengl.core.AObject
 import com.arthurgichuhi.kotlinopengl.core.Program
 import com.arthurgichuhi.kotlinopengl.core.Texture
 import com.arthurgichuhi.kotlinopengl.core.VertexBuffer
+import com.arthurgichuhi.kotlinopengl.enums.AObjectType
 import com.arthurgichuhi.kotlinopengl.utils.MathUtils
 import com.arthurgichuhi.kotlinopengl.utils.Utils
 
@@ -23,6 +24,7 @@ class SphereObj(
     private lateinit var texture: Texture
 
     init {
+        this.objectType = AObjectType.COLLISION_TYPE
         MathUtils.scale(vertices, scale)
         stride = Utils.FloatsPerPosition
         nVertices = vertices.size/stride

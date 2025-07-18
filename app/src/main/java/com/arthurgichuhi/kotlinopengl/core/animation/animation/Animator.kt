@@ -74,9 +74,8 @@ class Animator(
         }
     }
 
-    private fun getPreviousAndNextFrames():Array<KeyFrame2>{
+    private fun getPreviousAndNextFrames():Array<KeyFrame>{
         val allFrames = currentAnimation!!.keyFrames
-        Log.d("TAG","GPN ${currentAnimation?.name}")
         var previousFrame = allFrames[0]
         var nextFrame = allFrames[0]
         for(frame in allFrames){
@@ -89,18 +88,27 @@ class Animator(
         if (nextAnimation != null && currentAnimation!!.name != "transition") {
             val pf = nextFrame
             val nf = nextAnimation!!.keyFrames.first()
-            pf.time = .02f
-            nf.time = .25f
+            pf.time =  0f
+            nf.time = .2f
             currentAnimation = Animation(
                 name = "transition",
-                length = .26f,
+                length = .2f,
                 keyFrames = listOf(pf, nf)
             )
+        }
+        if(nextAnimation == null){
+            if(animationTime < previousFrame.time){
+                nextFrame = currentAnimation!!.keyFrames.first()
+                previousFrame = currentAnimation!!.keyFrames.last()
+
+                previousFrame.time = 0f
+                nextFrame.time = .035f
+            }
         }
         return arrayOf(previousFrame,nextFrame)
     }
 
-    private fun calculateProgression(previousFrame: KeyFrame2,nextFrame: KeyFrame2):Float{
+    private fun calculateProgression(previousFrame: KeyFrame, nextFrame: KeyFrame):Float{
 
         val totalTime = nextFrame.time - previousFrame.time
         val currentTime = animationTime - previousFrame.time
@@ -113,7 +121,7 @@ class Animator(
         return  result
     }
 
-    private fun interpolateKeyframes(previous: KeyFrame2, nextFrame: KeyFrame2, alpha: Float) {
+    private fun interpolateKeyframes(previous: KeyFrame, nextFrame: KeyFrame, alpha: Float) {
 
         for(node in previous.boneTransforms.keys){
             val index = gltfObj.nodeModels.indexOf(node)
@@ -141,7 +149,7 @@ class Animator(
     companion object{
         fun processAnimation(animation: AnimationModel):Animation{
 
-            val nodeKeyFrames : MutableList<KeyFrame2> = ArrayList()
+            val nodeKeyFrames : MutableList<KeyFrame> = ArrayList()
             for(channel in animation.channels){
                 val node = channel.nodeModel
                 val path = channel.path // "translation", "rotation", or "scale"
@@ -199,8 +207,8 @@ class Animator(
             return data
         }
 
-        private fun MutableList<KeyFrame2>.findOrCreate(time: Float,node: NodeModel): KeyFrame2 {
-            return find { it.time == time } ?: KeyFrame2(time, boneTransforms = hashMapOf(node to BoneTransform())).also { add(it) }
+        private fun MutableList<KeyFrame>.findOrCreate(time: Float, node: NodeModel): KeyFrame {
+            return find { it.time == time } ?: KeyFrame(time, boneTransforms = hashMapOf(node to BoneTransform())).also { add(it) }
         }
     }
 

@@ -13,7 +13,7 @@ abstract class AScene(val context: Context) {
     var width=0f
     var height=0f
 
-    private var objects:MutableList<AObject> = ArrayList()
+    var objects:MutableList<AObject> = ArrayList()
     private var programs:MutableMap<String, Program> = HashMap()
     private var textures:MutableMap<String,Texture> = HashMap()
 

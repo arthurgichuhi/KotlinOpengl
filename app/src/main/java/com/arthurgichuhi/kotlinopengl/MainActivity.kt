@@ -73,12 +73,12 @@ class MainActivity : ComponentActivity(){
             "textures/earth/bottom.png",
             "textures/earth/front.png",
             "textures/earth/back.png")
-        earth.setUpdateCall(object:ObjUpdateCall{
-            override fun update(time: Long, obj: AObject) {
-                moveEarth(time,obj)
-            }
-        })
-        //myScene.addObject(earth)
+//        earth.setUpdateCall(object:ObjUpdateCall{
+//            override fun update(time: Long, obj: AObject) {
+//                moveEarth(time,obj)
+//            }
+//        })
+        myScene.addObject(earth)
 
         val sun = PCTNObj(
             Sphere2(1f,10).getPositionsAndTex(),
@@ -108,13 +108,13 @@ class MainActivity : ComponentActivity(){
         //myScene.addObject(gltObj)
 
         val actor = Actor(gltfModel, "models/model/diffuse.png")
-        actor.rotate(-90f,Vec3f(0f,1f,0f))
-        actor.translate(Vec3f(-1f,0f,0f))
+        actor.rotate(90f,Vec3f(0f,1f,0f))
+        actor.translate(Vec3f(-4f,0f,0f))
         myScene.addObject(actor)
 
         val npcActor = ActorNPC(gltfModel,"models/model/diffuse.png")
-        npcActor.rotate(90f,Vec3f(0f,1f,0f))
-        npcActor.translate(Vec3f(1f,0f,0f))
+        npcActor.rotate(-90f,Vec3f(0f,1f,0f))
+        npcActor.translate(Vec3f(4f,0f,0f))
         //myScene.addObject(npcActor)
 //        val interiorFile = this.assets.open("models/model/house-4.glb")
 //        val interiorGltf = gltfModelReader.readWithoutReferences(interiorFile)
