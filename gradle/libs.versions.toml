@@ -1,5 +1,5 @@
 [versions]
-agp = "8.10.1"
+agp = "8.11.1"
 jgltfModel = "2.0.4"
 joml = "1.10.8"
 kotlin = "1.9.0"
