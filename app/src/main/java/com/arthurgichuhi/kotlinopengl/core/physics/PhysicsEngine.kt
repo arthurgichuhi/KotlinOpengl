@@ -41,7 +41,7 @@ class PhysicsEngine(val actor: Actor) {
     init {
         skeleton = actor.bones
             .filter {
-                RightArm.matcher(it.key.name).find() ||
+                        RightArm.matcher(it.key.name).find() ||
                         LeftArm.matcher(it.key.name).find() ||
                         RightForeArm.matcher(it.key.name).find() ||
                         LeftForeArm.matcher(it.key.name).find() ||
@@ -67,7 +67,7 @@ class PhysicsEngine(val actor: Actor) {
 
     fun trackBones(npc: ActorNPC):Int{
         val skeleton2 = npc.bones.filter {
-            LeftArm.matcher(it.key.name).find() ||
+                    LeftArm.matcher(it.key.name).find() ||
                     RightForeArm.matcher(it.key.name).find() ||
                     LeftForeArm.matcher(it.key.name).find() ||
                     RightHand.matcher(it.key.name).find() ||
@@ -105,15 +105,18 @@ class PhysicsEngine(val actor: Actor) {
                 val y2 = npcBoneOrigin[1]
                 val z2 = npcBoneOrigin[2]
 
-                Log.d("TAG","Bone ${bone.value.node.name}  ${boneOrigin[0]},${boneOrigin[1]},${boneOrigin[2]}")
-                Log.d("TAG","NPC Bone ${npcBone.value.node.name}  ${npcBoneOrigin[0]},${npcBoneOrigin[1]},${npcBoneOrigin[2]}")
-                val halfSize = 0.5f
-                //Log.d("TAG","X $x $x2 \n Y $y $y2 \n Z $z $z2")
-                if (x + halfSize < x2 - halfSize || x - halfSize > x2 + halfSize) return 0
-                if (y + halfSize < y2 - halfSize || y - halfSize > y2 + halfSize) return 0
-                if (z + halfSize < z2 - halfSize || z - halfSize > z2 + halfSize) return 0
+                val halfSize = 0.1f
+
+                if (x + halfSize < x2 - halfSize || x - halfSize > x2 + halfSize) break
+                if (y + halfSize < y2 - halfSize || y - halfSize > y2 + halfSize) break
+                if (z + halfSize < z2 - halfSize || z - halfSize > z2 + halfSize) break
+
+                Log.d("TAG","Bone ${bone.value.node.name}  $x,$y,$z")
+                Log.d("TAG","NPC Bone ${npcBone.value.node.name}  $x2,$y2,$z2")
+
+                return 1
             }
         }
-        return 1
+        return 0
     }
 }

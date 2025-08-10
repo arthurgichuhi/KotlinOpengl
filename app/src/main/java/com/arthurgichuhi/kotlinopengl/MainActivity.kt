@@ -109,7 +109,7 @@ class MainActivity : ComponentActivity(){
 
         val actor = Actor(gltfModel, "models/model/diffuse.png")
         actor.rotate(90f,Vec3f(0f,1f,0f))
-        //actor.translate(Vec3f(-2f,0f,0f))
+        actor.translate(Vec3f(-.9f,0f,0f))
         myScene.addObject(actor)
 
         val npcActor = ActorNPC(gltfModel,"models/model/diffuse.png")
