@@ -60,6 +60,8 @@ class Actor(
     private val boneMatrices: Array<FloatArray> = Array(skin[0].joints.size) { FloatArray(16) }
     val bones: MutableMap<NodeModel, Bone> = HashMap()
 
+    private lateinit var npc: ActorNPC
+    var position = Vector3f(-1f,0f,0f)
     init {
         createBones()
         animator = Animator(model, bones)
@@ -88,8 +90,12 @@ class Actor(
         animator.doAnimation(animations["warmUp"]!!)
         middle = Pair(mScene.width, mScene.height)
 
-        physicsEngine = this.mScene.objects.first { it.objectType==AObjectType.COLLISION_TYPE  }.let {
-            PhysicsEngine(this,it).also { Log.d("TAG","Found Collision Type") }
+        physicsEngine = PhysicsEngine(this)
+
+        for(obj in this.mScene.objects){
+            if(obj.objectType== AObjectType.NPC_TYPE){
+                npc = obj as ActorNPC
+            }
         }
     }
 
@@ -134,7 +140,9 @@ class Actor(
 
         animator.update()
         addJointsToArray(bones)
-        physicsEngine?.trackBones()
+        if(::npc.isInitialized){
+            Log.d("TAG","Collision ${physicsEngine?.trackBones(npc)}")
+        }
 
         program.use()
         buffer.bind()

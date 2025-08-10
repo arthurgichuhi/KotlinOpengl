@@ -19,7 +19,7 @@ import org.joml.Quaternionf
 abstract class AObject {
     lateinit var mScene:AScene
     var objectType:AObjectType = AObjectType.ACTOR_TYPE
-    protected var modelMat:FloatArray = FloatArray(16)
+    var modelMat:FloatArray = FloatArray(16)
     private var updateCall:ObjUpdateCall?=null
     private var initialized:Boolean=false
 

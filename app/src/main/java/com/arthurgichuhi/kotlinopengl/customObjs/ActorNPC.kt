@@ -10,6 +10,7 @@ import com.arthurgichuhi.kotlinopengl.core.VertexBuffer
 import com.arthurgichuhi.kotlinopengl.core.animation.animatedModel.Bone
 import com.arthurgichuhi.kotlinopengl.core.animation.animation.Animation
 import com.arthurgichuhi.kotlinopengl.core.animation.animation.Animator
+import com.arthurgichuhi.kotlinopengl.enums.AObjectType
 import com.arthurgichuhi.kotlinopengl.io_Operations.TouchTracker
 import com.arthurgichuhi.kotlinopengl.models.ModelInputs
 import com.arthurgichuhi.kotlinopengl.utils.Utils
@@ -52,6 +53,7 @@ class ActorNPC(val model: GltfModel, path: String,):AObject() {
     val bones: MutableMap<NodeModel, Bone> = HashMap()
 
     init {
+        this.objectType = AObjectType.NPC_TYPE
         createBones()
         animator = Animator(model, bones)
         for (animation in model.animationModels){
