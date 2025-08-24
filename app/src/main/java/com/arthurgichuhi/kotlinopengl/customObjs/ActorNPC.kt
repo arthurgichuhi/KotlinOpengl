@@ -34,7 +34,7 @@ class ActorNPC(val model: GltfModel, path: String,):AObject() {
     private val skin = model.skinModels
 
     private val animations: MutableMap<String,Animation> = HashMap()
-    private var animator: Animator
+    var animator: Animator
 
     private val receiver: IReceiveInput = createReceiver()
     private val touches: Array<TouchTracker> = Array(2) {

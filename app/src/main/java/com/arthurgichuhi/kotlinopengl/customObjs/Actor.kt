@@ -141,7 +141,10 @@ class Actor(
         animator.update()
         addJointsToArray(bones)
         if(::npc.isInitialized){
-            Log.d("TAG","Collision ${physicsEngine?.trackBones(npc)}")
+            val collisionData = physicsEngine?.trackBones(npc)
+            if(collisionData!=null){
+                if(collisionData.success>0)Log.d("TAG","-----------Collision--------\n$collisionData")
+            }
         }
 
         program.use()

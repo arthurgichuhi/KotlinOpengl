@@ -4,6 +4,7 @@ import android.util.Log
 import com.arthurgichuhi.kotlinopengl.core.animation.animatedModel.Bone
 import com.arthurgichuhi.kotlinopengl.customObjs.Actor
 import com.arthurgichuhi.kotlinopengl.customObjs.ActorNPC
+import com.arthurgichuhi.kotlinopengl.models.CollisionData
 import de.javagl.jgltf.model.NodeModel
 import org.joml.Matrix4f
 import org.joml.Vector4f
@@ -16,6 +17,7 @@ class PhysicsEngine(val actor: Actor) {
         private val RightForeArm = Pattern.compile("mixamorig:RightForeArm")
         private val LeftForeArm = Pattern.compile("mixamorig:LeftForeArm")
 
+        private val Hand = Pattern.compile(".*Hand$")
         private val RightHand = Pattern.compile("mixamorig:RightHand$")
         private val LeftHand = Pattern.compile("mixamorig:LeftHand$")
 
@@ -24,6 +26,7 @@ class PhysicsEngine(val actor: Actor) {
         private val LeftLeg = Pattern.compile("mixamorig:LeftLeg")
         private val RightLeg = Pattern.compile("mixamorig:RightLeg")
 
+        private val Foot = Pattern.compile(".*Foot$")
         private val LeftFoot = Pattern.compile("mixamorig:LeftFoot")
         private val RightFoot = Pattern.compile("mixamorig:RightFoot")
 
@@ -37,7 +40,7 @@ class PhysicsEngine(val actor: Actor) {
         private val Spine1 =  Pattern.compile("mixamorig:Spine")
         private val Spine2 =  Pattern.compile("mixamorig:Spine2")
     }
-    lateinit var skeleton:Map<NodeModel, Bone>
+    var skeleton:Map<NodeModel, Bone>
     init {
         skeleton = actor.bones
             .filter {
@@ -61,11 +64,9 @@ class PhysicsEngine(val actor: Actor) {
                         Spine1.matcher(it.key.name).find()||
                         Spine2.matcher(it.key.name).find()
             }
-
-        Log.d("TAG","Skeleton ${skeleton.size}")
     }
 
-    fun trackBones(npc: ActorNPC):Int{
+    fun trackBones(npc: ActorNPC): CollisionData?{
         val skeleton2 = npc.bones.filter {
                     LeftArm.matcher(it.key.name).find() ||
                     RightForeArm.matcher(it.key.name).find() ||
@@ -110,13 +111,24 @@ class PhysicsEngine(val actor: Actor) {
                 if (x + halfSize < x2 - halfSize || x - halfSize > x2 + halfSize) break
                 if (y + halfSize < y2 - halfSize || y - halfSize > y2 + halfSize) break
                 if (z + halfSize < z2 - halfSize || z - halfSize > z2 + halfSize) break
-
-                Log.d("TAG","Bone ${bone.value.node.name}  $x,$y,$z")
-                Log.d("TAG","NPC Bone ${npcBone.value.node.name}  $x2,$y2,$z2")
-
-                return 1
+                Log.d("TAG","Success Collision")
+                var actorHit = false
+                var npcHit = false
+                if(
+                    Foot.matcher(bone.value.node.name).find() ||
+                    Hand.matcher(bone.value.node.name).find()
+                    ){
+                    actorHit = true
+                }
+                if(
+                    Foot.matcher(npcBone.value.node.name).find() ||
+                    Hand.matcher(npcBone.value.node.name).find()
+                ){
+                    npcHit = true
+                }
+                return CollisionData(1,actorHit,npcHit)
             }
         }
-        return 0
+        return null
     }
 }
