@@ -114,19 +114,35 @@ class PhysicsEngine(val actor: Actor) {
                 Log.d("TAG","Success Collision")
                 var actorHit = false
                 var npcHit = false
+                var headHit = false
+                var bodyHit = false
                 if(
                     Foot.matcher(bone.value.node.name).find() ||
                     Hand.matcher(bone.value.node.name).find()
                     ){
                     actorHit = true
+                    if(Head.matcher(bone.value.node.name).find() ||
+                        Neck.matcher(bone.value.node.name).find()){
+                        headHit = true
+                    }
+                    else{
+                        bodyHit = true
+                    }
                 }
                 if(
                     Foot.matcher(npcBone.value.node.name).find() ||
                     Hand.matcher(npcBone.value.node.name).find()
                 ){
                     npcHit = true
+                    if(Head.matcher(bone.value.node.name).find() ||
+                        Neck.matcher(bone.value.node.name).find()){
+                        headHit = true
+                    }
+                    else{
+                        bodyHit = true
+                    }
                 }
-                return CollisionData(1,actorHit,npcHit)
+                return CollisionData(1,actorHit,npcHit,headHit,bodyHit)
             }
         }
         return null

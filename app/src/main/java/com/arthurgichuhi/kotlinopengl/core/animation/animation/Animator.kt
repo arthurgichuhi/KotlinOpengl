@@ -18,10 +18,12 @@ class Animator(
     val bones:MutableMap<NodeModel,Bone>
 ) {
     private val model = gltfObj
+    var defaultAnimation: Animation? = null
     var currentAnimation: Animation? = null
     private var nextAnimation:Animation? = null
     private var animationTime:Float = 0f
     private var start:Float = 0f
+    private var loopTime:Float = 0f
 
     private val skinModel = model.skinModels[0]
 
@@ -50,8 +52,16 @@ class Animator(
         val currentTime = Utils.getCurrentTime()
         animationTime = currentTime - start
         if (animationTime >= currentAnimation!!.length) {
+            loopTime = animationTime - currentAnimation!!.length
             start = currentTime - (animationTime % currentAnimation!!.length)
             animationTime %= currentAnimation!!.length
+        }
+        val progress = animationTime%currentAnimation!!.length
+        if(currentAnimation!!.name == "Head hit" ||
+            currentAnimation!!.name == "Hit to Body" &&
+            currentAnimation!!.length - animationTime<.1
+            ){
+            doAnimation(defaultAnimation!!)
         }
     }
 
@@ -89,10 +99,10 @@ class Animator(
             val pf = nextFrame
             val nf = nextAnimation!!.keyFrames.first()
             pf.time =  0f
-            nf.time = .2f
+            nf.time = .5f
             currentAnimation = Animation(
                 name = "transition",
-                length = .2f,
+                length = .5f,
                 keyFrames = listOf(pf, nf)
             )
         }
@@ -102,7 +112,7 @@ class Animator(
                 previousFrame = currentAnimation!!.keyFrames.last()
 
                 previousFrame.time = 0f
-                nextFrame.time = .035f
+                nextFrame.time = .025f
             }
         }
         return arrayOf(previousFrame,nextFrame)
@@ -140,7 +150,7 @@ class Animator(
                 it.scale = floatArrayOf(scale.x,scale.y,scale.z)
             }
         }
-        if (currentAnimation!!.name == "transition" && alpha > .7f) {
+        if (currentAnimation!!.name == "transition" && alpha > .9f) {
             currentAnimation = nextAnimation
             nextAnimation = null
         }

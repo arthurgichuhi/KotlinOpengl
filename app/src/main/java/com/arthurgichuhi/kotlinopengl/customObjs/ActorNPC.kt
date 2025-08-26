@@ -59,6 +59,7 @@ class ActorNPC(val model: GltfModel, path: String,):AObject() {
         for (animation in model.animationModels){
             animations[animation.name] = Animator.processAnimation(animation)
         }
+        animator.defaultAnimation = animations["idle"]
 
     }
 

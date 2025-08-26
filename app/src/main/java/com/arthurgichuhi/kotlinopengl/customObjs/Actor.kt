@@ -68,6 +68,7 @@ class Actor(
         for (animation in model.animationModels){
             animations[animation.name] = Animator.processAnimation(animation)
         }
+        animator.defaultAnimation = animations["warmUp"]
     }
 
     override fun onInit() {
@@ -143,6 +144,22 @@ class Actor(
         if(::npc.isInitialized){
             val collisionData = physicsEngine?.trackBones(npc)
             if(collisionData!=null){
+                if(collisionData.actorHit){
+                    if(collisionData.headHit){
+                        npc.animator.doAnimation(animations["Head hit"]!!)
+                    }
+                    else{
+                        npc.animator.doAnimation(animations["Hit to Body"]!!)
+                    }
+                }
+                else{
+                    if(collisionData.headHit){
+                        animator.doAnimation(animations["Head hit"]!!)
+                    }
+                    else{
+                        animator.doAnimation(animations["Hit to Body"]!!)
+                    }
+                }
                 if(collisionData.success>0)Log.d("TAG","-----------Collision--------\n$collisionData")
             }
         }
