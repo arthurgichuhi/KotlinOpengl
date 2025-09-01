@@ -55,7 +55,7 @@ class ActorNPC(val model: GltfModel, path: String,):AObject() {
     init {
         this.objectType = AObjectType.NPC_TYPE
         createBones()
-        animator = Animator(model, bones)
+        animator = Animator(model, bones,false)
         for (animation in model.animationModels){
             animations[animation.name] = Animator.processAnimation(animation)
         }

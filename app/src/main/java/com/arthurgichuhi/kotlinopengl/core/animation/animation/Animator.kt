@@ -3,6 +3,7 @@ package com.arthurgichuhi.kotlinopengl.core.animation.animation
 import android.opengl.Matrix
 import android.util.Log
 import com.arthurgichuhi.kotlinopengl.core.animation.animatedModel.Bone
+import com.arthurgichuhi.kotlinopengl.models.InterpolationData
 import com.arthurgichuhi.kotlinopengl.utils.Utils
 import de.javagl.jgltf.impl.v2.Skin
 import de.javagl.jgltf.model.AccessorFloatData
@@ -12,18 +13,24 @@ import de.javagl.jgltf.model.GltfModel
 import de.javagl.jgltf.model.NodeModel
 import org.joml.Quaternionf
 import org.joml.Vector3f
+import kotlin.math.abs
+import kotlin.math.pow
 
 class Animator(
     val gltfObj: GltfModel,
-    val bones:MutableMap<NodeModel,Bone>
+    val bones:MutableMap<NodeModel,Bone>,
+    var actor:Boolean = true
 ) {
     private val model = gltfObj
     var defaultAnimation: Animation? = null
     var currentAnimation: Animation? = null
+    var animations: Map<String,Animation> = HashMap()
     private var nextAnimation:Animation? = null
-    private var animationTime:Float = 0f
-    private var start:Float = 0f
-    private var loopTime:Float = 0f
+    private var animationTime:Long = 0
+    private var transitionTime:Float = .3f
+
+    private val startNanos:Long = 0
+
 
     private val skinModel = model.skinModels[0]
 
@@ -35,6 +42,7 @@ class Animator(
         } else {
             if (currentAnimation!!.name != animation.name && nextAnimation==null) {
                 nextAnimation = animation
+                nextAnimation!!.start = System.nanoTime()
             }
         }
     }
@@ -49,26 +57,67 @@ class Animator(
     }
 
     private fun increaseAnimationTime(){
-        val currentTime = Utils.getCurrentTime()
-        animationTime = currentTime - start
-        if (animationTime >= currentAnimation!!.length) {
-            loopTime = animationTime - currentAnimation!!.length
-            start = currentTime - (animationTime % currentAnimation!!.length)
-            animationTime %= currentAnimation!!.length
+        val currentTime = System.nanoTime()
+        val stopTime = currentAnimation!!.start + currentAnimation!!.length
+
+        animationTime = currentTime - currentAnimation!!.start
+
+        Log.d("TAG","Current $currentTime  $animationTime")
+
+        currentAnimation!!.current = currentTime
+        if(nextAnimation!=null) nextAnimation!!.current = currentTime
+
+        if (nextAnimation != null) {
+            if (currentTime - nextAnimation!!.start >= (transitionTime * 1_000_000_000L)) {
+                currentAnimation = nextAnimation
+                animationTime = (currentTime - nextAnimation!!.start)
+                nextAnimation = null
+                return
+            }
         }
-        val progress = animationTime%currentAnimation!!.length
-        if(currentAnimation!!.name == "Head hit" ||
-            currentAnimation!!.name == "Hit to Body" &&
-            currentAnimation!!.length - animationTime<.1
-            ){
-            doAnimation(defaultAnimation!!)
+
+        if(currentAnimation!!.name == "Hit to Body" || currentAnimation!!.name == "Head hit"){
+            if(nextAnimation==null){
+
+                if(stopTime - currentTime <= (transitionTime * 1_000_000_000L)){
+                    doAnimation(defaultAnimation!!)
+                }
+            }
+        }
+
+        if (animationTime >= currentAnimation!!.length) {
+            animationTime %= currentAnimation!!.length
+            currentAnimation!!.start = currentTime - animationTime
         }
     }
 
     private fun calculateCurrentAnimationPose(){
-        val frames = getPreviousAndNextFrames()
-        val progression = calculateProgression(frames[0],frames[1])
-        interpolateKeyframes(frames[0],frames[1],progression)
+        if(nextAnimation==null){
+            val frames = getPreviousAndNextFrames(currentAnimation!!)
+            val progression = calculateProgression(
+                frames[0],frames[1],currentAnimation!!)
+            interpolateKeyframes(frames[0],frames[1],progression)
+        }
+        else{
+            val frames = getPreviousAndNextFrames(currentAnimation!!)
+            val progression = calculateProgression(
+                frames[0],frames[1],currentAnimation!!)
+
+            if(!actor)Log.d("TAG","CP-IT 1\n$progression\n${frames[0].time} - ${frames[1].time}")
+
+            val frames2 = getPreviousAndNextFrames(nextAnimation!!)
+            val progression2 = calculateProgression(
+                frames2[0],frames2[1], nextAnimation!!)
+
+            if(!actor)Log.d("TAG","CP-IT 2\n$progression2\n${frames2[0].time} - ${frames2[1].time}")
+
+            interpolateTransition(
+                InterpolationData(
+                    frames[0],frames[1],progression),
+                InterpolationData(
+                    frames2[0],frames2[1],progression2)
+            )
+        }
     }
 
     private fun applyPoseToJoints() {
@@ -81,58 +130,49 @@ class Animator(
                 globalJointTransform, 0,
                 inverseTransform, 0,
             )
+           if(index==0 && !actor){
+               Log.d("TAG","Transform" +
+                       "\n${bones[joint]!!.animatedTransform.toList()}" +
+                       "\n${inverseTransform.toList()}" +
+                       "\n${globalJointTransform.toList()}")
+           }
         }
     }
 
-    private fun getPreviousAndNextFrames():Array<KeyFrame>{
-        val allFrames = currentAnimation!!.keyFrames
-        var previousFrame = allFrames[0]
-        var nextFrame = allFrames[0]
-        for(frame in allFrames){
-             nextFrame = frame
-            if(nextFrame.time>animationTime){
-                break
-            }
-            previousFrame = frame
-        }
-        if (nextAnimation != null && currentAnimation!!.name != "transition") {
-            val pf = nextFrame
-            val nf = nextAnimation!!.keyFrames.first()
-            pf.time =  0f
-            nf.time = .5f
-            currentAnimation = Animation(
-                name = "transition",
-                length = .5f,
-                keyFrames = listOf(pf, nf)
-            )
-        }
-        if(nextAnimation == null){
-            if(animationTime < previousFrame.time){
-                nextFrame = currentAnimation!!.keyFrames.first()
-                previousFrame = currentAnimation!!.keyFrames.last()
+    private fun getPreviousAndNextFrames(animation: Animation):Array<KeyFrame>{
+        val allFrames = animation.keyFrames
+        var previousFrame = allFrames[0].copy()
+        var nextFrame = allFrames[0].copy()
 
-                previousFrame.time = 0f
-                nextFrame.time = .025f
-            }
+        for(frame in allFrames){
+             nextFrame = frame.copy(time = frame.time)
+            if(nextFrame.time > (animation.current - animation.start))break
+            previousFrame = frame.copy(time = frame.time)
         }
+
+        if (previousFrame.time == nextFrame.time && previousFrame.time == currentAnimation!!.keyFrames.first().time){
+            previousFrame.time = 15_000_000L
+            Log.d("TAG","Similar times 2 ${nextFrame.time}   ${previousFrame.time}")
+        }
+
         return arrayOf(previousFrame,nextFrame)
     }
 
-    private fun calculateProgression(previousFrame: KeyFrame, nextFrame: KeyFrame):Float{
-
+    private fun calculateProgression(
+        previousFrame: KeyFrame, nextFrame: KeyFrame, animation: Animation):Float{
+        val elapsed =(animation.current - animation.start)
         val totalTime = nextFrame.time - previousFrame.time
-        val currentTime = animationTime - previousFrame.time
-        val result = if (totalTime <= 0f || currentTime <= 0f) {
-            .5f
-        } else {
-            (currentTime / totalTime)
+        val currentTime = abs(elapsed - previousFrame.time)
+        if(!actor){
+            Log.d("TAG","Incorrect $totalTime" +
+                    "\n${nextFrame.time} ${previousFrame.time} - $elapsed" +
+                    "\n${((currentTime/1_000_000_000f).toDouble()/(totalTime/1_000_000_000f).toDouble()).toFloat()}")
         }
-
-        return  result
+        return ((currentTime/1_000_000_000f).toDouble()/(totalTime/1_000_000_000f).toDouble()).toFloat()
     }
 
     private fun interpolateKeyframes(previous: KeyFrame, nextFrame: KeyFrame, alpha: Float) {
-
+        if(actor)Log.d("TAG","Interpolation $alpha ${previous.time} ${nextFrame.time}")
         for(node in previous.boneTransforms.keys){
             val index = gltfObj.nodeModels.indexOf(node)
             val prev = previous.boneTransforms[node]!!
@@ -149,10 +189,50 @@ class Animator(
                 it.rotation = floatArrayOf(rot.x,rot.y,rot.z,rot.w)
                 it.scale = floatArrayOf(scale.x,scale.y,scale.z)
             }
+
         }
-        if (currentAnimation!!.name == "transition" && alpha > .9f) {
-            currentAnimation = nextAnimation
-            nextAnimation = null
+    }
+
+    private fun interpolateTransition(currentData: InterpolationData,nextData: InterpolationData) {
+        val elapsed = nextAnimation!!.current - nextAnimation!!.start
+        val blendFactor:Float = (elapsed / (transitionTime * 1_000_000_000f))
+
+        Log.d("TAG","Blend $blendFactor")
+
+        for(node in currentData.previousKeyFrame.boneTransforms.keys){
+            val index = gltfObj.nodeModels.indexOf(node)
+            val prev1 = currentData.previousKeyFrame.boneTransforms[node]!!
+            val next1 = currentData.nextKeyFrame.boneTransforms[node]!!
+
+            val prev2 = nextData.previousKeyFrame.boneTransforms[node]!!
+            val next2 = nextData.nextKeyFrame.boneTransforms[node]!!
+            Log.d("TAG","IT" +
+                    "\nPREV" +
+                    "\n${prev1.translation.x},${prev1.translation.y},${prev1.translation.z}" +
+                    "\n${prev2.translation.x},${prev2.translation.y},${prev2.translation.z}" +
+                    "\nNEXT" +
+                    "\n${next1.translation.x},${next1.translation.y},${next1.translation.z}" +
+                    "\n${next2.translation.x},${next2.translation.y},${next2.translation.z}")
+            val trans = Vector3f()
+            val trans1 = prev1.translation.lerp(next1.translation,currentData.alpha)
+            val trans2 = prev2.translation.lerp(next2.translation,nextData.alpha)
+            trans1.mul(1f - blendFactor).add(trans2.mul(blendFactor)).set(trans)
+
+            val rot = Quaternionf()
+            val rot1 = prev1.rotation.normalize().slerp(next1.rotation.normalize(), currentData.alpha)
+            val rot2 = prev2.rotation.normalize().slerp(next2.rotation.normalize(), nextData.alpha)
+            rot1.slerp(rot2,blendFactor).normalize().set(rot)
+
+            val scale = Vector3f()
+            val scale1 = prev1.scale.lerp(next1.scale, currentData.alpha)
+            val scale2 = prev2.scale.lerp(next2.scale, nextData.alpha)
+            scale1.mul(1f - blendFactor).add(scale2.mul(blendFactor)).set(scale)
+
+            gltfObj.nodeModels[index]?.also {
+                it.translation = floatArrayOf(trans.x,trans.y,trans.z)
+                it.rotation = floatArrayOf(rot.x,rot.y,rot.z,rot.w)
+                it.scale = floatArrayOf(scale.x,scale.y,scale.z)
+            }
         }
     }
 
@@ -169,7 +249,7 @@ class Animator(
                 val values = getFloatData(sampler.output)
 
                 for(i in 0 ..<sampler.input.count){
-                    val time = times.get(i)
+                    val time = (times.get(i) * 1_000_000_000).toLong()
                     val keyFrame = nodeKeyFrames.findOrCreate(time,node)
                     if(!keyFrame.boneTransforms.containsKey(node)){
                         keyFrame.boneTransforms [node] = BoneTransform()
@@ -207,7 +287,6 @@ class Animator(
                     }
                 }
             }
-
             return Animation(animation.name,nodeKeyFrames.last().time,nodeKeyFrames)
         }
 
@@ -217,7 +296,7 @@ class Animator(
             return data
         }
 
-        private fun MutableList<KeyFrame>.findOrCreate(time: Float, node: NodeModel): KeyFrame {
+        private fun MutableList<KeyFrame>.findOrCreate(time: Long, node: NodeModel): KeyFrame {
             return find { it.time == time } ?: KeyFrame(time, boneTransforms = hashMapOf(node to BoneTransform())).also { add(it) }
         }
     }

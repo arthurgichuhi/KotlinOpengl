@@ -111,7 +111,7 @@ class PhysicsEngine(val actor: Actor) {
                 if (x + halfSize < x2 - halfSize || x - halfSize > x2 + halfSize) break
                 if (y + halfSize < y2 - halfSize || y - halfSize > y2 + halfSize) break
                 if (z + halfSize < z2 - halfSize || z - halfSize > z2 + halfSize) break
-                Log.d("TAG","Success Collision")
+
                 var actorHit = false
                 var npcHit = false
                 var headHit = false

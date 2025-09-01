@@ -69,6 +69,7 @@ class Actor(
             animations[animation.name] = Animator.processAnimation(animation)
         }
         animator.defaultAnimation = animations["warmUp"]
+        animator.animations = animations
     }
 
     override fun onInit() {
@@ -153,14 +154,13 @@ class Actor(
                     }
                 }
                 else{
-                    if(collisionData.headHit){
-                        animator.doAnimation(animations["Head hit"]!!)
-                    }
-                    else{
-                        animator.doAnimation(animations["Hit to Body"]!!)
-                    }
+//                    if(collisionData.headHit){
+//                        animator.doAnimation(animations["Head hit"]!!)
+//                    }
+//                    else{
+//                        animator.doAnimation(animations["Hit to Body"]!!)
+//                    }
                 }
-                if(collisionData.success>0)Log.d("TAG","-----------Collision--------\n$collisionData")
             }
         }
 
